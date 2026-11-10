@@ -1,0 +1,42 @@
+name: PR quality gate
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: pr-quality-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: "24"
+
+      - uses: pnpm/action-setup@v6.1.1
+        with:
+          version: 12.19.0
+          run_install: false
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Validate package manifests
+        run: pnpm package-manifests:check
+
+      - name: 🔍 Validate GitHub Actions Workflows
+        run: pnpm github-actions:check

@@ -1,13 +1,20 @@
-# node-packages
+# @asmundwien/node-packages
 
-Public source for four MIT-licensed packages under `@asmundwien`:
+Public source for `@asmundwien`s shared node modules:
 
-- `@asmundwien/design`: framework-independent design tokens, CSS and JSON.
-- `@asmundwien/ui`: React components and scoped themes.
-- `@asmundwien/tailwind`: Tailwind 4 plugin and CSS integration.
-- `@asmundwien/lint`: composable ESLint and native Biome presets.
+- TBI `@asmundwien/design`: framework-independent design tokens, CSS and JSON.
+- TBI `@asmundwien/ui`: React components and scoped themes.
+- TBI `@asmundwien/tailwind`: Tailwind 4 plugin and CSS integration.
+- TBI `@asmundwien/lint`: composable ESLint and native Biome presets.
 
-The planned pnpm and Turborepo workspace keeps the root private and versions the four public packages together. Implementation and release requirements are tracked in this repository's issues. No packages are implemented or published yet.
+## Contents
+
+See the links below to find further documentation.
+
+| Document                             | Description                                           |
+| ------------------------------------ | ----------------------------------------------------- |
+| [Contributing](docs/contributing.md) | Guidance for contributing changes to this repository. |
+| [Process](docs/process.md)           | How changes are validated and delivered.              |
 
 ## License
 

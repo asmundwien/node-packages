@@ -1,14 +1,30 @@
 {
   "name": "@asmundwien/node-packages",
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.x",
+      "onFail": "download"
+    }
+  },
   "scripts": {
+    "package-manifests": "sherif --fix",
+    "package-manifests:check": "sherif",
+    "github-actions:check": "github-actionlint .github/workflows/*.yml",
     "rulesync:install": "rulesync install",
     "rulesync:update": "rulesync install --update",
     "rulesync:preview": "rulesync generate --dry-run",
     "rulesync:apply": "rulesync generate"
   },
   "devDependencies": {
-    "rulesync": "43.8.0"
+    "github-actionlint": "1.7.12",
+    "rulesync": "43.8.0",
+    "sherif": "1.13.0",
+    "typescript": "6.0.3"
   },
   "packageManager": "pnpm@12.19.0"
 }
