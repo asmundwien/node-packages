@@ -2,7 +2,8 @@
 
 ## Pull requests
 
-The PR quality gate provides automated feedback before changes reach `main`. Review the `checks` result on your pull request and resolve failures before merging.
+Use pull requests to review changes before they reach `main`.
+Resolve review feedback and ensure the PR quality gate passes before merging.
 
 ## Action updates
 
