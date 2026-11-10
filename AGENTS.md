@@ -7,3 +7,7 @@ Documentation is never historical unless that is its explicit purpose. Describe 
 ### Never repeat yourself
 
 Keep each fact in one authoritative location and link to it elsewhere.
+
+## Installing node modules locally
+
+Unless you have a very spesiffic reason not to, always use package versions that satisfy the default waiting period enforced by `pnpm`.

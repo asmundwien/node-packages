@@ -1,0 +1,52 @@
+{
+  "name": "@asmundwien/lint",
+  "version": "0.0.0",
+  "description": "Composable strict ESLint policy for modern ESM, TypeScript, Node and React",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asmundwien/node-packages.git",
+    "directory": "packages/lint"
+  },
+  "homepage": "https://github.com/asmundwien/node-packages/tree/main/packages/lint#readme",
+  "bugs": {
+    "url": "https://github.com/asmundwien/node-packages/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    "./eslint": {
+      "types": "./eslint/index.d.mts",
+      "import": "./eslint/index.mjs"
+    }
+  },
+  "files": [
+    "eslint/",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@eslint-react/eslint-plugin": "5.28.8",
+    "@eslint/js": "10.0.1",
+    "eslint-import-resolver-typescript": "4.4.5",
+    "eslint-plugin-import-x": "4.18.1",
+    "eslint-plugin-n": "18.5.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-unicorn": "79.0.0",
+    "globals": "17.14.0",
+    "typescript-eslint": "8.72.2"
+  },
+  "peerDependencies": {
+    "eslint": "10.14.0",
+    "typescript": "6.0.3"
+  },
+  "devDependencies": {
+    "eslint": "10.14.0",
+    "typescript": "6.0.3"
+  }
+}
