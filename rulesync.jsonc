@@ -1,0 +1,23 @@
+{
+  "$schema": "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json",
+  "targets": ["omp"],
+  "features": ["skills"],
+  "sources": [
+    {
+      "source": "asmundwien/agentic:architecture-and-design/skills",
+      "skills": ["*"]
+    },
+    {
+      "source": "asmundwien/agentic:code-quality/skills",
+      "skills": ["*"]
+    },
+    {
+      "source": "asmundwien/agentic:debugging/skills",
+      "skills": ["*"]
+    },
+    {
+      "source": "asmundwien/agentic:node/skills",
+      "skills": ["*"]
+    }
+  ]
+}

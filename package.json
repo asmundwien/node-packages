@@ -1,0 +1,14 @@
+{
+  "name": "@asmundwien/node-packages",
+  "private": true,
+  "scripts": {
+    "rulesync:install": "rulesync install",
+    "rulesync:update": "rulesync install --update",
+    "rulesync:preview": "rulesync generate --dry-run",
+    "rulesync:apply": "rulesync generate"
+  },
+  "devDependencies": {
+    "rulesync": "43.8.0"
+  },
+  "packageManager": "pnpm@12.19.0"
+}

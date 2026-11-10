@@ -1,0 +1,88 @@
+{
+  "lockfileVersion": 1,
+  "sources": {
+    "asmundwien/agentic:architecture-and-design/skills": {
+      "requestedRef": "main",
+      "resolvedRef": "e93cbaa4d8b01d724a213644c18c4361da6d36c0",
+      "resolvedAt": "2026-11-06T09:59:47.175Z",
+      "skills": {
+        "codebase-design": {
+          "integrity": "sha256-9f457cc65ef2d70eb5b8a44a4dae2b139840078b6596a67ee8c4e95f5a0e6f5c"
+        },
+        "coding-standards": {
+          "integrity": "sha256-9f8927ba9f924a3be480eb32db2313ae04b9a9632f5a4a2780732103943c66f0"
+        },
+        "domain-modeling": {
+          "integrity": "sha256-2bc3bb0a64ea9c6f5c3bcf78fc17f0fcdc7c062edc547ef006441de0b576d248"
+        },
+        "explicit-effects": {
+          "integrity": "sha256-f8ec09f257b2849dd2927061579ad3c154241c3c2c4474434fe5b3aaf0efa08d"
+        },
+        "principle-subtract-before-you-add": {
+          "integrity": "sha256-695763e57eb71d9133565a040abe06633e7d4191785949fb2aa007b542f87523"
+        },
+        "principle-type-system-discipline": {
+          "integrity": "sha256-e2582b8295f9c0beb8861f282d7b8e645a2ee15b8b45f8da2550899c07766ae9"
+        }
+      },
+      "skillSelection": [
+        "*"
+      ],
+      "skillsPath": "architecture-and-design/skills"
+    },
+    "asmundwien/agentic:code-quality/skills": {
+      "requestedRef": "main",
+      "resolvedRef": "e93cbaa4d8b01d724a213644c18c4361da6d36c0",
+      "resolvedAt": "2026-11-06T09:59:47.200Z",
+      "skills": {
+        "code-review": {
+          "integrity": "sha256-12daafb9c4f77deb3c3303dc2e6f8a3c2a0ff7928fc004af959ba18b8bd38068"
+        },
+        "improve-codebase-architecture": {
+          "integrity": "sha256-86f5e0413fa5b42b8e954858a09ce5a73187c61169f1b3b199bc79416fd78086"
+        }
+      },
+      "skillSelection": [
+        "*"
+      ],
+      "skillsPath": "code-quality/skills"
+    },
+    "asmundwien/agentic:debugging/skills": {
+      "requestedRef": "main",
+      "resolvedRef": "e93cbaa4d8b01d724a213644c18c4361da6d36c0",
+      "resolvedAt": "2026-11-06T09:59:47.226Z",
+      "skills": {
+        "diagnosing-bugs": {
+          "integrity": "sha256-bcdaec9e1033901c396437fcb102161d8ad3cd87632007aaf270b19e03e70117"
+        }
+      },
+      "skillSelection": [
+        "*"
+      ],
+      "skillsPath": "debugging/skills"
+    },
+    "asmundwien/agentic:node/skills": {
+      "requestedRef": "main",
+      "resolvedRef": "e93cbaa4d8b01d724a213644c18c4361da6d36c0",
+      "resolvedAt": "2026-11-06T09:59:47.287Z",
+      "skills": {
+        "modern-javascript-patterns": {
+          "integrity": "sha256-b25abe60ade2d960443e53dcb1d160e60374934c41b60856db473f4b643594cb"
+        },
+        "nodejs-backend-patterns": {
+          "integrity": "sha256-92dfeaec18b14df48242ab558b47be20d42ffc8343c74940bb55fd48f167a4ee"
+        },
+        "typescript-advanced-types": {
+          "integrity": "sha256-5cfece01370706036b65eae88c2c7ad9fa6f7a72dfd7ef58d65c666e3d8ee1a2"
+        },
+        "typescript-best-practices": {
+          "integrity": "sha256-a5ad4082afbdf97f41bf5b7663d239a724e2d580ea60184391458c433d173c85"
+        }
+      },
+      "skillSelection": [
+        "*"
+      ],
+      "skillsPath": "node/skills"
+    }
+  }
+}
