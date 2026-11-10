@@ -40,3 +40,6 @@ jobs:
 
       - name: 🔍 Validate GitHub Actions Workflows
         run: pnpm github-actions:check
+
+      - name: 🔍 Validate ESLint
+        run: pnpm lint:check

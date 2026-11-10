@@ -1,6 +1,7 @@
 {
   "json.schemaDownload.trustedDomains": {
-    "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json": true
+    "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json": true,
+    "https://turborepo.com/schema.json": true
   },
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#ab307e",
