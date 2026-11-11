@@ -1,20 +1,29 @@
 # Contributing to @asmundwien/lint
 
-For consumer configuration, layers, peers and lint policy, see the [package README](../README.md).
+See the [README](../README.md) for package policy and consumer setup.
 
-## Configuration modules
+## Policy changes
 
-Each module has its own declaration in `eslint/`.
+Select rules against the [package policy](../README.md#policy). Choose them explicitly so upstream presets and dependency updates cannot silently change the policy.
 
-## Rule override comments
+Composed layers must enforce a coherent policy without duplicate or contradictory checks. Keep separate checks when they protect different requirements.
 
-Every locally authored rule entry, including additions, option changes and `off` entries, must have an immediately preceding comment that explains why the selected upstream settings are insufficient or unsuitable and what behavior the override requires.
+## Rule rationale
 
-- For conflicting or duplicate checks, name the exact replacement rule and the check it owns.
-- For compatibility exclusions, name the unavailable API or incompatible plugin behavior and the affected Node or ESLint version.
-- For policy choices, state the concrete accepted or rejected code pattern. Explain the chosen options when they change upstream behavior.
-- For checks absent from a preset, state the missing enforcement and the requirement it adds.
+Keep rationale beside each effective rule entry. Explain the risk or convention it protects and why non-default options are appropriate. For exclusions, name the replacement check or verified compatibility constraint.
 
-An upstream overlay needs one comment explaining why that overlay is selected. Descriptions such as "not needed", "best practice" or a restatement of the rule name are insufficient. Reasons must describe verified behavior rather than guesses.
+Do not restate rule names or rely on phrases such as "best practice" or "not needed". Remove entries that have no effect rather than keep a catalogue of reviewed rules.
 
-Remove an override when the inherited setting already has the same severity and options. Remove an `off` entry when the inherited rule is already absent or disabled, or its empty configuration performs no checks. Keep policy explanations beside effective overrides rather than retaining inactive entries as a record of reviewed rules.
+### Exceptions
+
+Inline ESLint configuration and suppressions are disabled. Exceptions require reviewed, file-scoped configuration with a concrete reason and an accepted code pattern.
+
+Agents must not grant their own exceptions, they are human approved only. Just because an exception exists does not mean it is free to keep violating. If an exception grows worse with a new code change, this is a red flag and requires human eyes.
+
+Run CI with `--max-warnings=0` so attempted inline configuration also fails validation.
+
+## Verification
+
+Run `pnpm typecheck` from the package directory.
+
+Exercise policy changes through composed ESLint configurations and real fixture files. Verify rejected code, accepted alternatives, and file-scope boundaries.

@@ -1,9 +1,9 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "@asmundwien/tsconfig/node.json",
   "compilerOptions": {
-    "lib": ["ES2022"],
-    "types": [],
-    "noEmit": true
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true
   },
-  "include": ["eslint/**/*.d.mts"]
+  "include": ["src/**/*", "eslint.config.mjs"]
 }

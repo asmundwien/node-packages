@@ -1,6 +1,8 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "strict": true,
+    "skipLibCheck": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
@@ -8,9 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "erasableSyntaxOnly": true,
-    "verbatimModuleSyntax": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler"
+    "verbatimModuleSyntax": true
   }
 }

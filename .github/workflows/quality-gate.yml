@@ -43,3 +43,6 @@ jobs:
 
       - name: 🔍 Validate ESLint
         run: pnpm lint:check
+
+      - name: 🔍 Check types
+        run: pnpm typecheck

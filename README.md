@@ -6,6 +6,7 @@ Public source for `@asmundwien`s shared node modules:
 - TBI `@asmundwien/ui`: React components and scoped themes.
 - TBI `@asmundwien/tailwind`: Tailwind 4 plugin and CSS integration.
 - [@asmundwien/lint](packages/lint/README.md): composable ESLint configurations.
+- [@asmundwien/tsconfig](packages/tsconfig/README.md): strict compiler configurations.
 
 ## Contents
 
