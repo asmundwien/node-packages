@@ -32,7 +32,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "lint": "eslint . --fix",
+    "lint": "eslint . --fix --max-warnings=0",
     "lint:check": "eslint . --max-warnings=0",
     "typecheck": "tsc"
   },

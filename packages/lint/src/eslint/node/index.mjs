@@ -3,10 +3,8 @@ import n from 'eslint-plugin-n';
 import globals from 'globals';
 
 const node = defineConfig({
-  name: '@asmundwien/lint/node',
   files: ['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'],
   languageOptions: {
-    sourceType: 'module',
     globals: {
       ...globals.nodeBuiltin,
       __dirname: 'off',
@@ -15,14 +13,17 @@ const node = defineConfig({
       module: 'off',
       require: 'off',
     },
+    sourceType: 'module',
   },
+  name: '@asmundwien/lint/node',
   plugins: { n },
-  settings: { node: { version: '>=24.0.0' } },
   rules: {
     // [correctness] Return after error-first callbacks so execution cannot continue after completion.
     'n/callback-return': 'error',
     // [correctness] Handle conventional err/error/*Error callback parameters so a named failure cannot be discarded silently.
     'n/handle-callback-err': ['error', '^(?:err|error|.+Error)$'],
+    // [correctness] Require valid Node hashbangs so executable scripts and installed bin entries launch with the intended runtime.
+    'n/hashbang': 'error',
     // [correctness] Pass Error objects to error-first callbacks so callers can inspect failure details consistently.
     'n/no-callback-literal': 'error',
     // [correctness] Reject deprecated Node APIs before removal breaks runtime behavior; import and type checks cover different declarations.
@@ -55,21 +56,20 @@ const node = defineConfig({
     'n/prefer-global/text-decoder': 'error',
     // [standardization] Use the global TextEncoder supported by Node 24 so encoding does not alternate between equivalent bindings.
     'n/prefer-global/text-encoder': 'error',
-    // [standardization] Use the global URLSearchParams so query parsing does not alternate between equivalent bindings.
-    'n/prefer-global/url-search-params': 'error',
-    // [standardization] Use the global URL so URL construction does not alternate between equivalent bindings.
-    'n/prefer-global/url': 'error',
     // [standardization] Use global callback timers so scheduling does not alternate between global and imported spellings.
     'n/prefer-global/timers': 'error',
+    // [standardization] Use the global URL so URL construction does not alternate between equivalent bindings.
+    'n/prefer-global/url': 'error',
+    // [standardization] Use the global URLSearchParams so query parsing does not alternate between equivalent bindings.
+    'n/prefer-global/url-search-params': 'error',
     // [correctness] Use strict Node assertions so equality checks cannot pass because of type coercion.
     'n/prefer-import/assert-strict': 'error',
     // [standardization] Use promise-based DNS operations so lookup failures follow the selected async/await control flow.
     'n/prefer-promises/dns': 'error',
     // [standardization] Use promise-based filesystem operations so IO failures follow the selected async/await control flow.
     'n/prefer-promises/fs': 'error',
-    // [correctness] Require valid Node hashbangs so executable scripts and installed bin entries launch with the intended runtime.
-    'n/hashbang': 'error',
   },
+  settings: { node: { version: '>=24.0.0' } },
 });
 
 export { node };

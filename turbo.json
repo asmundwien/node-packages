@@ -4,8 +4,12 @@
     "lint": {
       "cache": false
     },
-    "lint:check": {},
+    "lint:check": {
+      "dependsOn": ["^lint:check"],
+      "outputs": []
+    },
     "typecheck": {
+      "dependsOn": ["^typecheck"],
       "outputs": []
     }
   }

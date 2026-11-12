@@ -1,4 +1,4 @@
-import vitestPlugin from '@vitest/eslint-plugin';
+import plugin from '@vitest/eslint-plugin';
 import { defineConfig } from 'eslint/config';
 
 const testFiles = [
@@ -19,10 +19,10 @@ const runnerConfigFiles = [
 ];
 
 const vitest = defineConfig({
-  name: '@asmundwien/lint/vitest',
   files: testFiles,
   ignores: runnerConfigFiles,
-  plugins: { vitest: vitestPlugin },
+  name: '@asmundwien/lint/vitest',
+  plugins: { vitest: plugin },
   rules: {
     // [standardization] Off (scope): Tests keep literal inputs, expected results and boundary values beside assertions rather than naming every numeric fixture.
     'no-magic-numbers': 'off',
@@ -52,29 +52,29 @@ const vitest = defineConfig({
     }],
     // [enforcement-integrity] Reject skipIf and runIf on ordinary and fixture APIs so runtime conditions cannot silently omit registered verification.
     'no-restricted-properties': ['error', {
+      message: 'Register unconditional test cases. Put environment-specific suites in scoped Vitest projects.',
       property: 'skipIf',
-      message: 'Register unconditional test cases. Put environment-specific suites in scoped Vitest projects.',
     }, {
-      property: 'runIf',
       message: 'Register unconditional test cases. Put environment-specific suites in scoped Vitest projects.',
+      property: 'runIf',
     }],
     // [enforcement-integrity] Reject named test and suite registration under branches so generated verification does not disappear with runtime inputs.
     'no-restricted-syntax': ['error', {
-      selector: ':matches(IfStatement, SwitchCase, ConditionalExpression, LogicalExpression) CallExpression:matches([callee.name=/^(test|it|describe|suite)$/], [callee.object.name=/^(test|it|describe|suite)$/])',
       message: 'Register tests and suites unconditionally. Use parameterized cases or scoped Vitest projects.',
+      selector: ':matches(IfStatement, SwitchCase, ConditionalExpression, LogicalExpression) CallExpression:matches([callee.name=/^(test|it|describe|suite)$/], [callee.object.name=/^(test|it|describe|suite)$/])',
     }],
 
     // [standardization] Use each rather than for for both case and suite tables so generated parameterized declarations share one searchable API.
     'vitest/consistent-each-for': ['error', {
-      test: 'each',
-      it: 'each',
       describe: 'each',
+      it: 'each',
       suite: 'each',
+      test: 'each',
     }],
     // [standardization] Recognize both test and spec suffixes across supported source extensions, but require test so generated case files have one suffix.
     'vitest/consistent-test-filename': ['error', {
-      pattern: '.*\\.test\\.(?:[jt]sx?|[cm][jt]s)$',
-      allTestPattern: '.*\\.(?:test|spec)\\.(?:[jt]sx?|[cm][jt]s)$',
+      allTestPattern: String.raw`.*\.(?:test|spec)\.(?:[jt]sx?|[cm][jt]s)$`,
+      pattern: String.raw`.*\.test\.(?:[jt]sx?|[cm][jt]s)$`,
     }],
     // [standardization] Use test inside and outside describes so generated case declarations have one searchable spelling.
     'vitest/consistent-test-it': ['error', { fn: 'test', withinDescribe: 'test' }],
@@ -110,9 +110,9 @@ const vitest = defineConfig({
     'vitest/no-interpolation-in-snapshots': 'error',
     // [architectural-prevention] Ban module replacement through mock, doMock and importMock so generated tests expose doubles through explicit dependency ownership.
     'vitest/no-restricted-vi-methods': ['error', {
-      mock: 'Pass a test double through an explicit parameter, constructor or factory dependency instead of replacing a module with vi.mock().',
       doMock: 'Pass a test double through an explicit parameter, constructor or factory dependency instead of replacing a module with vi.doMock().',
       importMock: 'Import the real module and pass test doubles through explicit dependencies instead of loading an automatically mocked module.',
+      mock: 'Pass a test double through an explicit parameter, constructor or factory dependency instead of replacing a module with vi.mock().',
     }],
     // [correctness] Assertions in suite-definition code run outside the intended test lifecycle and can fail before a case owns the failure.
     'vitest/no-standalone-expect': 'error',
@@ -183,20 +183,19 @@ const vitest = defineConfig({
     'vitest/require-top-level-describe': ['error', { maxNumberOfTopLevelDescribes: 1 }],
     // [correctness] Describe callbacks must register cases synchronously with a supported signature or Vitest can miss cases or reject the suite.
     'vitest/valid-describe-callback': 'error',
+    // [standardization, enforcement-integrity] Await async assertions to finish verification; allow a second expect argument for Vitest's assertion message or polling options.
+    'vitest/valid-expect': ['error', { alwaysAwait: true, maxArgs: 2, minArgs: 1 }],
     // [enforcement-integrity] Assertion-bearing promise chains must finish before the runner marks verification complete.
     'vitest/valid-expect-in-promise': 'error',
-    // [standardization, enforcement-integrity] Await async assertions to finish verification; allow a second expect argument for Vitest's assertion message or polling options.
-    'vitest/valid-expect': ['error', { alwaysAwait: true, minArgs: 1, maxArgs: 2 }],
     // [standardization] Require nonempty titles without stray whitespace or repeated test-function prefixes so generated case names remain readable and searchable.
     'vitest/valid-title': 'error',
-    // [enforcement-integrity] Todo placeholders execute no regression check and cannot stand in for completed verification.
+    // [enforcement-integrity] Placeholder cases execute no regression check and cannot stand in for completed verification.
     'vitest/warn-todo': 'error',
   },
 }, {
-  name: '@asmundwien/lint/vitest/typescript',
   files: typedTestFiles,
   ignores: runnerConfigFiles,
-  settings: { vitest: { typecheck: true } },
+  name: '@asmundwien/lint/vitest/typescript',
   rules: {
     // [standardization] Off (scope): Typed tests keep literal inputs, expected results and boundary values beside assertions rather than naming every numeric fixture.
     '@typescript-eslint/no-magic-numbers': 'off',
@@ -211,11 +210,10 @@ const vitest = defineConfig({
     // [correctness] Preserve receiver checks outside supported matcher inspection, including static methods whose implementations can depend on this.
     'vitest/unbound-method': ['error', { ignoreStatic: false }],
   },
+  settings: { vitest: { typecheck: true } },
 }, {
-  name: '@asmundwien/lint/vitest/snapshots',
   files: [...testFiles, '**/__snapshots__/*.snap'],
   ignores: runnerConfigFiles,
-  plugins: { vitest: vitestPlugin },
   linterOptions: {
     // [enforcement-integrity] Block source-level configuration in snapshot files so generated output cannot weaken the surrounding test policy.
     noInlineConfig: true,
@@ -224,9 +222,11 @@ const vitest = defineConfig({
     // [enforcement-integrity] Set unused inline-policy diagnostics to errors; noInlineConfig remains the active source-configuration protection.
     reportUnusedInlineConfigs: 'error',
   },
+  name: '@asmundwien/lint/vitest/snapshots',
+  plugins: { vitest: plugin },
   rules: {
     // [architectural-prevention] Snapshot ceilings of 50 external lines and 20 inline lines are chosen review limits to discourage opaque expected output, not guarantees of useful checks.
-    'vitest/no-large-snapshots': ['error', { maxSize: 50, inlineMaxSize: 20 }],
+    'vitest/no-large-snapshots': ['error', { inlineMaxSize: 20, maxSize: 50 }],
   },
 });
 

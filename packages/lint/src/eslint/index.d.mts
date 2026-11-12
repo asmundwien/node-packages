@@ -1,7 +1,9 @@
 import type { Linter } from "eslint";
 
-export declare const base: Linter.Config[];
-export declare const typescript: Linter.Config[];
-export declare const node: Linter.Config[];
-export declare const react: Linter.Config[];
-export declare const vitest: Linter.Config[];
+declare const base: Linter.Config[];
+declare const typescript: Linter.Config[];
+declare const node: Linter.Config[];
+declare const react: Linter.Config[];
+declare const vitest: Linter.Config[];
+
+export { base, node, react, typescript, vitest };
