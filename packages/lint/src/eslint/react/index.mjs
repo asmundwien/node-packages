@@ -19,174 +19,174 @@ const react = defineConfig({
     },
   },
   rules: {
-    // Do not read stale this.state inside a class setState update.
+    // [correctness] Functional state updates must use the pending state rather than a stale this.state snapshot.
     '@eslint-react/no-access-state-in-setstate': 'error',
-    // Use stable item identity rather than array positions as reconciliation keys.
+    // [correctness] Positional keys can attach a prior item's state to a different item after insertion or reordering.
     '@eslint-react/no-array-index-key': 'error',
-    // Represent child collections explicitly instead of relying on Children.count traversal semantics.
+    // [standardization] Use explicit child data for counts so generated components do not depend on opaque Children traversal conventions.
     '@eslint-react/no-children-count': 'error',
-    // Iterate explicit child data instead of traversing React's opaque children structure.
+    // [standardization] Iterate explicit child data so review can follow the collection without React Children traversal semantics.
     '@eslint-react/no-children-for-each': 'error',
-    // Map explicit child data instead of changing opaque children through Children.map.
+    // [standardization] Transform explicit child data rather than opaque React elements so generated collection code uses one representation.
     '@eslint-react/no-children-map': 'error',
-    // Express single-child contracts in component props instead of runtime Children.only assertions.
+    // [standardization] Declare single-child props instead of runtime Children.only assertions so component contracts use the chosen props convention.
     '@eslint-react/no-children-only': 'error',
-    // Keep child data as explicit arrays instead of rebuilding it through Children.toArray.
+    // [standardization] Keep child collections as explicit arrays rather than reconstructing them through React's opaque children API.
     '@eslint-react/no-children-to-array': 'error',
-    // Use function components and hooks; retain classes only for error boundaries.
+    // [standardization] Generate function components and hooks, with error-boundary classes as the supported exception.
     '@eslint-react/no-class-component': 'error',
-    // Pass data through props instead of rewriting existing elements with cloneElement.
+    // [architectural-prevention] Explicit props keep ownership of child inputs visible instead of overriding another element's props through cloning.
     '@eslint-react/no-clone-element': 'error',
-    // Reject the legacy pre-mount lifecycle method that React cannot run safely.
+    // [correctness] Pre-mount lifecycle effects can repeat or run for abandoned renders before React commits.
     '@eslint-react/no-component-will-mount': 'error',
-    // Reject the legacy receive-props lifecycle method that React cannot run safely.
+    // [correctness] Receive-props lifecycle work can repeat before commit and overwrite state based on uncommitted props.
     '@eslint-react/no-component-will-receive-props': 'error',
-    // Reject the legacy pre-update lifecycle method that React cannot run safely.
+    // [correctness] Pre-update lifecycle effects can run for an update that React never commits.
     '@eslint-react/no-component-will-update': 'error',
-    // Use React 19's Context provider element rather than the legacy Context.Provider spelling.
+    // [standardization] Use React 19's context element spelling so generated providers follow the selected framework API.
     '@eslint-react/no-context-provider': 'error',
-    // Use useRef in function components so ref identity survives renders.
+    // [standardization] Use useRef in function components as the chosen ref API instead of generating createRef calls intended for classes.
     '@eslint-react/no-create-ref': 'error',
-    // Update class state through setState instead of mutating this.state directly.
+    // [correctness] Mutating this.state bypasses React's update scheduling and can leave rendered output stale.
     '@eslint-react/no-direct-mutation-state': 'error',
-    // Pass ref as a React 19 prop instead of wrapping components with forwardRef.
+    // [standardization] React 19 accepts ref as a prop, so generated components do not need the older forwardRef wrapper convention.
     '@eslint-react/no-forward-ref': 'error',
-    // Give anonymous memoized components display names that identify them in React DevTools.
+    // [standardization] Name anonymous memoized components so DevTools and failure diagnostics identify the generated component.
     '@eslint-react/no-missing-component-display-name': 'error',
-    // Give contexts display names that identify them in React DevTools.
+    // [standardization] Name contexts so DevTools identifies the provider being inspected instead of displaying an anonymous context.
     '@eslint-react/no-missing-context-display-name': 'error',
-    // Supply reconciliation keys for every element produced by list rendering.
+    // [correctness] Missing list keys prevent React from reliably associating child state with the intended item across updates.
     '@eslint-react/no-missing-key': 'error',
-    // Reject component definitions in JSX props and class renders beyond Hooks' dynamic JSX-use checks.
+    // [correctness] Nested component definitions create new component types that can remount children and discard their state.
     '@eslint-react/no-nested-component-definitions': 'error',
-    // Declare lazy imports outside components and hooks so their component identity remains stable.
+    // [correctness] Recreating lazy component declarations during rendering changes component identity and can reset child state.
     '@eslint-react/no-nested-lazy-component-declarations': 'error',
-    // Avoid synchronous class state updates during mount that force an extra render.
+    // [architectural-prevention] Synchronous mount state updates add a second render before paint, a preventable rendering-cost pattern.
     '@eslint-react/no-set-state-in-component-did-mount': 'error',
-    // Avoid synchronous class state updates during update that can trigger repeated renders.
+    // [correctness] Synchronous state updates after an update can schedule another update indefinitely.
     '@eslint-react/no-set-state-in-component-did-update': 'error',
-    // Do not schedule class state updates during the pre-update lifecycle.
+    // [correctness] Scheduling state updates during the pre-update lifecycle violates React's supported update lifecycle.
     '@eslint-react/no-set-state-in-component-will-update': 'error',
-    // Reserve the use prefix for functions that actually call hooks.
+    // [standardization] Reserve use-prefixed names for hook functions so generated call sites communicate hook restrictions consistently.
     '@eslint-react/no-unnecessary-use-prefix': 'error',
-    // Reject UNSAFE_componentWillMount rather than retaining an unsafe lifecycle under a new name.
+    // [correctness] Renaming pre-mount work with UNSAFE_ does not stop effects from running before an abandoned render commits.
     '@eslint-react/no-unsafe-component-will-mount': 'error',
-    // Reject UNSAFE_componentWillReceiveProps instead of deriving state in an unsafe lifecycle.
+    // [correctness] UNSAFE_componentWillReceiveProps can run before commit, so deriving state there can use uncommitted props.
     '@eslint-react/no-unsafe-component-will-receive-props': 'error',
-    // Reject UNSAFE_componentWillUpdate instead of running work before React commits an update.
+    // [correctness] UNSAFE_componentWillUpdate can perform effects for updates that React abandons before commit.
     '@eslint-react/no-unsafe-component-will-update': 'error',
-    // Keep context provider values referentially stable to avoid unrelated consumer renders.
+    // [architectural-prevention] Fresh context value identities trigger consumer updates even when their underlying data has not changed.
     '@eslint-react/no-unstable-context-value': 'error',
-    // Keep object and function default props stable instead of allocating them on every render.
+    // [architectural-prevention] Fresh object or function defaults invalidate identity-based dependencies and memoization on every omitted-prop render.
     '@eslint-react/no-unstable-default-props': 'error',
-    // Remove unused class component methods and properties, including error-boundary members.
+    // [standardization] Remove unused class members so generated error boundaries do not retain misleading implementation code.
     '@eslint-react/no-unused-class-component-members': 'error',
-    // Read context with React 19's use API instead of the older useContext API.
+    // [standardization] Use React 19's use API for context reads so generated components follow one selected context convention.
     '@eslint-react/no-use-context': 'error',
-    // Destructure state consistently, name matching setters and lazily evaluate expensive initializers.
+    // [architectural-prevention, standardization] Destructured state and matching setter names make updates recognizable; lazy expensive initializers avoid repeating work on renders.
     '@eslint-react/use-state': 'error',
-    // Pass children as nested JSX content instead of a separate children prop.
+    // [standardization] Write children as nested JSX so generated component composition has one searchable representation.
     '@eslint-react/jsx-no-children-prop': 'error',
-    // Use JSX comment expressions instead of accidentally rendering comment-like text.
+    // [correctness] Comment-like JSX text renders to users unless it uses a JSX comment expression.
     '@eslint-react/jsx-no-comment-textnodes': 'error',
-    // Put key before spreads so the automatic JSX runtime does not fall back to createElement.
+    // [standardization] Put key before spreads to retain the selected automatic JSX runtime path instead of its createElement fallback.
     '@eslint-react/jsx-no-key-after-spread': 'error',
-    // Reject template-literal dollar signs accidentally copied into JSX interpolation text.
+    // [correctness] A template-style dollar sign beside JSX interpolation becomes unintended visible text.
     '@eslint-react/jsx-no-leaked-dollar': 'error',
-    // Reject statement semicolons accidentally copied into rendered JSX text.
+    // [correctness] A statement semicolon copied after a JSX expression becomes unintended visible text.
     '@eslint-react/jsx-no-leaked-semicolon': 'error',
-    // Reject JSX namespace syntax that React does not support.
+    // [correctness] React does not support JSX namespace syntax, so generated namespaced elements violate the renderer contract.
     '@eslint-react/jsx-no-namespace': 'error',
-    // Remove fragments that add no grouping while preserving fragments required by expression contracts.
+    // [standardization] Omit redundant fragments so generated JSX has no extra grouping unless its expression contract needs it.
     '@eslint-react/jsx-no-useless-fragment': 'error',
-    // Render escaped content instead of bypassing React's escaping with dangerouslySetInnerHTML.
+    // [correctness] Raw HTML injection bypasses React's escaping and can execute attacker-controlled markup.
     '@eslint-react/dom-no-dangerously-set-innerhtml': 'error',
-    // Use refs instead of finding DOM nodes through the removed findDOMNode API.
+    // [correctness] React 19 removed findDOMNode, so generated DOM access must use supported refs.
     '@eslint-react/dom-no-find-dom-node': 'error',
-    // Let React schedule updates instead of forcing synchronous DOM commits with flushSync.
+    // [architectural-prevention] Forced synchronous commits interrupt React scheduling and can add blocking rendering work.
     '@eslint-react/dom-no-flush-sync': 'error',
-    // Hydrate with hydrateRoot instead of the removed ReactDOM.hydrate API.
+    // [correctness] React 19 removed ReactDOM.hydrate, so hydration must use the supported hydrateRoot entry point.
     '@eslint-react/dom-no-hydrate': 'error',
-    // State button types explicitly so non-submit buttons do not submit forms by default.
+    // [correctness] A button without an explicit type can submit its surrounding form when it was intended only to perform an action.
     '@eslint-react/dom-no-missing-button-type': 'error',
-    // Restrict embedded documents with an explicit iframe sandbox.
+    // [correctness] An explicit iframe sandbox restricts embedded content rather than granting unrestricted browser capabilities by default.
     '@eslint-react/dom-no-missing-iframe-sandbox': 'error',
-    // Render through createRoot instead of the removed ReactDOM.render API.
+    // [correctness] React 19 removed ReactDOM.render, so mounting must use the supported createRoot entry point.
     '@eslint-react/dom-no-render': 'error',
-    // Reject javascript URLs that execute code instead of navigating to a document.
+    // [correctness] javascript URLs execute code in the page instead of navigating and can introduce script injection.
     '@eslint-react/dom-no-script-url': 'error',
-    // Supply style objects instead of CSS strings that React does not accept.
+    // [correctness] React requires an object for style props and rejects CSS strings at runtime.
     '@eslint-react/dom-no-string-style-prop': 'error',
-    // Use known React DOM property names instead of misspelled or unsupported attributes.
+    // [correctness] Unsupported or misspelled DOM props can leave the intended browser behavior or attribute unset.
     '@eslint-react/dom-no-unknown-property': 'error',
-    // Reject iframe sandbox combinations that let embedded content escape its restrictions.
+    // [correctness] Unsafe sandbox permission combinations let embedded content remove restrictions intended to isolate it.
     '@eslint-react/dom-no-unsafe-iframe-sandbox': 'error',
-    // Use noreferrer for new browsing contexts instead of exposing the opener and referrer.
+    // [correctness] noreferrer prevents linked pages from receiving the referrer or retaining an opener reference to this page.
     '@eslint-react/dom-no-unsafe-target-blank': 'error',
-    // Use React 19's useActionState instead of the renamed useFormState API.
+    // [standardization] Use React 19's useActionState name so generated form code follows the supported replacement for useFormState.
     '@eslint-react/dom-no-use-form-state': 'error',
-    // Do not give children to DOM elements whose HTML contracts prohibit child content.
+    // [correctness] Void HTML elements cannot contain children, and passing children violates React's DOM element contract.
     '@eslint-react/dom-no-void-elements-with-children': 'error',
-    // Remove component and hook event listeners during cleanup to prevent retained callbacks.
+    // [architectural-prevention] Missing listener cleanup retains callbacks and can continue handling events after the component's lifetime.
     '@eslint-react/web-api-no-leaked-event-listener': 'error',
-    // Disconnect component and hook intersection observers during cleanup.
+    // [architectural-prevention] Missing intersection observer cleanup retains observation work and callbacks beyond the component's lifetime.
     '@eslint-react/web-api-no-leaked-intersection-observer': 'error',
-    // Clear component and hook intervals during cleanup instead of retaining repeated work.
+    // [architectural-prevention] Uncleared intervals retain callbacks and repeat work after the component no longer owns them.
     '@eslint-react/web-api-no-leaked-interval': 'error',
-    // Disconnect component and hook resize observers during cleanup.
+    // [architectural-prevention] Missing resize observer cleanup retains observation work and callbacks beyond the component's lifetime.
     '@eslint-react/web-api-no-leaked-resize-observer': 'error',
-    // Clear component and hook timeouts during cleanup instead of running after unmount.
+    // [architectural-prevention] Uncleared timeouts retain callbacks that can run after the component that scheduled them unmounts.
     '@eslint-react/web-api-no-leaked-timeout': 'error',
-    // Name createContext results as PascalCase components with a Context suffix.
+    // [standardization] PascalCase names ending in Context distinguish generated context providers from ordinary values in JSX and search.
     '@eslint-react/naming-convention-context-name': 'error',
-    // Name useId results id or with an Id suffix so generated DOM identifiers are recognizable.
+    // [standardization] Name useId results id or with an Id suffix so reviewers can recognize generated DOM identifiers.
     '@eslint-react/naming-convention-id-name': 'error',
-    // Name useRef results ref or with a Ref suffix so receiver references are recognizable.
+    // [standardization] Name useRef results ref or with a Ref suffix so reviewers can recognize mutable references.
     '@eslint-react/naming-convention-ref-name': 'error',
-    // Reject typed conditional-render expressions that can leak non-element values into JSX.
+    // [correctness] Conditional JSX expressions can render values such as zero instead of omitting the intended child.
     '@eslint-react/no-leaked-conditional-rendering': 'error',
 
-    // Call hooks only in React components or hooks and preserve their call order.
+    // [correctness] React associates hook state with call order, so conditional or unsupported hook calls can read the wrong state or fail.
     'react-hooks/rules-of-hooks': 'error',
-    // Include every captured reactive value in hook dependency lists to prevent stale closures.
+    // [correctness] Missing reactive dependencies leave hooks using captured values after those values have changed.
     'react-hooks/exhaustive-deps': 'error',
-    // Keep component identities static instead of creating dynamic JSX component values during render.
+    // [correctness] Dynamic component identities during rendering can remount children and discard their state.
     'react-hooks/static-components': 'error',
-    // Require valid synchronous, argument-free useMemo callbacks that compute a value.
+    // [correctness] Async or argument-taking useMemo callbacks violate its synchronous computation contract and can produce the wrong cached value.
     'react-hooks/use-memo': 'error',
-    // Preserve existing manual memoization when the compiler transforms a component or hook.
+    // [correctness] Compiler transformations must preserve existing manual memoization dependencies so cached behavior does not change.
     'react-hooks/preserve-manual-memoization': 'error',
-    // Reject libraries whose APIs cannot preserve React's memoization contract.
+    // [correctness] Known incompatible library APIs can return stale UI when React Compiler memoizes their results.
     'react-hooks/incompatible-library': 'error',
-    // Do not mutate props, state or other values that React treats as immutable.
+    // [correctness] Mutating React-owned immutable inputs bypasses identity-based update detection and can leave output stale.
     'react-hooks/immutability': 'error',
-    // Do not assign to or mutate global values during render.
+    // [correctness] Render-time global mutations escape React's commit lifecycle and can survive abandoned or repeated renders.
     'react-hooks/globals': 'error',
-    // Read and write ref.current outside render so render output does not depend on mutable refs.
+    // [correctness] Mutable ref reads or writes during rendering can make repeated renders disagree before React commits.
     'react-hooks/refs': 'error',
-    // Do not synchronously update state in effects when the value belongs in render or an event handler.
+    // [architectural-prevention] Synchronous effect state updates add avoidable render passes when render or event handling can compute the value.
     'react-hooks/set-state-in-effect': 'error',
-    // Catch child-render failures with error boundaries instead of try/catch around JSX.
+    // [correctness] try/catch around JSX construction cannot catch failures from React's later rendering of the child.
     'react-hooks/error-boundaries': 'error',
-    // Keep render deterministic instead of calling known impure APIs during render.
+    // [correctness] Impure render APIs can return different output for identical inputs when React repeats a render.
     'react-hooks/purity': 'error',
-    // Do not unconditionally set state during render and trigger a render loop.
+    // [correctness] Unconditional render-time state updates trigger another render and can loop until React aborts.
     'react-hooks/set-state-in-render': 'error',
-    // Reject syntax that the React Compiler cannot safely transform.
+    // [standardization] Generate syntax supported by React Compiler so components stay within the selected compilation contract.
     'react-hooks/unsupported-syntax': 'error',
-    // Require valid React Compiler configuration options.
+    // [correctness] Invalid React Compiler options can prevent compilation or apply a different transformation policy than intended.
     'react-hooks/config': 'error',
-    // Require valid React Compiler gating configuration.
+    // [correctness] Invalid compiler gating configuration can break the runtime selection of compiled component implementations.
     'react-hooks/gating': 'error',
-    // Render capitalized components through JSX instead of invoking them as ordinary functions.
+    // [correctness] Calling components as functions bypasses React's component identity and hook lifecycle management.
     'react-hooks/capitalized-calls': 'error',
-    // Keep effect dependencies memoized instead of changing object or function identity every render.
+    // [architectural-prevention] Fresh object or function effect dependencies repeat effects even when their meaningful inputs have not changed.
     'react-hooks/memoized-effect-dependencies': 'error',
-    // Derive state-dependent values during render instead of copying them into state through effects.
+    // [architectural-prevention] Copying derived values into state through effects adds render passes and a second value that must stay synchronized.
     'react-hooks/no-deriving-state-in-effects': 'error',
-    // Reject suppression of React checks instead of hiding unsafe hook or compiler behavior.
+    // [enforcement-integrity] Suppressing React checks hides unresolved hook or compiler obligations from the preventive policy.
     'react-hooks/rule-suppression': 'error',
-    // Require useMemo to return a value and require the component or hook to use that result.
+    // [standardization] Reserve useMemo for returned values that callers use rather than generated discarded calculations or effect-like callbacks.
     'react-hooks/void-use-memo': 'error',
   },
 });

@@ -1,14 +1,15 @@
 # @asmundwien/tsconfig
 
-Strict TypeScript defaults shared across projects. Choose a preset for your runtime, then configure project-specific needs locally.
+Preventive compiler policy for agent-generated TypeScript, intended to reduce human review burden. Requires Node.js 24+.
 
 ## Setup
 
-Requires Node.js 24+ and TypeScript 6+.
+Install `@asmundwien/tsconfig` with the TypeScript and `@types/node` peer versions in [package.json](./package.json).
 
-```sh
-pnpm add --save-dev @asmundwien/tsconfig typescript @types/node
-```
+| Preset | Use |
+| --- | --- |
+| `node.json` | Node.js projects. Includes `base.json`; supports ESM and CommonJS. |
+| `base.json` | Shared policy with your own runtime or build environment. |
 
 For a Node.js project, create `tsconfig.json`:
 
@@ -22,19 +23,6 @@ For a Node.js project, create `tsconfig.json`:
 }
 ```
 
-## Choosing a preset
+Run `tsc` in CI. Set file selection and build options locally; the example checks `src` without emitting files.
 
-| Preset | Use |
-| --- | --- |
-| `node.json` | Code that runs directly in Node.js. Supports ESM and CommonJS. |
-| `base.json` | Shared strictness when you need to choose your own runtime or build environment. |
-
-Your project decides which files to check and how to build them.
-
-## Contributing
-
-See the [contributor guide](docs/contributing.md).
-
-## License
-
-[MIT](LICENSE)
+See [contributing](./docs/contributing.md) for policy changes and exceptions.

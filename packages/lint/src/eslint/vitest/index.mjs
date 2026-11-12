@@ -24,9 +24,9 @@ const vitest = defineConfig({
   ignores: runnerConfigFiles,
   plugins: { vitest: vitestPlugin },
   rules: {
-    // Literal inputs, expected outputs and boundary values are the test cases themselves.
+    // [standardization] Off (scope): Tests keep literal inputs, expected results and boundary values beside assertions rather than naming every numeric fixture.
     'no-magic-numbers': 'off',
-    // Core distinguishes ambient APIs from fixture imports; Vitest's import-preference rule accepts only vitest imports.
+    // [standardization] Require explicit runner API imports, including globalThis and global access, while allowing fixture imports that Vitest's import-only rule would reject.
     'no-restricted-globals': ['error', {
       checkGlobalObject: true,
       globalObjects: ['global'],
@@ -50,7 +50,7 @@ const vitest = defineConfig({
         'onTestFinished',
       ],
     }],
-    // Conditional registration APIs change test coverage with runtime inputs, including fixture APIs.
+    // [enforcement-integrity] Reject skipIf and runIf on ordinary and fixture APIs so runtime conditions cannot silently omit registered verification.
     'no-restricted-properties': ['error', {
       property: 'skipIf',
       message: 'Register unconditional test cases. Put environment-specific suites in scoped Vitest projects.',
@@ -58,138 +58,138 @@ const vitest = defineConfig({
       property: 'runIf',
       message: 'Register unconditional test cases. Put environment-specific suites in scoped Vitest projects.',
     }],
-    // Register named cases outside branches so every run executes the same declared contracts.
+    // [enforcement-integrity] Reject named test and suite registration under branches so generated verification does not disappear with runtime inputs.
     'no-restricted-syntax': ['error', {
       selector: ':matches(IfStatement, SwitchCase, ConditionalExpression, LogicalExpression) CallExpression:matches([callee.name=/^(test|it|describe|suite)$/], [callee.object.name=/^(test|it|describe|suite)$/])',
       message: 'Register tests and suites unconditionally. Use parameterized cases or scoped Vitest projects.',
     }],
 
-    // Parameterized cases use each consistently; its rows become named runner-managed cases.
+    // [standardization] Use each rather than for for both case and suite tables so generated parameterized declarations share one searchable API.
     'vitest/consistent-each-for': ['error', {
       test: 'each',
       it: 'each',
       describe: 'each',
       suite: 'each',
     }],
-    // Suffixed test files use .test across ESM, CommonJS, JSX and TypeScript source extensions.
+    // [standardization] Recognize both test and spec suffixes across supported source extensions, but require test so generated case files have one suffix.
     'vitest/consistent-test-filename': ['error', {
       pattern: '.*\\.test\\.(?:[jt]sx?|[cm][jt]s)$',
       allTestPattern: '.*\\.(?:test|spec)\\.(?:[jt]sx?|[cm][jt]s)$',
     }],
-    // Use test both inside and outside describes so test declarations have one spelling.
+    // [standardization] Use test inside and outside describes so generated case declarations have one searchable spelling.
     'vitest/consistent-test-it': ['error', { fn: 'test', withinDescribe: 'test' }],
-    // Use vi for effect spies, fake clocks and explicitly passed test doubles.
+    // [standardization] Use vi rather than vitest for spies and doubles so generated test utilities have one searchable receiver name.
     'vitest/consistent-vitest-vi': ['error', { fn: 'vi' }],
-    // Recognize built-in value/type assertions and local test-context expect without generic helper names.
+    // [enforcement-integrity] Require recognizable assertions, accepting value and type assertion APIs plus dotted expect calls for test-context expect, but not arbitrary helper names.
     'vitest/expect-expect': ['error', {
       assertFunctionNames: ['expect', 'assert', 'expectTypeOf', 'assertType', '**.expect'],
     }],
-    // Hoisted setup must precede ordinary statements so the written order matches execution order.
+    // [standardization] Place hoisted APIs first so source order communicates that their setup executes before ordinary statements.
     'vitest/hoisted-apis-on-top': 'error',
-    // Three describe levels allow subject, operation and scenario without deeply nested suites.
+    // [architectural-prevention] Three describe levels are a chosen review ceiling for suite nesting, not proof that a test structure is simple.
     'vitest/max-nested-describe': ['error', { max: 3 }],
-    // Canonical matcher names make assertions searchable and avoid deprecated aliases.
+    // [standardization] Use canonical matcher names so generated assertions remain searchable without deprecated alias spellings.
     'vitest/no-alias-methods': 'error',
-    // Commented-out cases remove regression coverage while leaving an apparent test in the file.
+    // [enforcement-integrity] Commented-out cases look like retained coverage but execute no regression check.
     'vitest/no-commented-out-tests': 'error',
-    // Every assertion must run; assertion counts do not exempt conditional expectations.
+    // [enforcement-integrity] Conditional assertions may never execute; assertion-count guards do not waive the requirement to run each declared check.
     'vitest/no-conditional-expect': ['error', { expectAssertions: false }],
-    // A test body has one scenario; split branching setup into separate parameterized cases.
+    // [architectural-prevention] Branch-free test bodies keep the exercised scenario visible instead of embedding multiple execution paths in one case.
     'vitest/no-conditional-in-test': 'error',
-    // Conditional suite or test registration makes coverage depend on the current environment.
+    // [enforcement-integrity] Conditional registration lets the current environment silently remove verification from a run.
     'vitest/no-conditional-tests': 'error',
-    // Skipped and callback-free cases cannot protect the contract they claim to test.
+    // [enforcement-integrity] Skipped and callback-free cases execute no check despite declaring a test contract.
     'vitest/no-disabled-tests': 'error',
-    // One hook of each kind per suite gives setup and teardown an explicit execution order.
+    // [standardization] Keep one hook of each kind per suite so generated setup and teardown do not require tracking duplicate lifecycle blocks.
     'vitest/no-duplicate-hooks': 'error',
-    // Focused cases silently omit the rest of the suite from CI.
+    // [enforcement-integrity] Focused cases can omit the rest of the suite while the selected cases still pass.
     'vitest/no-focused-tests': 'error',
-    // Distinct sibling titles identify failures and external snapshots without ambiguity.
+    // [standardization] Distinct sibling titles let reviewers identify failures and their external snapshots without ambiguous case names.
     'vitest/no-identical-title': 'error',
-    // Inline snapshots must contain fixed expected text rather than values computed by the test.
+    // [enforcement-integrity] Interpolated snapshot expectations can derive the expected output from runtime data instead of checking a fixed contract.
     'vitest/no-interpolation-in-snapshots': 'error',
-    // Module replacement hides dependency contracts; pass doubles through explicit dependency seams.
+    // [architectural-prevention] Ban module replacement through mock, doMock and importMock so generated tests expose doubles through explicit dependency ownership.
     'vitest/no-restricted-vi-methods': ['error', {
       mock: 'Pass a test double through an explicit parameter, constructor or factory dependency instead of replacing a module with vi.mock().',
       doMock: 'Pass a test double through an explicit parameter, constructor or factory dependency instead of replacing a module with vi.doMock().',
       importMock: 'Import the real module and pass test doubles through explicit dependencies instead of loading an automatically mocked module.',
     }],
-    // Assertions belong to executed tests or assertion helpers, not suite-definition code.
+    // [correctness] Assertions in suite-definition code run outside the intended test lifecycle and can fail before a case owns the failure.
     'vitest/no-standalone-expect': 'error',
-    // Test bodies finish after their awaited assertions instead of returning an assertion or exiting early.
+    // [standardization] Finish test bodies after their awaited checks rather than returning assertion expressions or introducing early exits.
     'vitest/no-test-return-statement': 'error',
-    // Assert the original promise rather than adding an async wrapper that changes the reported stack.
+    // [standardization] Assert promises directly instead of generating redundant async expectation wrappers that obscure the tested operation.
     'vitest/no-unneeded-async-expect-function': 'error',
-    // Separate suite declarations, hooks, cases and assertion groups with blank lines.
+    // [standardization] Separate suite declarations, hooks and cases with blank lines so reviewers can scan generated test structure consistently.
     'vitest/padding-around-all': 'error',
-    // Adjacent assertions form one group; separate that group from setup and actions.
+    // [standardization] Keep adjacent assertions together and separate them from setup and actions so the checked contract is easy to locate.
     'vitest/padding-around-expect-groups': 'error',
-    // Combine a once-and-arguments contract into one assertion about the same invocation.
+    // [standardization] Express matching once-and-arguments checks with one matcher so the generated assertion names the complete invocation contract.
     'vitest/prefer-called-exactly-once-with': 'error',
-    // Use the same count matcher for one or many calls instead of competing once spellings.
+    // [standardization] Use count matchers for both one and many calls so generated invocation counts have one representation.
     'vitest/prefer-called-times': 'error',
-    // Positive call assertions name the arguments so an unrelated invocation cannot satisfy them.
+    // [enforcement-integrity] Positive call checks must name arguments so an unrelated invocation cannot satisfy the intended interaction contract.
     'vitest/prefer-called-with': 'error',
-    // Comparison matchers report the actual operands rather than an opaque boolean result.
+    // [standardization] Use comparison matchers so generated failures report compared operands rather than only a boolean result.
     'vitest/prefer-comparison-matcher': 'error',
-    // Parameterized declarations let Vitest report and rerun each row as an independent case.
+    // [standardization] Use runner-managed parameterized cases instead of repeated declarations so each input row has its own reported case.
     'vitest/prefer-each': 'error',
-    // Equality matchers report both compared values rather than only the comparison's boolean.
+    // [standardization] Use equality matchers so generated failures report both compared values rather than only the comparison result.
     'vitest/prefer-equality-matcher': 'error',
-    // Callback and loop assertions need a runtime assertion guard so empty execution cannot pass.
+    // [enforcement-integrity] Require assertion-count guards for callback and loop assertions that may execute zero times, without imposing counts on every straight-line case.
     'vitest/prefer-expect-assertions': ['error', {
       onlyFunctionsWithExpectInCallback: true,
       onlyFunctionsWithExpectInLoop: true,
     }],
-    // Await resolves assertions so rejected promises retain their assertion context.
+    // [standardization] Use resolves assertions rather than awaiting inside expect so generated promise checks retain matcher-specific failure context.
     'vitest/prefer-expect-resolves': 'error',
-    // Type matchers state the expected runtime type directly in failure output.
+    // [standardization] Use type matchers rather than comparing typeof strings so generated failures identify the expected runtime type directly.
     'vitest/prefer-expect-type-of': 'error',
-    // Declare beforeAll, beforeEach, afterEach and afterAll in execution-lifecycle order.
+    // [standardization] Write hooks in beforeAll, beforeEach, afterEach and afterAll order so generated suites use one lifecycle layout.
     'vitest/prefer-hooks-in-order': 'error',
-    // Place setup and teardown before the cases whose lifecycle they control.
+    // [standardization] Put hooks before cases so reviewers encounter lifecycle setup before the tests that depend on it.
     'vitest/prefer-hooks-on-top': 'error',
-    // Test descriptions start with lowercase prose; describes may retain public symbol capitalization.
+    // [standardization] Start case titles with lowercase prose, but allow describe titles to retain public symbol capitalization.
     'vitest/prefer-lowercase-title': ['error', { ignore: ['describe'] }],
-    // Promise-returning doubles state their resolution or rejection without a manual Promise wrapper.
+    // [standardization] Use promise-return shorthand for doubles so generated setup states resolution or rejection without manual Promise callbacks.
     'vitest/prefer-mock-promise-shorthand': 'error',
-    // Constant-return doubles state the configured return value without an implementation callback.
+    // [standardization] Use return-value shorthand for constant doubles so generated setup does not hide a fixed value inside an implementation callback.
     'vitest/prefer-mock-return-shorthand': 'error',
-    // Give each external snapshot a stable hint so snapshot failures name the checked output.
+    // [standardization] Require a hint on every external snapshot assertion so generated snapshot names identify the checked output.
     'vitest/prefer-snapshot-hint': ['error', 'always'],
-    // Effect spies use vi.spyOn so Vitest can restore the original method after the contract check.
+    // [standardization] Use vi.spyOn for method spies so generated tests use Vitest's restoration-capable API rather than direct replacement.
     'vitest/prefer-spy-on': 'error',
-    // Boolean contracts check true or false rather than accepting unrelated truthy or falsy values.
+    // [enforcement-integrity] Exact boolean expectations reject unrelated truthy or falsy values that could otherwise satisfy the test.
     'vitest/prefer-strict-boolean-matchers': 'error',
-    // Structural equality includes prototypes, sparse elements and undefined-valued properties.
+    // [enforcement-integrity] Strict equality checks retain distinctions in prototypes, sparse arrays and undefined-valued properties that loose structural checks can miss.
     'vitest/prefer-strict-equal': 'error',
-    // Primitive and absent-value matchers state the checked value without loose structural equality.
+    // [standardization] Use dedicated primitive and absent-value matchers so generated assertions name the specific value contract.
     'vitest/prefer-to-be': 'error',
-    // Containment matchers report the missing item instead of an includes result.
+    // [standardization] Use containment matchers so generated failures show the missing item rather than only an includes result.
     'vitest/prefer-to-contain': 'error',
-    // Call-count matchers check invocation history without inspecting the mock.calls representation.
+    // [standardization] Check invocation counts through matchers instead of coupling generated assertions to the mock.calls array representation.
     'vitest/prefer-to-have-been-called-times': 'error',
-    // Length matchers report the collection as well as its expected size.
+    // [standardization] Use length matchers so generated failures include the collection and its expected size.
     'vitest/prefer-to-have-length': 'error',
-    // Polling and element assertions must finish before the test completes.
+    // [enforcement-integrity] Unawaited polling or element assertions can outlive the test and leave their verification unfinished.
     'vitest/require-awaited-expect-poll': 'error',
-    // Lifecycle setup belongs in hooks rather than executable suite-definition statements.
+    // [architectural-prevention] Put lifecycle setup in hooks so generated suites make ownership and execution timing visible instead of mutating state during registration.
     'vitest/require-hook': 'error',
-    // Concurrent snapshots use the current test's expect so snapshots cannot attach to another test.
+    // [correctness] Concurrent snapshots need the current test's expect so Vitest does not attribute a snapshot to another running case.
     'vitest/require-local-test-context-for-concurrent-snapshots': 'error',
-    // Positive throw assertions identify the expected error instead of accepting every exception.
+    // [enforcement-integrity] Positive throw assertions must identify the expected error so an unrelated exception cannot satisfy the test.
     'vitest/require-to-throw-message': 'error',
-    // A file has one subject suite; nested describes separate its operations and scenarios.
+    // [standardization] Use one top-level subject suite per file so generated cases have a predictable location; nested suites group its scenarios.
     'vitest/require-top-level-describe': ['error', { maxNumberOfTopLevelDescribes: 1 }],
-    // Describe callbacks register cases synchronously with the supported title/callback signature.
+    // [correctness] Describe callbacks must register cases synchronously with a supported signature or Vitest can miss cases or reject the suite.
     'vitest/valid-describe-callback': 'error',
-    // Promise chains containing assertions must finish before the runner marks a test complete.
+    // [enforcement-integrity] Assertion-bearing promise chains must finish before the runner marks verification complete.
     'vitest/valid-expect-in-promise': 'error',
-    // Await async assertions and accept Vitest's optional assertion message or polling options.
+    // [standardization, enforcement-integrity] Await async assertions to finish verification; allow a second expect argument for Vitest's assertion message or polling options.
     'vitest/valid-expect': ['error', { alwaysAwait: true, minArgs: 1, maxArgs: 2 }],
-    // Nonempty titles have no accidental whitespace or duplicated test-function prefix.
+    // [standardization] Require nonempty titles without stray whitespace or repeated test-function prefixes so generated case names remain readable and searchable.
     'vitest/valid-title': 'error',
-    // Todo placeholders do not execute a regression check and cannot enter the committed suite.
+    // [enforcement-integrity] Todo placeholders execute no regression check and cannot stand in for completed verification.
     'vitest/warn-todo': 'error',
   },
 }, {
@@ -198,17 +198,17 @@ const vitest = defineConfig({
   ignores: runnerConfigFiles,
   settings: { vitest: { typecheck: true } },
   rules: {
-    // Typed test inputs and expected boundary values need literal numbers just like JavaScript tests.
+    // [standardization] Off (scope): Typed tests keep literal inputs, expected results and boundary values beside assertions rather than naming every numeric fixture.
     '@typescript-eslint/no-magic-numbers': 'off',
-    // Vitest's extension retains receiver checks but permits inspecting methods in supported matchers.
+    // [correctness] Off (covered): With type-aware linting, vitest/unbound-method replaces this check while permitting method inspection in non-throw matchers and vi.mocked without invoking the method.
     '@typescript-eslint/unbound-method': 'off',
-    // Public function and class subjects use the symbol so renamed APIs cannot leave stale suite titles.
+    // [standardization] Use the tested function or class symbol as its suite title so generated names track API renames instead of retaining stale prose.
     'vitest/prefer-describe-function-title': 'error',
-    // Typed doubles use vi.mocked instead of assertions that fabricate a Mock signature.
+    // [standardization] Use vi.mocked for typed doubles instead of assertions that manufacture a Mock signature outside the selected Vitest API.
     'vitest/prefer-vi-mocked': 'error',
-    // Function doubles declare the dependency signature; ordinary imports remain ordinary imports.
+    // [standardization] Give vi.fn an explicit dependency signature; leave importActual and importMock outside this signature convention because they load modules rather than define callable doubles.
     'vitest/require-mock-type-parameters': ['error', { checkImportFunctions: false }],
-    // Preserve receiver correctness outside matcher inspection, including static methods.
+    // [correctness] Preserve receiver checks outside supported matcher inspection, including static methods whose implementations can depend on this.
     'vitest/unbound-method': ['error', { ignoreStatic: false }],
   },
 }, {
@@ -217,12 +217,15 @@ const vitest = defineConfig({
   ignores: runnerConfigFiles,
   plugins: { vitest: vitestPlugin },
   linterOptions: {
+    // [enforcement-integrity] Block source-level configuration in snapshot files so generated output cannot weaken the surrounding test policy.
     noInlineConfig: true,
+    // [enforcement-integrity] Set unused-suppression diagnostics to errors; noInlineConfig is the active source-suppression protection.
     reportUnusedDisableDirectives: 'error',
+    // [enforcement-integrity] Set unused inline-policy diagnostics to errors; noInlineConfig remains the active source-configuration protection.
     reportUnusedInlineConfigs: 'error',
   },
   rules: {
-    // External snapshots stay within 50 lines and inline snapshots within 20 for reviewable contracts.
+    // [architectural-prevention] Snapshot ceilings of 50 external lines and 20 inline lines are chosen review limits to discourage opaque expected output, not guarantees of useful checks.
     'vitest/no-large-snapshots': ['error', { maxSize: 50, inlineMaxSize: 20 }],
   },
 });

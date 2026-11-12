@@ -19,55 +19,55 @@ const node = defineConfig({
   plugins: { n },
   settings: { node: { version: '>=24.0.0' } },
   rules: {
-    // Return after error-first callbacks so execution cannot continue after completion.
+    // [correctness] Return after error-first callbacks so execution cannot continue after completion.
     'n/callback-return': 'error',
-    // Handle callbacks named err, error or ending in Error instead of discarding failures.
+    // [correctness] Handle conventional err/error/*Error callback parameters so a named failure cannot be discarded silently.
     'n/handle-callback-err': ['error', '^(?:err|error|.+Error)$'],
-    // Pass Error objects, not arbitrary literals, to error-first callbacks.
+    // [correctness] Pass Error objects to error-first callbacks so callers can inspect failure details consistently.
     'n/no-callback-literal': 'error',
-    // Reject Node API deprecations independently of imported or typed @deprecated declarations.
+    // [correctness] Reject deprecated Node APIs before removal breaks runtime behavior; import and type checks cover different declarations.
     'n/no-deprecated-api': 'error',
-    // Resolve import.meta paths with path utilities instead of platform-dependent concatenation.
+    // [correctness] Resolve import.meta paths with path utilities so path separators do not depend on the operating system.
     'n/no-path-concat': 'error',
-    // Pass environment-derived configuration explicitly instead of reading process.env in application code.
+    // [architectural-prevention] Pass environment-derived configuration explicitly so function behavior does not depend on hidden process state.
     'n/no-process-env': 'error',
-    // Use asynchronous Node APIs instead of blocking the event loop with synchronous methods.
+    // [architectural-prevention] Use asynchronous Node APIs so one operation does not block unrelated work on the event loop.
     'n/no-sync': 'error',
-    // Package executable files must survive npm's publication exclusions.
+    // [correctness] Require package executables to survive npm publication so installed bin entries point to shipped files.
     'n/no-unpublished-bin': 'error',
-    // Published ESM must not import files or dependencies that npm excludes from the package.
+    // [correctness] Reject imports excluded by npm publication so a working checkout cannot hide a broken installed package.
     'n/no-unpublished-import': 'error',
-    // Restrict ECMAScript built-ins to APIs available at the Node 24.0.0 minimum.
+    // [correctness] Restrict ECMAScript built-ins to the Node 24.0.0 minimum so supported installations can execute them.
     'n/no-unsupported-features/es-builtins': 'error',
-    // Check Node-supported syntax while allowing native ESM imports and exports.
+    // [correctness] Reject syntax unsupported by the Node minimum; allow native ESM modules because this package requires ESM.
     'n/no-unsupported-features/es-syntax': ['error', { ignores: ['modules'] }],
-    // Restrict Node-specific built-ins to APIs available at the Node 24.0.0 minimum.
+    // [correctness] Restrict Node-specific built-ins to the Node 24.0.0 minimum so newer development runtimes cannot hide incompatibility.
     'n/no-unsupported-features/node-builtins': 'error',
-    // Use the global Buffer supplied by Node instead of redundant buffer imports.
+    // [standardization] Use Node's global Buffer so access to the same constructor has one spelling.
     'n/prefer-global/buffer': 'error',
-    // Use Node's global console rather than importing a second spelling of the same API.
+    // [standardization] Use Node's global console so permitted logging does not introduce an equivalent import spelling.
     'n/prefer-global/console': 'error',
-    // Use the global Web Crypto API when accessing the Web Crypto implementation.
+    // [standardization] Use the global Web Crypto object so the same implementation has one access pattern.
     'n/prefer-global/crypto': 'error',
-    // Use Node's global process rather than importing the same process object.
+    // [standardization] Use Node's global process so process operations have one recognizable access pattern.
     'n/prefer-global/process': 'error',
-    // Use the global TextDecoder supported by the minimum Node version.
+    // [standardization] Use the global TextDecoder supported by Node 24 so decoding does not alternate between equivalent bindings.
     'n/prefer-global/text-decoder': 'error',
-    // Use the global TextEncoder supported by the minimum Node version.
+    // [standardization] Use the global TextEncoder supported by Node 24 so encoding does not alternate between equivalent bindings.
     'n/prefer-global/text-encoder': 'error',
-    // Use the global URLSearchParams instead of a redundant node:url import.
+    // [standardization] Use the global URLSearchParams so query parsing does not alternate between equivalent bindings.
     'n/prefer-global/url-search-params': 'error',
-    // Use the global URL instead of a redundant node:url import.
+    // [standardization] Use the global URL so URL construction does not alternate between equivalent bindings.
     'n/prefer-global/url': 'error',
-    // Use global callback timers rather than importing equivalent callback timer functions.
+    // [standardization] Use global callback timers so scheduling does not alternate between global and imported spellings.
     'n/prefer-global/timers': 'error',
-    // Use strict assertion semantics instead of coercive node:assert comparisons.
+    // [correctness] Use strict Node assertions so equality checks cannot pass because of type coercion.
     'n/prefer-import/assert-strict': 'error',
-    // Use the promise-based DNS API instead of callback-based DNS operations.
+    // [standardization] Use promise-based DNS operations so lookup failures follow the selected async/await control flow.
     'n/prefer-promises/dns': 'error',
-    // Use the promise-based filesystem API instead of callback-based filesystem operations.
+    // [standardization] Use promise-based filesystem operations so IO failures follow the selected async/await control flow.
     'n/prefer-promises/fs': 'error',
-    // Require executable scripts and package bin entries to use valid Node hashbangs.
+    // [correctness] Require valid Node hashbangs so executable scripts and installed bin entries launch with the intended runtime.
     'n/hashbang': 'error',
   },
 });

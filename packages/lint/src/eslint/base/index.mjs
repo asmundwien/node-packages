@@ -13,8 +13,11 @@ const base = defineConfig(
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
     linterOptions: {
+      // [enforcement-integrity] Keep rule configuration outside source comments so generated code cannot bypass repository lint obligations inline.
       noInlineConfig: true,
+      // [enforcement-integrity] Report obsolete disable directives as errors so stale suppression attempts do not remain in reviewed source.
       reportUnusedDisableDirectives: 'error',
+      // [enforcement-integrity] Report unused inline configurations as errors so ineffective local policy changes cannot masquerade as enforced obligations.
       reportUnusedInlineConfigs: 'error',
     },
     plugins: {
@@ -28,173 +31,173 @@ const base = defineConfig(
       ],
     },
     rules: {
-      // Require a getter for each setter so properties support both reading and writing.
+      // [standardization] Pair setters with getters so generated properties follow the selected readable-and-writable accessor contract rather than write-only interfaces.
       'accessor-pairs': 'error',
-      // Require return values from array transformations so callbacks do not silently produce undefined.
+      // [correctness] Return values from array transformation callbacks so missing returns do not silently produce undefined elements.
       'array-callback-return': 'error',
-      // Keep variable use inside its declaring block to prevent accidental scope leakage.
+      // [standardization] Keep variable use inside its declaring block so reviewers can follow block boundaries even for function-scoped declarations.
       'block-scoped-var': 'error',
-      // Use camelCase identifiers so declarations and references follow one source naming convention.
+      // [standardization] Use camelCase identifiers so generated declarations and repository searches follow one naming convention.
       'camelcase': 'error',
-      // Start comments with capital letters so prose follows sentence capitalization.
+      // [standardization] Capitalize comment starts so generated prose follows the selected sentence convention.
       'capitalized-comments': 'error',
-      // Keep instance methods dependent on their instance rather than hiding standalone functions in classes.
+      // [architectural-prevention] Keep instance methods dependent on instance state so class ownership does not hide otherwise standalone behavior.
       'class-methods-use-this': 'error',
-      // Limit each function to cyclomatic complexity 20 so branching remains reviewable.
+      // [architectural-prevention] Cyclomatic complexity 20 is a chosen review ceiling for branching, not evidence that a function below it has a sound design.
       'complexity': ['error', 20],
-      // Require return statements to either always or never specify values.
+      // [correctness] Keep return paths consistent so callers do not unexpectedly receive undefined from a function that otherwise returns a value.
       'consistent-return': 'error',
-      // Require super() calls in constructors.
+      // [correctness] Call super() where required and only on derived constructors so instance initialization does not throw.
       'constructor-super': 'error',
-      // Require braces for every control statement so added statements cannot escape its branch.
+      // [architectural-prevention] Use braces for control statements so a later added statement cannot appear guarded while executing outside the branch.
       'curly': 'error',
-      // Require default cases in switch statements.
+      // [architectural-prevention] Require a switch default or the rule's explicit omission marker so reviewers must consider inputs not covered by listed cases.
       'default-case': 'error',
-      // Put the default branch last so switch cases have a predictable order.
+      // [standardization] Put switch defaults last so reviewers find fallback behavior in a predictable position.
       'default-case-last': 'error',
-      // Put defaulted parameters last so callers can omit them without placeholder arguments.
+      // [standardization] Put defaulted parameters last so callers can omit optional inputs without positional placeholders.
       'default-param-last': 'error',
-      // Use dot access for identifier keys so property access does not hide simple names in strings.
+      // [standardization] Use dot access for identifier keys so reviewers can distinguish fixed property names from computed access.
       'dot-notation': 'error',
-      // Require strict equality so coercion cannot change comparison results.
+      // [correctness] Use strict equality so coercion cannot silently equate values with different types.
       'eqeqeq': 'error',
-      // Reject loop updates that move the counter away from its stopping condition.
+      // [correctness] Catch loop updates that move counters away from their stopping conditions before finite processing becomes nonterminating.
       'for-direction': 'error',
-      // Match function expression names to their assigned identifiers so stack traces identify the binding.
+      // [standardization] Match function expression names to assigned bindings so stack traces and repository searches identify the same function name.
       'func-name-matching': 'error',
-      // Name function expressions that remain after the callback-arrow policy so stack traces identify them.
+      // [standardization] Name remaining function expressions so diagnostic stacks identify the function instead of an anonymous frame.
       'func-names': 'error',
-      // Require getters to return a value on every reachable path.
+      // [correctness] Return values on reachable getter paths so property reads do not unexpectedly yield undefined.
       'getter-return': 'error',
-      // Keep each getter and setter adjacent so the complete property contract can be reviewed together.
+      // [standardization] Keep getter and setter pairs adjacent so reviewers can inspect the complete property interface together.
       'grouped-accessor-pairs': 'error',
-      // Require for-in loops to include an if statement.
+      // [correctness] Guard for-in bodies so inherited enumerable properties are not processed as the object's own entries.
       'guard-for-in': 'error',
-      // Require at least two characters in identifiers and property names to reject opaque single-letter names.
+      // [standardization] Choose a two-character minimum for checked names to reject opaque single-letter bindings and properties during generated-code review.
       'id-length': ['error', { min: 2 }],
-      // Initialize declarations so the first value is explicit at the declaration.
+      // [standardization] Initialize declarations so reviewers see each binding's first value where the binding is introduced.
       'init-declarations': 'error',
-      // Limit modules to one class so class responsibilities have separate files.
+      // [architectural-prevention] One class per file is a chosen review ceiling that separates class ownership boundaries, not proof of cohesive responsibilities.
       'max-classes-per-file': ['error', 1],
-      // Limit block nesting to four levels so control flow remains reviewable.
+      // [architectural-prevention] Four nested blocks is a chosen review ceiling for tracing control flow, not a threshold that proves simple design.
       'max-depth': ['error', 4],
-      // Limit files to 300 lines, including comments and blanks, so modules stay bounded.
+      // [architectural-prevention] A 300-line file ceiling counts comments and blanks to bound the complete review unit rather than only executable statements.
       'max-lines': ['error', 300],
-      // Limit functions to 50 lines, including comments and blanks, so responsibilities remain bounded.
+      // [architectural-prevention] A 50-line function ceiling counts comments and blanks to bound the complete review unit rather than treating short code as proof of limited responsibility.
       'max-lines-per-function': ['error', 50],
-      // Limit callback nesting to ten levels so callback control flow has a fixed ceiling.
+      // [architectural-prevention] Ten nested callbacks is a chosen review ceiling for tracing enclosing scopes and control flow, not a safe-depth guarantee.
       'max-nested-callbacks': ['error', 10],
-      // Limit functions to three parameters so callers do not depend on long positional argument lists.
+      // [architectural-prevention] Three parameters is a chosen review ceiling for caller coupling through positional inputs, not proof of a cohesive interface.
       'max-params': ['error', 3],
-      // Limit functions to ten statements so each function has a bounded responsibility.
+      // [architectural-prevention] Ten statements is a chosen function review ceiling to prompt inspection of combined responsibilities, not proof that smaller functions have one purpose.
       'max-statements': ['error', 10],
-      // Require constructor names to begin with a capital letter.
+      // [standardization] Capitalize constructor names so reviewers can distinguish construction-oriented APIs from ordinary calls by their names.
       'new-cap': 'error',
-      // Reject the use of alert, confirm, and prompt.
+      // [standardization] Avoid alert(), confirm(), and prompt() so generated UI behavior does not introduce browser modal dialogs as an alternate interaction convention.
       'no-alert': 'error',
-      // Reject Array constructors.
+      // [standardization] Use array literals so reviewers do not decode constructor overloads to determine initial contents.
       'no-array-constructor': 'error',
-      // Reject using an async function as a Promise executor.
+      // [correctness] Keep Promise executors synchronous because the constructor ignores a returned async promise and can lose its rejection.
       'no-async-promise-executor': 'error',
-      // Reject bitwise operators.
+      // [standardization] Avoid bitwise operators so generated arithmetic does not introduce implicit fixed-width integer coercion under this policy.
       'no-bitwise': 'error',
-      // Reject the use of arguments.caller or arguments.callee.
+      // [correctness] Avoid arguments.caller and arguments.callee because strict-mode execution rejects these legacy introspection operations.
       'no-caller': 'error',
-      // Reject lexical declarations in case clauses.
+      // [correctness] Isolate lexical declarations from switch case scope so entering another case cannot encounter an uninitialized shared binding.
       'no-case-declarations': 'error',
-      // Reject reassigning class members.
+      // [correctness] Keep class declaration bindings unchanged so later construction does not unexpectedly target a reassigned value.
       'no-class-assign': 'error',
-      // Reject comparing against -0.
+      // [correctness] Do not use ordinary equality to distinguish -0 because it compares equal to 0.
       'no-compare-neg-zero': 'error',
-      // Reject assignment operators in conditional expressions.
+      // [correctness] Catch assignments in conditions before a mistaken equals sign changes state and tests the assigned value instead of equality.
       'no-cond-assign': 'error',
-      // Reject the use of console.
+      // [standardization] Keep console calls out of generated source so diagnostics do not introduce an unstructured alternate output convention.
       'no-console': 'error',
-      // Reject reassigning const, using, and await using variables.
+      // [correctness] Do not reassign const or resource bindings because these updates violate the language's immutable-binding contract.
       'no-const-assign': 'error',
-      // Reject expressions where the operation doesn't affect the value.
+      // [correctness] Catch constant binary outcomes that can hide precedence mistakes or checks that never inspect the intended value.
       'no-constant-binary-expression': 'error',
-      // Reject constant expressions in conditions.
+      // [correctness] Catch constant conditions before an intended branch is unreachable or a loop cannot terminate.
       'no-constant-condition': 'error',
-      // Reject returning value from constructor.
+      // [correctness] Do not return values from constructors because object returns replace the instance and primitive returns do not behave like ordinary function results.
       'no-constructor-return': 'error',
-      // Reject raw and hexadecimal control characters in regexes while permitting named control escapes.
+      // [standardization] Use named control escapes instead of raw or hexadecimal control characters so reviewers can identify nonprinting regex contents.
       'no-control-regex': 'error',
-      // Reject the use of debugger.
+      // [correctness] Remove debugger statements so consumer execution cannot unexpectedly pause when debugging tools are attached.
       'no-debugger': 'error',
-      // Reject deleting variables.
+      // [correctness] Do not delete lexical variables because delete cannot remove their bindings and strict mode rejects the operation.
       'no-delete-var': 'error',
-      // Reject equal signs explicitly at the beginning of regular expressions.
+      // [standardization] Escape a leading regex equals sign so reviewers do not confuse the literal opening with a division assignment.
       'no-div-regex': 'error',
-      // Reject duplicate arguments in function definitions.
+      // [correctness] Reject duplicate parameter names because one argument can hide another and strict mode rejects the declaration.
       'no-dupe-args': 'error',
-      // Reject duplicate class members.
+      // [correctness] Catch duplicate class members before a later definition silently replaces an earlier method or accessor.
       'no-dupe-class-members': 'error',
-      // Reject duplicate conditions in if-else-if chains.
+      // [correctness] Catch repeated if-chain conditions before an intended branch is hidden behind an earlier identical condition.
       'no-dupe-else-if': 'error',
-      // Reject duplicate keys in object literals.
+      // [correctness] Catch duplicate object keys before a later value silently overwrites an earlier configuration entry.
       'no-dupe-keys': 'error',
-      // Reject duplicate case labels.
+      // [correctness] Catch repeated switch labels before an intended case becomes unreachable behind the first matching label.
       'no-duplicate-case': 'error',
-      // Reject empty block statements.
+      // [enforcement-integrity] Reject empty blocks so omitted handling is not mistaken for completed generated behavior; the rule permits comments to state intentional emptiness.
       'no-empty': 'error',
-      // Reject empty functions.
+      // [enforcement-integrity] Reject empty functions so placeholder implementations cannot pass as completed behavior without an explicit explanation permitted by the rule.
       'no-empty-function': 'error',
-      // Reject empty destructuring patterns.
+      // [correctness] Catch empty destructuring patterns that bind nothing and can hide an omitted target binding.
       'no-empty-pattern': 'error',
-      // Reject empty static blocks.
+      // [standardization] Remove empty static blocks so class declarations do not imply initialization work that never occurs.
       'no-empty-static-block': 'error',
-      // Reject null comparisons without type-checking operators.
+      // [standardization] Compare null explicitly with strict operators so nullish matching does not introduce loose-equality conventions.
       'no-eq-null': 'error',
-      // Reject the use of eval().
+      // [correctness] Avoid eval() so data cannot become dynamically executed code with access to the current scope.
       'no-eval': 'error',
-      // Reject reassigning exceptions in catch clauses.
+      // [correctness] Preserve caught exception bindings so subsequent handling does not accidentally lose the original failure.
       'no-ex-assign': 'error',
-      // Reject extending native types.
+      // [architectural-prevention] Avoid extending native prototypes so one module cannot silently alter builtin behavior for unrelated consumers.
       'no-extend-native': 'error',
-      // Reject unnecessary calls to .bind().
+      // [standardization] Remove bind() calls that add no receiver behavior so reviewers can distinguish necessary binding from redundant wrappers.
       'no-extra-bind': 'error',
-      // Reject unnecessary boolean casts.
+      // [standardization] Omit redundant boolean casts in conditions so reviewers inspect the predicate without an unnecessary conversion layer.
       'no-extra-boolean-cast': 'error',
-      // Reject unnecessary labels.
+      // [standardization] Remove labels unnecessary to an exit target so explicit labels identify control flow that actually needs naming.
       'no-extra-label': 'error',
-      // Reject accidental switch fallthrough; intentional fallthrough must have an explanatory comment.
+      // [correctness] Reject accidental switch fallthrough so handling one case cannot unexpectedly execute the next; explanatory comments mark deliberate fallthrough.
       'no-fallthrough': 'error',
-      // Reject reassigning function declarations.
+      // [correctness] Keep function declaration bindings unchanged so later calls do not unexpectedly invoke a replacement value.
       'no-func-assign': 'error',
-      // Reject assignments to native objects or read-only global variables.
+      // [correctness] Avoid writes to readonly globals because assignments can fail or undermine the builtin contract the code expects.
       'no-global-assign': 'error',
-      // Use explicit conversions instead of boolean, numeric, or string coercion shortcuts.
+      // [standardization] Use explicit conversions so reviewers do not decode boolean, numeric, or string coercion shortcuts.
       'no-implicit-coercion': 'error',
-      // Reject declarations in the global scope.
+      // [architectural-prevention] Avoid implicit globals in script contexts so separately loaded code does not acquire hidden shared bindings.
       'no-implicit-globals': 'error',
-      // Reject the use of eval()-like methods.
+      // [correctness] Avoid string-based eval-like APIs so timer or execution inputs cannot be interpreted as executable source.
       'no-implied-eval': 'error',
-      // Reject assigning to imported bindings.
+      // [correctness] Do not assign imported bindings because ESM imports are readonly views of another module's exports.
       'no-import-assign': 'error',
-      // Put comments on separate lines so statements and explanations have separate edits.
+      // [standardization] Put comments on separate lines so explanations and statements can be reviewed and edited independently.
       'no-inline-comments': 'error',
-      // Reject variable or function declarations in nested blocks.
+      // [standardization] Keep flagged declarations out of nested blocks so generated source does not depend on confusing declaration-placement conventions.
       'no-inner-declarations': 'error',
-      // Reject use of this in contexts where the value of this is undefined.
+      // [correctness] Catch this in invalid receiver contexts before a property operation encounters undefined instead of the intended instance.
       'no-invalid-this': 'error',
-      // Reject irregular whitespace.
+      // [standardization] Reject irregular whitespace so invisible source characters do not obscure token boundaries during review.
       'no-irregular-whitespace': 'error',
-      // Reject the use of the __iterator__ property.
+      // [standardization] Use standard iteration protocols instead of legacy __iterator__ properties so generated code follows the supported language API.
       'no-iterator': 'error',
-      // Reject labels that share a name with a variable.
+      // [standardization] Keep labels distinct from variable names so reviewers can distinguish jump targets from data bindings.
       'no-label-var': 'error',
-      // Reject labeled statements.
+      // [standardization] Avoid labeled statements so generated control flow follows ordinary structured loop and branch conventions.
       'no-labels': 'error',
-      // Reject unnecessary nested blocks.
+      // [standardization] Remove unnecessary blocks so reviewers do not infer a meaningful scope boundary where none is needed.
       'no-lone-blocks': 'error',
-      // Reject if statements as the only statement in else blocks.
+      // [standardization] Use else if instead of an else containing only if so generated branch chains have one selected layout.
       'no-lonely-if': 'error',
-      // Reject function declarations that contain unsafe references inside loop statements.
+      // [correctness] Avoid loop-created closures over unsafe changing bindings so callbacks do not all observe an unintended later iteration value.
       'no-loop-func': 'error',
-      // Reject literal numbers that lose precision.
+      // [correctness] Catch numeric literals outside exact representability before the runtime silently rounds the intended value.
       'no-loss-of-precision': 'error',
-      // Name numeric values with const bindings; permit named object values, -1/0/1, indexes, defaults, enum values, and numeric type positions.
+      // [standardization] Name unexplained numbers with const; allow -1/0/1 and indexes as common structural values, and object values, defaults, fields, enums, readonly properties, and numeric type positions where the surrounding declaration supplies their role.
       'no-magic-numbers': ['error', {
         detectObjects: false,
         enforceConst: true,
@@ -207,43 +210,43 @@ const base = defineConfig(
         ignoreReadonlyClassProperties: true,
         ignoreTypeIndexes: true,
       }],
-      // Reject use of chained assignment expressions.
+      // [standardization] Separate chained assignments so reviewers can inspect each state update and its assigned value independently.
       'no-multi-assign': 'error',
-      // Reject multiline strings.
+      // [standardization] Use template literals or explicit escapes instead of line-continued strings so reviewers can see intended string boundaries.
       'no-multi-str': 'error',
-      // Reject new operators outside of assignments or comparisons.
+      // [architectural-prevention] Retain constructed instances instead of invoking constructors solely for effects so object ownership and lifetime remain visible.
       'no-new': 'error',
-      // Reject new operators with the Function object.
+      // [correctness] Avoid Function construction so input text cannot become executable code through dynamic compilation.
       'no-new-func': 'error',
-      // Reject new operators with global non-constructor functions.
+      // [correctness] Do not construct nonconstructible builtins because new on these functions throws instead of producing an instance.
       'no-new-native-nonconstructor': 'error',
-      // Reject new operators with the String, Number, and Boolean objects.
+      // [correctness] Use primitive values instead of boxed strings, numbers, or booleans because wrapper identity and truthiness differ from their contents.
       'no-new-wrappers': 'error',
-      // Reject \8 and \9 escape sequences in string literals.
+      // [standardization] Avoid legacy non-octal decimal escapes so generated strings use supported unambiguous escape notation.
       'no-nonoctal-decimal-escape': 'error',
-      // Reject calling global object properties as functions.
+      // [correctness] Do not call noncallable builtin objects because treating namespaces such as Math as functions throws.
       'no-obj-calls': 'error',
-      // Reject calls to the Object constructor without an argument.
+      // [standardization] Use object literals for empty objects so reviewers do not infer a conversion operation from Object construction.
       'no-object-constructor': 'error',
-      // Reject octal literals.
+      // [standardization] Avoid legacy octal literal notation so generated constants do not depend on leading-zero interpretation.
       'no-octal': 'error',
-      // Reject octal escape sequences in string literals.
+      // [correctness] Avoid legacy octal string escapes because strict-mode source rejects them rather than producing the intended character.
       'no-octal-escape': 'error',
-      // Reject parameter rebinding and property writes so functions cannot mutate caller-owned inputs through parameters.
+      // [architectural-prevention] Check parameter properties as well as rebinding so functions cannot hide caller-owned input mutation behind a stable parameter name.
       'no-param-reassign': ['error', { props: true }],
-      // Reject the unary operators ++ and --.
+      // [standardization] Use explicit assignment updates instead of ++ or -- so reviewers do not need to distinguish prefix and postfix result semantics.
       'no-plusplus': 'error',
-      // Reject returning values from Promise executor functions.
+      // [correctness] Do not return values from Promise executors because the constructor ignores them instead of resolving with them.
       'no-promise-executor-return': 'error',
-      // Reject the use of the __proto__ property.
+      // [standardization] Avoid legacy __proto__ access so prototype operations use explicit standard APIs rather than a special property convention.
       'no-proto': 'error',
-      // Reject calling some Object.prototype methods directly on objects.
+      // [correctness] Do not call borrowed Object.prototype methods directly on inputs because those methods can be absent or shadowed by data.
       'no-prototype-builtins': 'error',
-      // Reject variable redeclaration.
+      // [correctness] Catch redeclarations that can hide a conflicting binding or overwrite a function-scoped declaration's intended meaning.
       'no-redeclare': 'error',
-      // Reject multiple spaces in regular expressions.
+      // [standardization] Express repeated regex spaces explicitly so reviewers can count required whitespace without comparing invisible gaps.
       'no-regex-spaces': 'error',
-      // Use Vitest for unit and integration tests; reject Node, Bun, Jest, Mocha, Ava, Tape, and uvu runner imports and subpaths.
+      // [standardization] Use Vitest for unit and integration tests; reject alternate runner imports and their subpaths so generated tests do not introduce a second discovery and execution convention.
       'no-restricted-imports': ['error', {
         patterns: [{
           group: [
@@ -267,962 +270,962 @@ const base = defineConfig(
           message: 'Use Vitest for unit and integration tests; configure browser E2E separately.',
         }],
       }],
-      // Reject assignment operators in return statements.
+      // [standardization] Separate assignment from returned values so reviewers can distinguish state updates from the function's output contract.
       'no-return-assign': 'error',
-      // Reject javascript: URLs.
+      // [correctness] Avoid javascript: URLs because navigation can execute embedded code instead of loading a resource.
       'no-script-url': 'error',
-      // Reject assignments where both sides are exactly the same.
+      // [correctness] Catch self-assignments that leave an intended update unperformed and can hide a mistaken source binding.
       'no-self-assign': 'error',
-      // Reject comparisons where both sides are exactly the same.
+      // [correctness] Catch self-comparisons that can hide a mistaken operand and make the intended condition ineffective.
       'no-self-compare': 'error',
-      // Reject comma operators.
+      // [standardization] Use separate expressions instead of comma operators so reviewers do not overlook effects hidden inside a value expression.
       'no-sequences': 'error',
-      // Reject returning values from setters.
+      // [correctness] Do not return values from setters because property assignment ignores the setter's return value.
       'no-setter-return': 'error',
-      // Reject variable declarations from shadowing variables declared in the outer scope.
+      // [architectural-prevention] Avoid shadowed bindings so reviewers can identify which state a reference reads without reconstructing nested name resolution.
       'no-shadow': 'error',
-      // Reject identifiers from shadowing restricted names.
+      // [correctness] Preserve restricted builtin names so references such as undefined and NaN cannot resolve to misleading local values.
       'no-shadow-restricted-names': 'error',
-      // Reject sparse arrays.
+      // [correctness] Avoid array holes because iteration methods can skip them instead of visiting an explicit undefined element.
       'no-sparse-arrays': 'error',
-      // Reject template literal placeholder syntax in regular strings.
+      // [correctness] Catch interpolation markers in ordinary strings before consumers receive placeholder text instead of the intended value.
       'no-template-curly-in-string': 'error',
-      // Reject this/super before calling super() in constructors.
+      // [correctness] Initialize derived instances with super() before accessing this or super properties so construction does not throw.
       'no-this-before-super': 'error',
-      // Reject throwing literals as exceptions.
+      // [correctness] Throw Error objects rather than literals so consumers receive stack traces and the standard error contract.
       'no-throw-literal': 'error',
-      // Reject let or var variables that are read but never assigned.
+      // [correctness] Catch reads of never-assigned variables before undefined substitutes for an intended initialized value.
       'no-unassigned-vars': 'error',
-      // Reject the use of undeclared variables unless mentioned in /*global */ comments.
+      // [correctness] Catch undeclared bindings before execution raises ReferenceError or a misspelled name targets an unintended global.
       'no-undef': 'error',
-      // Reject initializing variables to undefined.
+      // [standardization] Omit redundant undefined initializers so explicit initial values identify meaningful state choices.
       'no-undef-init': 'error',
-      // Reject underscore-prefixed source bindings; use real private fields rather than public-name conventions.
+      // [standardization] Avoid underscore privacy names so generated bindings follow the selected naming convention and real private fields express privacy.
       'no-underscore-dangle': 'error',
-      // Reject confusing multiline expressions.
+      // [correctness] Catch newline-sensitive expressions before automatic semicolon insertion changes the intended call or access.
       'no-unexpected-multiline': 'error',
-      // Reject unmodified loop conditions.
+      // [correctness] Catch loop conditions whose tested variables never change before a terminating loop becomes nonterminating.
       'no-unmodified-loop-condition': 'error',
-      // Reject ternary operators when simpler alternatives exist.
+      // [standardization] Use direct boolean or fallback expressions instead of redundant ternaries so reviewers inspect the effective value operation.
       'no-unneeded-ternary': 'error',
-      // Reject unreachable code after return, throw, continue, and break statements.
+      // [correctness] Catch unreachable statements that can conceal work placed after an unconditional exit.
       'no-unreachable': 'error',
-      // Reject loops with a body that allows only one iteration.
+      // [correctness] Catch loops that can execute only once because an unconditional exit may have replaced intended repeated processing.
       'no-unreachable-loop': 'error',
-      // Reject control flow statements in finally blocks.
+      // [correctness] Keep exits out of finally blocks so cleanup cannot silently replace a pending return or suppress a thrown error.
       'no-unsafe-finally': 'error',
-      // Reject negating the left operand of relational operators.
+      // [correctness] Parenthesize intended relational negation so operator precedence does not compare a negated boolean instead of the original value.
       'no-unsafe-negation': 'error',
-      // Reject use of optional chaining in contexts where the undefined value is not allowed.
+      // [correctness] Guard optional-chain results before operations that reject undefined so missing data does not turn a supposedly guarded access into a runtime exception.
       'no-unsafe-optional-chaining': 'error',
-      // Reject unused expressions.
+      // [correctness] Catch discarded expressions that perform no useful work and can hide a missing call or mistaken assignment.
       'no-unused-expressions': 'error',
-      // Reject unused labels.
+      // [standardization] Remove unused labels so reviewers do not infer a jump target that no control-flow statement uses.
       'no-unused-labels': 'error',
-      // Reject unused private class members.
+      // [architectural-prevention] Remove unused private members so class state and behavior do not retain dependencies with no internal consumer.
       'no-unused-private-class-members': 'error',
-      // Reject unused bindings and caught errors so dead values and ignored exceptions do not remain.
+      // [architectural-prevention] Reject unused bindings and caught errors so dead dependencies and unexamined failure paths remain visible to reviewers.
       'no-unused-vars': 'error',
-      // Reject the use of variables before they are defined.
+      // [standardization] Define bindings before use so reviewers encounter declarations before references, even where hoisting would permit the reverse order.
       'no-use-before-define': 'error',
-      // Reject variable assignments when the value is not used.
+      // [correctness] Catch overwritten unread assignments that can hide a lost result or an update written to the wrong binding.
       'no-useless-assignment': 'error',
-      // Reject unnecessary calls to .call() and .apply().
+      // [standardization] Use direct calls when call() or apply() adds no receiver behavior so reviewers do not infer a required invocation adaptation.
       'no-useless-call': 'error',
-      // Reject unnecessary catch clauses.
+      // [standardization] Remove catch clauses that only rethrow unchanged errors so visible handlers identify actual recovery or translation.
       'no-useless-catch': 'error',
-      // Reject unnecessary computed property keys in objects and classes.
+      // [standardization] Use ordinary property keys when computation is unnecessary so reviewers can distinguish fixed names from dynamic access.
       'no-useless-computed-key': 'error',
-      // Reject unnecessary constructors.
+      // [standardization] Omit constructors that add no behavior so reviewers inspect only initialization that differs from the language default.
       'no-useless-constructor': 'error',
-      // Reject unnecessary escape characters.
+      // [standardization] Remove ineffective escapes so source spelling does not imply a special character interpretation that never occurs.
       'no-useless-escape': 'error',
-      // Reject renaming import, export, and destructured assignments to the same name.
+      // [standardization] Omit same-name aliases so reviewers can distinguish genuine renaming from redundant import, export, or destructuring syntax.
       'no-useless-rename': 'error',
-      // Reject redundant return statements.
+      // [standardization] Remove redundant returns so explicit exits identify control flow that changes execution.
       'no-useless-return': 'error',
-      // Require let or const instead of var.
+      // [standardization] Use block-scoped let and const so generated declarations follow one scope model rather than mixing in var hoisting.
       'no-var': 'error',
-      // Allow standalone void statements for deliberately discarded return values, not inside value expressions.
+      // [standardization] Permit standalone void only to mark deliberate result discard; keep it out of value expressions where it hides the resulting undefined value.
       'no-void': ['error', { allowAsStatement: true }],
-      // Reject TODO, FIXME, and XXX reminders at comment starts so unfinished work cannot pass CI.
+      // [enforcement-integrity] Reject leading TODO, FIXME, and XXX reminders so unfinished generated work cannot be presented as complete through a passing lint run.
       'no-warning-comments': 'error',
-      // Reject with statements.
+      // [correctness] Avoid with statements because implicit object scope can redirect identifier lookup and assignment at runtime.
       'no-with': 'error',
-      // Require or disallow method and property shorthand syntax for object literals.
+      // [standardization] Use object method and property shorthand so equivalent literal members have one selected source form.
       'object-shorthand': 'error',
-      // Declare one binding per declaration so each variable has an independent initializer and edit.
+      // [standardization] Declare one binding per declaration so reviewers can inspect each initializer and edit it independently.
       'one-var': ['error', 'never'],
-      // Use arrows for callbacks that do not require their own this; named source functions remain declarations.
+      // [standardization] Use arrows for callbacks that do not need their own this so callback receiver behavior follows one explicit lexical convention.
       'prefer-arrow-callback': 'error',
-      // Require const declarations for variables that are never reassigned after declared.
+      // [architectural-prevention] Use const for unreassigned bindings so reviewers can distinguish stable references from mutable local state.
       'prefer-const': 'error',
-      // Use destructuring for array and object extraction so binding names and source structure are explicit.
+      // [standardization] Use destructuring for matched extractions so reviewers see source structure beside the resulting bindings.
       'prefer-destructuring': 'error',
-      // Reject the use of Math.pow in favor of the ** operator.
+      // [standardization] Use ** for exponentiation so generated arithmetic follows the selected operator syntax rather than an equivalent Math call.
       'prefer-exponentiation-operator': 'error',
-      // Name regex capture groups so consumers do not depend on unexplained capture positions.
+      // [standardization] Name capture groups so reviewers can connect extracted regex data to meaningful names instead of unexplained numeric positions.
       'prefer-named-capture-group': 'error',
-      // Reject parseInt() and Number.parseInt() in favor of binary, octal, and hexadecimal literals.
+      // [standardization] Use numeric literals for statically known parsed constants so reviewers read their radix and value without evaluating a parser call.
       'prefer-numeric-literals': 'error',
-      // Use Object.hasOwn() so own-property checks do not borrow or call a shadowed instance method.
+      // [correctness] Use Object.hasOwn() so own-property checks work even when an object shadows or lacks hasOwnProperty().
       'prefer-object-has-own': 'error',
-      // Use object spread instead of Object.assign() into a fresh object so copying is explicit and non-mutating.
+      // [standardization] Use object spread for fresh-object copies so reviewers distinguish constructing a copy from Object.assign() mutations of an existing target.
       'prefer-object-spread': 'error',
-      // Require using Error objects as Promise rejection reasons.
+      // [correctness] Reject promises with Error objects so consumers receive stack traces and the standard error inspection contract.
       'prefer-promise-reject-errors': 'error',
-      // Reject use of the RegExp constructor in favor of regular expression literals.
+      // [standardization] Use regex literals for static patterns so reviewers can inspect regex syntax without constructor-string escaping.
       'prefer-regex-literals': 'error',
-      // Require rest parameters instead of arguments.
+      // [standardization] Use rest parameters so variable arguments are declared in the signature rather than read through implicit arguments state.
       'prefer-rest-params': 'error',
-      // Require spread operators instead of .apply().
+      // [standardization] Use spread for matched argument forwarding so reviewers see the expanded arguments in ordinary call syntax.
       'prefer-spread': 'error',
-      // Require template literals instead of string concatenation.
+      // [standardization] Use template literals for interpolation so reviewers can distinguish literal text from embedded values without tracing concatenation.
       'prefer-template': 'error',
-      // Reject losing originally caught error when re-throwing custom errors.
+      // [correctness] Preserve the caught error as a cause when wrapping it so consumers do not lose the original failure and stack context.
       'preserve-caught-error': 'error',
-      // Specify parseInt() radix so numeric interpretation does not depend on the input prefix.
+      // [correctness] State parseInt() radix explicitly so input prefixes do not silently select an unintended numeric interpretation.
       'radix': 'error',
-      // Reject assignments and property writes whose value can become stale across an await or yield.
+      // [correctness] Catch updates that can use stale values across await or yield so interleaved work does not silently overwrite a newer result.
       'require-atomic-updates': 'error',
-      // Reject async functions which have no await expression.
+      // [standardization] Reserve async for functions containing await so promise-returning boundaries are not added through an unexplained async marker.
       'require-await': 'error',
-      // Require u or v regex flags so patterns use Unicode-aware matching.
+      // [standardization] Require u or v regex flags so generated patterns use the selected Unicode-aware interpretation rather than legacy code-unit syntax.
       'require-unicode-regexp': 'error',
-      // Require generator functions to contain yield.
+      // [correctness] Catch generators with no yield because consumers may otherwise receive no values from an intended sequence.
       'require-yield': 'error',
-      // Require object keys to be sorted.
+      // [standardization] Sort object keys so generated objects have a predictable review and search order.
       'sort-keys': 'error',
-      // Require symbol descriptions.
+      // [standardization] Describe symbols so logs and debugger output identify their intended role rather than displaying anonymous symbols.
       'symbol-description': 'error',
-      // Require or disallow Unicode byte order mark (BOM).
+      // [standardization] Omit byte order marks so generated source follows one encoding convention without an invisible leading character.
       'unicode-bom': 'error',
-      // Require calls to isNaN() when checking for NaN.
+      // [correctness] Use NaN-aware checks because equality comparisons with NaN never recognize NaN values.
       'use-isnan': 'error',
-      // Compare typeof results only with valid result strings so impossible type checks fail.
+      // [correctness] Compare typeof only with valid result strings so misspelled type checks cannot silently become impossible conditions.
       'valid-typeof': 'error',
-      // Put the value before the comparison constant so comparisons follow the normal reading order.
+      // [standardization] Put values before comparison constants so generated comparisons follow one reading order.
       'yoda': 'error',
 
-      // Use element-specific traversal APIs when text and comment nodes are not intended.
+      // [standardization] Use element-specific traversal when only elements are intended so reviewers do not infer text or comment node handling.
       'unicorn/better-dom-traversing': 'error',
-      // Name caught exceptions error so error-handling bindings use one recognizable name.
+      // [standardization] Name caught exceptions error so reviewers recognize error-handling bindings consistently across generated modules.
       'unicorn/catch-error-name': 'error',
-      // Use this in static methods so subclass calls refer to the receiving class.
+      // [correctness] Use this in matched static methods so inherited calls refer to the receiving subclass rather than a hard-coded base class.
       'unicorn/class-reference-in-static-methods': 'error',
-      // Reject empty or placeholder punctuation comments because they do not explain code.
+      // [standardization] Remove empty or punctuation-only comments so reviewers do not mistake placeholders for an explanation.
       'unicorn/comment-content': 'error',
-      // Keep multiline arrow return syntax consistent so early returns do not obscure the final result.
+      // [standardization] Use consistent multiline arrow return forms so reviewers can distinguish final values from earlier exits without syntax variation.
       'unicorn/consistent-arrow-return-style': 'error',
-      // Use strict Node assertions so equality checks do not coerce values.
+      // [correctness] Use strict Node assertions so coercion cannot make tests accept values with the wrong type.
       'unicorn/consistent-assert': 'error',
-      // Require boolean prefixes for variables, arguments, and functions; leave methods and fields outside this naming check.
+      // [standardization] Use boolean prefixes on checked variables, parameters, and functions so predicate names identify boolean intent without imposing this naming check on methods or fields.
       'unicorn/consistent-boolean-name': 'error',
-      // Order static fields, blocks, and methods before instance fields, constructors, and methods; place private members before public peers.
+      // [standardization] Put static members before instance members and private peers before public peers so reviewers find class declarations in a predictable order.
       'unicorn/consistent-class-member-order': 'error',
-      // Use the standard spelling of compound words so equivalent names do not vary across modules.
+      // [standardization] Spell compound words consistently so repository searches find equivalent concepts under the same name.
       'unicorn/consistent-compound-words': 'error',
-      // Use logical expressions for conditional object spreads instead of empty-object ternary branches.
+      // [standardization] Use logical conditional object spreads so optional properties have one form rather than an empty-object ternary alternative.
       'unicorn/consistent-conditional-object-spread': 'error',
-      // Pass the existing Date directly to its constructor when cloning to avoid an unnecessary timestamp conversion.
+      // [standardization] Clone Dates directly through the constructor so reviewers see a copy operation rather than an unnecessary timestamp conversion.
       'unicorn/consistent-date-clone': 'error',
-      // Do not mix destructured access and repeated property access to the same object.
+      // [standardization] Use consistent destructured access within matched code so reviewers do not track both local aliases and repeated source property reads.
       'unicorn/consistent-destructuring': 'error',
-      // Use the same iterable type in populated and empty conditional array-spread branches.
+      // [standardization] Keep empty and populated array-spread branches in the same iterable form so reviewers can compare alternatives without representation changes.
       'unicorn/consistent-empty-array-spread': 'error',
-      // Use consistent index comparisons for existence checks so missing-item sentinel handling is explicit.
+      // [standardization] Use consistent index existence comparisons so reviewers can recognize missing-item sentinel handling immediately.
       'unicorn/consistent-existence-index-check': 'error',
-      // Place decorators above export declarations so decorated classes follow one declaration order.
+      // [standardization] Put decorators above exports so generated decorated declarations follow one selected layout.
       'unicorn/consistent-export-decorator-position': 'error',
-      // Move functions that do not capture enclosing values out of that scope, including arrows.
+      // [architectural-prevention] Move noncapturing functions out of enclosing scopes, including arrows, so their available dependencies and allocation lifetime stay explicit.
       'unicorn/consistent-function-scoping': 'error',
-      // Use declarations for named functions and named exports, arrows for callbacks, and methods for object properties.
+      // [standardization] Use declarations for named functions and exports, arrows for callbacks, and object methods for properties so each role has one recognizable function form.
       'unicorn/consistent-function-style': ['error', {
         namedFunctions: 'declaration',
         namedExports: 'declaration',
         callbacks: 'arrow-function',
         objectProperties: 'method',
       }],
-      // Read JSON files as strings before JSON.parse() so decoding is explicit.
+      // [standardization] Read JSON as strings before parsing so decoding and parsing are separate visible operations rather than an implicit Buffer conversion.
       'unicorn/consistent-json-file-read': 'error',
-      // Use one optional-chain expression for same-base access instead of duplicated existence guards.
+      // [standardization] Use one optional chain for same-base access so reviewers do not reconstruct duplicated existence guards.
       'unicorn/consistent-optional-chaining': 'error',
-      // Escape template interpolation markers consistently so literal placeholders stay literal.
+      // [standardization] Escape literal interpolation markers consistently so reviewers can distinguish placeholder text from evaluated template expressions.
       'unicorn/consistent-template-literal-escape': 'error',
-      // Label tuple elements consistently so positional type contracts do not mix named and unnamed positions.
+      // [standardization] Label tuple elements consistently so reviewers can interpret every positional role without switching between named and unnamed positions.
       'unicorn/consistent-tuple-labels': 'error',
-      // Define Error subclasses with correct names and constructors so stack traces identify the actual error type.
+      // [correctness] Define Error subclass names and constructors correctly so consumers receive the intended error identity and diagnostic stack information.
       'unicorn/custom-error-definition': 'error',
-      // Use dataset for DOM data attributes so attribute names and property access stay consistent.
+      // [standardization] Use dataset for data attributes so generated DOM code follows one attribute naming and access convention.
       'unicorn/dom-node-dataset': 'error',
-      // Keep empty brace pairs unspaced so empty objects and blocks use one spelling.
+      // [standardization] Keep empty braces unspaced so equivalent empty objects and blocks have one selected spelling.
       'unicorn/empty-brace-spaces': 'error',
-      // Supply a message when creating built-in errors so failures explain what went wrong.
+      // [correctness] Supply built-in error messages so consumers receive an explanation of the failed operation rather than an anonymous failure.
       'unicorn/error-message': 'error',
-      // Use uppercase hexadecimal escape digits so equivalent escapes have one spelling.
+      // [standardization] Use uppercase hexadecimal escape digits so equivalent escaped values have one searchable spelling.
       'unicorn/escape-case': 'error',
-      // Compare length and size explicitly so zero and nonzero collection checks state their intent.
+      // [standardization] Compare length and size explicitly so reviewers can distinguish empty and nonempty collection checks without truthiness inference.
       'unicorn/explicit-length-check': 'error',
-      // Pass timer delays explicitly so immediate scheduling is not hidden in an omitted argument.
+      // [standardization] State timer delays explicitly so reviewers can see when immediate scheduling is a deliberate choice.
       'unicorn/explicit-timer-delay': 'error',
-      // Use kebab-case filenames and directory names so source paths follow one naming convention.
+      // [standardization] Select kebab-case filenames and checked directory names so generated source paths follow one predictable naming convention.
       'unicorn/filename-case': ['error', { case: 'kebabCase' }],
-      // Use default imports for chalk and node:path, and named imports for node:util, to match their module APIs.
+      // [standardization] Use default chalk and node:path imports and named node:util imports so generated bindings follow the selected per-module import conventions.
       'unicorn/import-style': 'error',
-      // Prevent usage of variables from outside the scope of isolated functions.
+      // [correctness] Keep isolated functions independent of unavailable outer bindings so transferred execution does not fail when its original lexical environment is absent.
       'unicorn/isolated-functions': 'error',
-      // Guard optional loop sources instead of allocating empty fallback collections.
+      // [architectural-prevention] Guard optional loop sources instead of constructing empty fallback collections solely to perform no iterations.
       'unicorn/iteration-fallback-style': 'error',
-      // Require or disallow logical assignment operator shorthand.
+      // [standardization] Use logical assignment shorthand for matched updates so conditional self-assignment follows one selected syntax.
       'unicorn/logical-assignment-operators': 'error',
-      // Limit nested call depth to three so evaluation order can be reviewed without expanding an expression.
+      // [architectural-prevention] Three nested calls is a chosen review ceiling for expression evaluation order, not proof that the expression is simple.
       'unicorn/max-nested-calls': ['error', { max: 3 }],
-      // Expand ambiguous abbreviations in variables, properties, and filenames so names state what they hold.
+      // [standardization] Expand flagged ambiguous abbreviations in names and paths so reviewers and searches use the same explicit vocabulary.
       'unicorn/name-replacements': 'error',
-      // Use new only for built-ins that construct objects so call syntax matches runtime semantics.
+      // [correctness] Match new usage to builtin call contracts so constructor-only APIs work and nonconstructible functions do not throw.
       'unicorn/new-for-builtins': 'error',
-      // Reject recursive access to this within getters and setters.
+      // [correctness] Avoid accessing an accessor through itself because recursive getter or setter calls can overflow the stack.
       'unicorn/no-accessor-recursion': 'error',
-      // Reject bitwise operators where a logical operator was likely intended.
+      // [correctness] Catch bitwise operators mistaken for logical operators before coercion changes the intended condition.
       'unicorn/no-accidental-bitwise-operator': 'error',
-      // Prevent passing a function reference directly to iterator methods.
+      // [correctness] Wrap array callbacks explicitly so index and array arguments do not accidentally become extra parameters to the referenced function.
       'unicorn/no-array-callback-reference': 'error',
-      // Reject array accumulation with Array#concat() in loops.
+      // [architectural-prevention] Avoid concat() accumulation in loops because repeated copying can turn linear input processing into quadratic allocation and work.
       'unicorn/no-array-concat-in-loop': 'error',
-      // Reject using reference values as Array#fill() values.
+      // [correctness] Avoid filling arrays with one reference value because mutating one apparent element then changes every aliased element.
       'unicorn/no-array-fill-with-reference-type': 'error',
-      // Reject .fill() after Array.from({length: ...}).
+      // [standardization] Initialize Array.from() through its mapping callback so reviewers see construction and initial values together rather than a subsequent fill().
       'unicorn/no-array-from-fill': 'error',
-      // Reject front-of-array mutation.
+      // [architectural-prevention] Avoid front-of-array mutation because shifting existing elements can create repeated linear copying during accumulation.
       'unicorn/no-array-front-mutation': 'error',
-      // Reject using the this argument in array methods.
+      // [standardization] Use lexical callback context rather than array method this arguments so reviewers follow one receiver convention.
       'unicorn/no-array-method-this-argument': 'error',
-      // Reject Array#reduce() and Array#reduceRight().
+      // [architectural-prevention] Use explicit iteration instead of reduce() so accumulator ownership and update effects remain visible during review.
       'unicorn/no-array-reduce': 'error',
-      // Use Array#toReversed() over Array#reverse().
+      // [architectural-prevention] Use toReversed() so reversing order does not mutate an array that other consumers may share.
       'unicorn/no-array-reverse': 'error',
-      // Use Array#toSorted() over Array#sort().
+      // [architectural-prevention] Use toSorted() so ordering does not mutate an array that other consumers may share.
       'unicorn/no-array-sort': 'error',
-      // Reject sorting arrays to get the minimum or maximum value.
+      // [architectural-prevention] Find extrema directly instead of sorting every element solely to read one endpoint.
       'unicorn/no-array-sort-for-min-max': 'error',
-      // Use Array#toSpliced() over Array#splice().
+      // [architectural-prevention] Use toSpliced() so range updates do not mutate an array that other consumers may share.
       'unicorn/no-array-splice': 'error',
-      // Reject asterisk prefixes and shared indentation in multiline comments.
+      // [standardization] Omit decorative asterisk prefixes and shared comment indentation so generated prose follows one multiline layout.
       'unicorn/no-asterisk-prefix-in-documentation-comments': 'error',
-      // Reject asynchronous callbacks in synchronous iterator helpers.
+      // [correctness] Keep synchronous iterator callbacks synchronous because these helpers do not await promises returned by async callbacks.
       'unicorn/no-async-iterator-callback': 'error',
-      // Reject async functions as Promise#finally() callbacks.
+      // [architectural-prevention] Keep finally cleanup synchronous under this policy so completion does not depend on an additional asynchronous cleanup chain.
       'unicorn/no-async-promise-finally': 'error',
-      // Reject member access from await expression.
+      // [standardization] Separate awaited values from member access so reviewers can distinguish promise settlement from subsequent property evaluation.
       'unicorn/no-await-expression-member': 'error',
-      // Reject using await in Promise method parameters.
+      // [correctness] Catch awaited inputs to Promise combinators before premature sequencing defeats the intended concurrent operation.
       'unicorn/no-await-in-promise-methods': 'error',
-      // Reject unnecessary Blob to File conversion.
+      // [standardization] Keep an existing Blob when file-specific metadata is unused so generated code does not imply a required File contract.
       'unicorn/no-blob-to-file': 'error',
-      // Reject boolean-returning sort comparators.
+      // [correctness] Return signed ordering results from comparators because booleans cannot distinguish every required ordering direction.
       'unicorn/no-boolean-sort-comparator': 'error',
-      // Reject break and optionally continue in nested loops and switches inside loops.
+      // [architectural-prevention] Avoid break targets hidden inside nested loops or switches so reviewers can identify which iteration ends.
       'unicorn/no-break-in-nested-loop': 'error',
-      // Use drawing canvases directly instead of converting them to images.
+      // [architectural-prevention] Draw canvases directly when supported so an intermediate image conversion does not add encoding and allocation work.
       'unicorn/no-canvas-to-image': 'error',
-      // Reject chained comparisons such as a < b < c.
+      // [correctness] Catch chained comparisons because JavaScript compares the first boolean result rather than expressing a mathematical range.
       'unicorn/no-chained-comparison': 'error',
-      // Reject accessing Map, Set, WeakMap, and WeakSet entries with bracket notation.
+      // [correctness] Access collection entries through their APIs because bracket properties do not read or write Map or Set contents.
       'unicorn/no-collection-bracket-access': 'error',
-      // Reject dynamic object property existence checks.
+      // [standardization] Use direct key existence operations for recognized dynamic checks so reviewers do not decode indirect computed-property patterns.
       'unicorn/no-computed-property-existence-check': 'error',
-      // Reject conflicting CSS query and HTML form constraints.
+      // [correctness] Catch contradictory CSS and form constraints before queries match nothing or forms accept no intended value.
       'unicorn/no-conflicting-constraints': 'error',
-      // Reject confusing uses of Array#{splice,toSpliced}().
+      // [standardization] Express single-element replacement directly and resolve insertion indexes explicitly so reviewers do not mistake splice(-1, 0, ...) for appending.
       'unicorn/no-confusing-array-splice': 'error',
-      // Reject confusing uses of Array#with().
+      // [standardization] Use explicit nonnegative replacement indexes with Array.with() rather than negative positions or length so reviewers can identify the intended existing element.
       'unicorn/no-confusing-array-with': 'error',
-      // Do not use leading/trailing space between console.log parameters.
+      // [standardization] Let console argument separation supply spacing so diagnostic text does not gain inconsistent leading or trailing spaces.
       'unicorn/no-console-spaces': 'error',
-      // Reject arithmetic and bitwise operations that always evaluate to 0.
+      // [correctness] Catch arithmetic that always yields zero before a mistaken calculation silently discards its operands.
       'unicorn/no-constant-zero-expression': 'error',
-      // Reject declarations before conditional early exits when they are only used after the exit.
+      // [architectural-prevention] Declare values after guards that can exit before their use so unnecessary work and available scope stay limited.
       'unicorn/no-declarations-before-early-exit': 'error',
-      // Do not use document.cookie directly.
+      // [architectural-prevention] Avoid direct document.cookie manipulation because synchronous global cookie reads and writes hide parsing and shared-state obligations.
       'unicorn/no-document-cookie': 'error',
-      // Reject two comparisons of the same operands that can be combined into one.
+      // [standardization] Combine equivalent comparisons of the same operands so reviewers inspect one relation instead of redundant logical alternatives.
       'unicorn/no-double-comparison': 'error',
-      // Reject duplicate adjacent branches in if chains.
+      // [architectural-prevention] Combine adjacent identical branches so future edits do not leave duplicated behavior inconsistent.
       'unicorn/no-duplicate-if-branches': 'error',
-      // Reject adjacent duplicate operands in logical expressions.
+      // [correctness] Catch repeated adjacent logical operands that can hide an omitted condition or repeat an effectful expression.
       'unicorn/no-duplicate-logical-operands': 'error',
-      // Reject .map() and .filter() in for...of and for await...of loop headers.
+      // [architectural-prevention] Avoid map() or filter() immediately before iteration so a loop does not require an extra traversal and temporary array.
       'unicorn/no-duplicate-loops': 'error',
-      // Reject duplicate values in Set constructor array literals.
+      // [correctness] Catch duplicate Set literal values that silently collapse and can hide a missing intended member.
       'unicorn/no-duplicate-set-values': 'error',
-      // Reject empty files.
+      // [enforcement-integrity] Reject empty source files so an unimplemented module is not mistaken for completed generated work.
       'unicorn/no-empty-file': 'error',
-      // Reject assigning to built-in error properties.
+      // [standardization] Initialize supported built-in error metadata through construction so reviewers inspect the error contract at its creation site.
       'unicorn/no-error-property-assignment': 'error',
-      // Reject exports in scripts.
+      // [correctness] Catch exports in script contexts before the runtime rejects module-only syntax.
       'unicorn/no-exports-in-scripts': 'error',
-      // Use for...of over the forEach method.
+      // [standardization] Use for...of instead of forEach() so generated iteration follows the selected statement-based control-flow convention.
       'unicorn/no-for-each': 'error',
-      // Do not use a for loop that can be replaced with a for-of loop.
+      // [standardization] Use for...of when indexes serve only to retrieve elements so reviewers see values rather than incidental counter mechanics.
       'unicorn/no-for-loop': 'error',
-      // Reject assigning properties on the global object.
+      // [architectural-prevention] Avoid assigning global object properties so module consumers do not share hidden writable state.
       'unicorn/no-global-object-property-assignment': 'error',
-      // Reject immediate mutation after assignment and initialization immediately after declaration.
+      // [standardization] Construct initial values directly instead of immediately mutating them so reviewers see the complete initial state at declaration.
       'unicorn/no-immediate-mutation': 'error',
-      // Reject impossible comparisons against .length or .size.
+      // [correctness] Catch impossible length or size comparisons before an intended branch becomes permanently unreachable.
       'unicorn/no-impossible-length-comparison': 'error',
-      // Reject class accessors that hide an inherited getter or setter.
+      // [correctness] Preserve both sides of inherited accessor contracts so overriding one side does not silently remove reading or writing behavior.
       'unicorn/no-incomplete-accessor-override': 'error',
-      // Reject incorrect querySelector() and querySelectorAll() usage.
+      // [correctness] Catch known invalid selector API usage before DOM lookup throws or returns unintended results.
       'unicorn/no-incorrect-query-selector': 'error',
-      // Reject incorrect template literal interpolation syntax.
+      // [correctness] Catch malformed interpolation markers before generated strings contain placeholder text instead of the intended value.
       'unicorn/no-incorrect-template-string-interpolation': 'error',
-      // Reject ineffective CSP directives in <meta> elements.
+      // [correctness] Catch CSP directives ignored in meta elements so declared security restrictions do not give a false impression of browser enforcement.
       'unicorn/no-ineffective-csp-directives': 'error',
-      // Reject instanceof with built-in objects.
+      // [correctness] Avoid realm-dependent instanceof checks on builtins so valid values from another realm are not misclassified.
       'unicorn/no-instanceof-builtins': 'error',
-      // Reject calling functions and constructors with an invalid number of arguments.
+      // [correctness] Catch known invalid builtin argument counts before calls throw or omit required behavior.
       'unicorn/no-invalid-argument-count': 'error',
-      // Reject invalid values for HTML boolean attributes.
+      // [correctness] Catch HTML boolean attribute values whose presence enables the attribute even when their text appears to mean false.
       'unicorn/no-invalid-boolean-attribute-value': 'error',
-      // Reject comparing a single character from a string to a multi-character string.
+      // [correctness] Catch single-character comparisons to longer strings because the intended branch can never match.
       'unicorn/no-invalid-character-comparison': 'error',
-      // Reject invalid DOM tokens.
+      // [correctness] Catch invalid DOM tokens before token-list operations throw instead of updating the element.
       'unicorn/no-invalid-dom-token': 'error',
-      // Reject invalid options in fetch() and new Request().
+      // [correctness] Catch invalid fetch and Request options before a request throws or ignores the intended transport behavior.
       'unicorn/no-invalid-fetch-options': 'error',
-      // Reject invalid accept values on file inputs.
+      // [correctness] Catch invalid file-input accept filters before browsers ignore the intended file selection constraint.
       'unicorn/no-invalid-file-input-accept': 'error',
-      // Reject invalid subresource integrity metadata.
+      // [correctness] Catch malformed subresource integrity metadata before resource loading fails or an intended integrity check is ineffective.
       'unicorn/no-invalid-integrity': 'error',
-      // Reject invalid or ignored Intl options.
+      // [correctness] Catch invalid or ignored Intl options before formatting throws or silently differs from the requested output.
       'unicorn/no-invalid-intl-options': 'error',
-      // Reject invalid property descriptors.
+      // [correctness] Catch incompatible property descriptors before object definition throws or installs a different property contract.
       'unicorn/no-invalid-property-descriptor': 'error',
-      // Prevent calling EventTarget#removeEventListener() with the result of an expression.
+      // [correctness] Remove listeners using the registered function identity so a newly evaluated expression does not leave the original listener attached.
       'unicorn/no-invalid-remove-event-listener': 'error',
-      // Reject invalid options in new Response(), Response.json(), and Response.redirect().
+      // [correctness] Catch invalid Response construction options before response creation throws or violates the HTTP response contract.
       'unicorn/no-invalid-response-options': 'error',
-      // Reject invalid arguments to CSSStyleDeclaration#setProperty().
+      // [correctness] Catch invalid setProperty() arguments before CSS updates are silently ignored.
       'unicorn/no-invalid-style-set-property': 'error',
-      // Reject statically known invalid Temporal arithmetic.
+      // [correctness] Catch statically invalid Temporal arithmetic before date or time operations throw at runtime.
       'unicorn/no-invalid-temporal-arithmetic': 'error',
-      // Reject invalid protocol strings in comparisons with URL#protocol.
+      // [correctness] Include the protocol colon when comparing URL.protocol so an intended scheme check can actually match.
       'unicorn/no-invalid-url-protocol-comparison': 'error',
-      // Reject invalid implementations of well-known symbol methods.
+      // [correctness] Honor well-known symbol method contracts so language operations do not receive invalid protocol results.
       'unicorn/no-invalid-well-known-symbol-methods': 'error',
-      // Reject identifiers starting with new or class.
+      // [standardization] Avoid keyword-like new and class prefixes in flagged identifiers so names do not resemble language syntax during review.
       'unicorn/no-keyword-prefix': 'error',
-      // Reject accessing event.currentTarget after the synchronous event dispatch has finished.
+      // [correctness] Read currentTarget during synchronous dispatch because the browser clears it after the handler returns.
       'unicorn/no-late-current-target-access': 'error',
-      // Reject event-control method calls after the synchronous event dispatch has finished.
+      // [correctness] Control event propagation and defaults during dispatch because late calls cannot change a completed dispatch.
       'unicorn/no-late-event-control': 'error',
-      // Reject empty lines at the beginning of a file.
+      // [standardization] Start files without empty lines so generated source has a consistent opening layout.
       'unicorn/no-leading-empty-lines': 'error',
-      // Combine nested if-only branches; core no-lonely-if separately normalizes else-if branches.
+      // [architectural-prevention] Combine nested if-only branches to reduce control-flow nesting; core no-lonely-if separately normalizes else-if branches.
       'unicorn/no-lonely-if': 'error',
-      // Reject mutating a loop iterable during iteration.
+      // [correctness] Do not mutate a loop's iterable during traversal because changing membership can skip, repeat, or indefinitely add work.
       'unicorn/no-loop-iterable-mutation': 'error',
-      // Reject a magic number as the depth argument in Array#flat(...)..
+      // [standardization] Name nontrivial flat() depths so reviewers can connect the flattening level to the intended data structure.
       'unicorn/no-magic-array-flat-depth': 'error',
-      // Reject manually wrapped comments.
+      // [standardization] Leave prose comments unwrapped manually so editing text does not require maintaining arbitrary line breaks.
       'unicorn/no-manually-wrapped-comments': 'error',
-      // Reject checking a Map key before accessing a different key.
+      // [correctness] Match Map lookup keys to their guards so checking one entry does not falsely justify reading a different entry.
       'unicorn/no-mismatched-map-key': 'error',
-      // Reject misrefactored compound assignments where the target is duplicated in the right-hand side.
+      // [correctness] Catch duplicated targets after compound-assignment refactors before updates apply the original value twice.
       'unicorn/no-misrefactored-assignment': 'error',
-      // Reject references to missing local resources.
+      // [correctness] Catch references to missing local resources before consumers encounter broken asset or file loads.
       'unicorn/no-missing-local-resource': 'error',
-      // Reject calling Promise executor resolver functions more than once on the same execution path.
+      // [correctness] Catch repeated resolver calls on one path because only the first settlement takes effect and later results are silently ignored.
       'unicorn/no-multiple-promise-resolver-calls': 'error',
-      // Reject named usage of default import and export.
+      // [standardization] Use ordinary default import and export syntax so the default slot is not disguised as a named public binding.
       'unicorn/no-named-default': 'error',
-      // Reject negated array predicate calls.
+      // [standardization] Use direct complementary array predicates so reviewers do not have to invert a negated predicate call mentally.
       'unicorn/no-negated-array-predicate': 'error',
-      // Reject negated comparisons.
+      // [standardization] Use direct comparison operators so reviewers read the tested relation without an outer negation.
       'unicorn/no-negated-comparison': 'error',
-      // Reject negated conditions.
+      // [standardization] Prefer positive branch conditions in the rule's matched patterns so reviewers need not invert the condition to understand the first branch.
       'unicorn/no-negated-condition': 'error',
-      // Reject negated expression in equality check.
+      // [standardization] Compare boolean relationships directly so an operand's negation does not obscure the intended equality test.
       'unicorn/no-negation-in-equality-check': 'error',
-      // Reject nested ternary expressions.
+      // [architectural-prevention] Avoid nested ternaries so reviewers can follow each decision without decoding stacked value branches.
       'unicorn/no-nested-ternary': 'error',
-      // Reject single-argument new Array() and its hole-producing ambiguity; core covers other constructor forms.
+      // [correctness] Reject single-argument Array construction because numeric input creates holes instead of one element; core covers other constructor forms.
       'unicorn/no-new-array': 'error',
-      // Require the use of Buffer.from() and Buffer.alloc() instead of the deprecated new Buffer().
+      // [correctness] Use Buffer.from() or Buffer.alloc() so construction distinguishes data conversion from allocation and does not expose uninitialized memory.
       'unicorn/no-new-buffer': 'error',
-      // Reject non-standard properties on built-in objects.
+      // [correctness] Avoid nonstandard builtin properties so generated code does not rely on runtime extensions absent from consumer environments.
       'unicorn/no-nonstandard-builtin-properties': 'error',
-      // Use undefined for internal absence rather than null; permit strict comparisons with external null values.
+      // [standardization] Use undefined for internal absence so optional values follow one convention; permit strict external null comparisons for interoperating with external data.
       'unicorn/no-null': 'error',
-      // Reject the use of objects as default parameters.
+      // [correctness] Default individual properties instead of using a nonempty object parameter default because passing a partial object bypasses whole-object defaults.
       'unicorn/no-object-as-default-parameter': 'error',
-      // Reject Object methods with Map or Set.
+      // [correctness] Use collection APIs because Object methods inspect properties rather than Map or Set entries.
       'unicorn/no-object-methods-with-collections': 'error',
-      // Reject optional chaining on undeclared variables.
+      // [correctness] Declare optional-chain roots because optional chaining does not prevent ReferenceError for an undeclared variable.
       'unicorn/no-optional-chaining-on-undeclared-variable': 'error',
-      // Reject ineffective preventDefault() calls in passive event listeners.
+      // [correctness] Do not call preventDefault() in passive listeners because the browser ignores cancellation there.
       'unicorn/no-prevent-default-in-passive-listener': 'error',
-      // Reject process.exit().
+      // [correctness] Avoid process.exit() so abrupt termination cannot truncate pending output or bypass asynchronous cleanup.
       'unicorn/no-process-exit': 'error',
-      // Reject comparisons made redundant by an equality check in the same logical AND.
+      // [standardization] Remove comparisons already implied by an equality guard so reviewers inspect only conditions that affect the outcome.
       'unicorn/no-redundant-comparison': 'error',
-      // Reject repeating the same wrapper at every call to a function.
+      // [architectural-prevention] Move repeated call wrappers to the function boundary so callers do not duplicate a shared adaptation obligation.
       'unicorn/no-repeated-call-wrappers': 'error',
-      // Reject using the return value of Array#push() and Array#unshift().
+      // [correctness] Do not return push() or unshift() as the updated array because these methods return its numeric length.
       'unicorn/no-return-array-push': 'error',
-      // Reject selector syntax in DOM names.
+      // [correctness] Keep selector syntax out of DOM name APIs because an element name and a CSS selector have different matching contracts.
       'unicorn/no-selector-as-dom-name': 'error',
-      // Reject shorthand properties that override related longhand properties.
+      // [correctness] Catch shorthand properties that overwrite related longhand values before the earlier configuration is silently lost.
       'unicorn/no-shorthand-property-overrides': 'error',
-      // Reject passing single-element arrays to Promise methods.
+      // [standardization] Avoid single-element Promise combinators so reviewers do not infer multi-operation coordination where only one promise exists.
       'unicorn/no-single-promise-in-promise-methods': 'error',
-      // Reject classes that only have static members.
+      // [architectural-prevention] Use module-level functions for static-only behavior so a class does not add a needless ownership and inheritance boundary.
       'unicorn/no-static-only-class': 'error',
-      // Use comparing values directly over subtracting and comparing to 0.
+      // [standardization] Compare operands directly rather than subtracting against zero so reviewers read the relation without reconstructing arithmetic.
       'unicorn/no-subtraction-comparison': 'error',
-      // Reject then property.
+      // [correctness] Avoid incidental then properties because promise resolution can treat such objects as thenables and invoke them unexpectedly.
       'unicorn/no-thenable': 'error',
-      // Reject assigning this to a variable.
+      // [standardization] Use lexical receiver access rather than aliasing this so reviewers do not track multiple names for the same receiver.
       'unicorn/no-this-assignment': 'error',
-      // Reject this outside of classes.
+      // [architectural-prevention] Keep this within classes so function behavior does not depend on an implicit external calling receiver.
       'unicorn/no-this-outside-of-class': 'error',
-      // Reject assigning to top-level variables from inside functions.
+      // [architectural-prevention] Avoid writing module-level variables inside functions so calls do not hide changes to shared module state.
       'unicorn/no-top-level-assignment-in-function': 'error',
-      // Reject top-level side effects in exported modules.
+      // [architectural-prevention] Avoid top-level effects in exported modules so importing a public API does not silently trigger unrelated work or state changes.
       'unicorn/no-top-level-side-effects': 'error',
-      // Reject all as a transition property.
+      // [architectural-prevention] Name transitioned CSS properties so future style changes do not silently add expensive or unintended animations.
       'unicorn/no-transition-all': 'error',
-      // Reject comparing undefined using typeof.
+      // [standardization] Compare declared values with undefined directly so absence checks do not disguise themselves as type-name checks.
       'unicorn/no-typeof-undefined': 'error',
-      // Reject referencing methods without calling them.
+      // [correctness] Catch method references where an invocation is expected before an uncalled function substitutes for its intended result.
       'unicorn/no-uncalled-method': 'error',
-      // Require class members to be declared.
+      // [standardization] Declare class members explicitly so reviewers can inventory instance state without tracing assignments throughout methods.
       'unicorn/no-undeclared-class-members': 'error',
-      // Reject using 1 as the depth argument of Array#flat().
+      // [standardization] Omit flat()'s default depth of one so ordinary shallow flattening has one selected spelling.
       'unicorn/no-unnecessary-array-flat-depth': 'error',
-      // Reject unnecessary use of Array#flatMap().
+      // [standardization] Use map() when no flattening is needed so reviewers do not infer a nested-array contract that the callback never produces.
       'unicorn/no-unnecessary-array-flat-map': 'error',
-      // Reject using .length or Infinity as the deleteCount or skipCount argument of Array#{splice,toSpliced}().
+      // [standardization] Omit redundant splice counts where supported so full-tail deletion has one recognizable expression.
       'unicorn/no-unnecessary-array-splice-count': 'error',
-      // Reject awaiting non-promise values.
+      // [correctness] Catch awaits on known non-promises that can hide a missing asynchronous call or add unintended scheduling.
       'unicorn/no-unnecessary-await': 'error',
-      // Reject unnecessary comparisons against boolean literals.
+      // [standardization] Use boolean conditions directly where equivalent so reviewers need not decode redundant true or false comparisons.
       'unicorn/no-unnecessary-boolean-comparison': 'error',
-      // Reject arguments that match their parameter defaults.
+      // [standardization] Omit arguments equal to defaults so explicit call arguments identify actual deviations from the API's default contract.
       'unicorn/no-unnecessary-default-arguments': 'error',
-      // Reject unnecessary options in fetch() and new Request().
+      // [standardization] Omit fetch options that repeat defaults so reviewers can distinguish intentional transport choices from redundant configuration.
       'unicorn/no-unnecessary-fetch-options': 'error',
-      // Reject unnecessary globalThis references.
+      // [standardization] Omit unnecessary globalThis qualification so explicit global access identifies cases that actually require it.
       'unicorn/no-unnecessary-global-this': 'error',
-      // Reject unnecessary nested ternary expressions.
+      // [standardization] Collapse equivalent nested ternary branches so reviewers do not infer an extra decision that never changes the value.
       'unicorn/no-unnecessary-nested-ternary': 'error',
-      // Reject parameters that receive the same value at every call.
+      // [architectural-prevention] Remove parameters with the same value at every known call so functions do not imply variation or coupling their callers never need.
       'unicorn/no-unnecessary-parameters': 'error',
-      // Require the use of built-in methods instead of unnecessary polyfills.
+      // [standardization] Use supported builtins rather than redundant polyfills so generated code follows the selected runtime API contract.
       'unicorn/no-unnecessary-polyfills': 'error',
-      // Reject using .length or Infinity as the end argument of {Array,String,TypedArray}#slice().
+      // [standardization] Omit redundant slice end arguments so copying through the end has one selected expression.
       'unicorn/no-unnecessary-slice-end': 'error',
-      // Reject Array#splice() when simpler alternatives exist.
+      // [standardization] Use simpler matched array operations instead of splice() so reviewers can identify the required mutation without interpreting general-purpose arguments.
       'unicorn/no-unnecessary-splice': 'error',
-      // Reject String#trim() before String#startsWith() or String#endsWith().
+      // [standardization] Omit trimming made irrelevant by the matched prefix or suffix test so reviewers inspect only operations that affect the result.
       'unicorn/no-unnecessary-string-trim': 'error',
-      // Reject unreadable array destructuring.
+      // [standardization] Avoid long skipped-position array destructuring so reviewers can identify indexes without counting commas.
       'unicorn/no-unreadable-array-destructuring': 'error',
-      // Reject unreadable iterable expressions in for...of and for await...of loop headers.
+      // [architectural-prevention] Keep loop-source expressions bounded so reviewers can distinguish iterable construction from per-item processing.
       'unicorn/no-unreadable-for-of-expression': 'error',
-      // Reject unreadable IIFEs.
+      // [standardization] Use readable IIFE forms so reviewers can distinguish immediate invocation from a function value.
       'unicorn/no-unreadable-iife': 'error',
-      // Reject unreadable new expressions.
+      // [standardization] Separate confusing constructor expressions so reviewers can identify the constructor and the instance operation.
       'unicorn/no-unreadable-new-expression': 'error',
-      // Reject unreadable object destructuring.
+      // [standardization] Avoid confusing object destructuring forms so reviewers can identify source keys, bindings, and defaults without reconstructing the pattern.
       'unicorn/no-unreadable-object-destructuring': 'error',
-      // Prevent unsafe use of ArrayBuffer view .buffer.
+      // [correctness] Preserve ArrayBuffer view offsets and lengths so buffer conversion does not expose bytes outside the intended view.
       'unicorn/no-unsafe-buffer-conversion': 'error',
-      // Reject unsafe DOM HTML APIs.
+      // [correctness] Avoid unsafe DOM HTML insertion APIs so untrusted content cannot become executable markup through direct insertion.
       'unicorn/no-unsafe-dom-html': 'error',
-      // Reject known values that JSON serialization cannot represent faithfully.
+      // [correctness] Catch known lossy or invalid JSON values before serialization drops information or throws.
       'unicorn/no-unsafe-json-serialization': 'error',
-      // Reject reading .value from Promise.allSettled() results without a fulfilled status guard.
+      // [correctness] Guard allSettled() results by fulfilled status because rejected results have no fulfillment value.
       'unicorn/no-unsafe-promise-all-settled-values': 'error',
-      // Reject unsafe values as property keys.
+      // [correctness] Catch unsafe property-key values before coercion selects an unintended key or triggers unsafe object access.
       'unicorn/no-unsafe-property-key': 'error',
-      // Reject interpolation into SQL strings passed to Node’s node:sqlite APIs.
+      // [correctness] Avoid interpolating data into node:sqlite SQL strings so input cannot become SQL syntax instead of a bound value.
       'unicorn/no-unsafe-sqlite-interpolation': 'error',
-      // Reject non-literal replacement values in String#replace() and String#replaceAll().
+      // [correctness] Use replacement callbacks for dynamic text so dollar sequences in data are not interpreted as replacement directives.
       'unicorn/no-unsafe-string-replacement': 'error',
-      // Reject ignoring the return value of selected built-in methods.
+      // [correctness] Consume results from non-mutating builtin operations so discarding a result does not silently discard the intended update.
       'unicorn/no-unused-builtin-method-return': 'error',
-      // Reject discarding lazy iterator helpers.
+      // [correctness] Consume lazy iterator helpers because constructing and discarding them never performs the intended iteration.
       'unicorn/no-unused-iterator-helper': 'error',
-      // Reject unused object properties.
+      // [architectural-prevention] Remove known unused properties so object contracts do not retain state or dependencies no consumer reads.
       'unicorn/no-unused-properties': 'error',
-      // Reject passing full URLs to URLSearchParams.
+      // [correctness] Pass query text rather than full URLs to URLSearchParams because the constructor does not extract a URL's query component.
       'unicorn/no-url-in-search-params': 'error',
-      // Remove Boolean() in array predicate callbacks; core separately covers boolean control contexts.
+      // [standardization] Omit redundant Boolean() in array predicates so reviewers see the predicate itself; core separately covers boolean control contexts.
       'unicorn/no-useless-boolean-cast': 'error',
-      // Reject useless type coercions of values that are already of the target type.
+      // [standardization] Remove coercions of values already in the target type so reviewers do not infer an actual representation change.
       'unicorn/no-useless-coercion': 'error',
-      // Reject useless values or fallbacks in Set, Map, WeakSet, or WeakMap.
+      // [standardization] Omit ineffective collection arguments and fallbacks so constructor inputs express actual initial contents.
       'unicorn/no-useless-collection-argument': 'error',
-      // Reject useless compound assignments such as x += 0.
+      // [correctness] Catch no-op compound assignments that can hide a mistaken operand or leave an intended update unperformed.
       'unicorn/no-useless-compound-assignment': 'error',
-      // Combine literal string and template fragments; this also covers core no-useless-concat patterns.
+      // [standardization] Combine adjacent literal fragments so reviewers read the resulting text directly rather than reconstructing concatenation.
       'unicorn/no-useless-concat': 'error',
-      // Reject useless continue statements.
+      // [standardization] Remove redundant continue statements so explicit loop exits identify control flow that changes execution.
       'unicorn/no-useless-continue': 'error',
-      // Reject unnecessary existence checks before deletion.
+      // [standardization] Delete optional properties directly in matched cases so reviewers do not infer that a redundant existence guard changes behavior.
       'unicorn/no-useless-delete-check': 'error',
-      // Remove else after return, throw, break, or continue; this also covers core no-else-return patterns.
+      // [architectural-prevention] Remove else after unconditional exits so remaining code has less nesting; this also covers core no-else-return patterns.
       'unicorn/no-useless-else': 'error',
-      // Reject unnecessary Error.captureStackTrace(...).
+      // [standardization] Omit redundant captureStackTrace() calls so manual stack handling identifies cases that actually need customization.
       'unicorn/no-useless-error-capture-stack-trace': 'error',
-      // Reject useless fallback when spreading in object literals.
+      // [standardization] Omit object-spread fallbacks that cannot affect the result so reviewers do not infer a required absence-handling branch.
       'unicorn/no-useless-fallback-in-spread': 'error',
-      // Reject unnecessary .toArray() on iterators.
+      // [architectural-prevention] Remove redundant iterator toArray() conversions so immediate consumers do not force avoidable materialization.
       'unicorn/no-useless-iterator-to-array': 'error',
-      // Reject useless array length check.
+      // [standardization] Omit length guards made redundant by the matched array operation so reviewers inspect only conditions that change behavior.
       'unicorn/no-useless-length-check': 'error',
-      // Reject unnecessary operands in logical expressions involving boolean literals.
+      // [standardization] Remove ineffective boolean operands so reviewers can read the effective logical condition directly.
       'unicorn/no-useless-logical-operand': 'error',
-      // Reject useless overrides of class methods.
+      // [architectural-prevention] Remove overrides that only delegate unchanged behavior so inheritance contracts do not acquire needless maintenance points.
       'unicorn/no-useless-override': 'error',
-      // Reject returning/yielding Promise.resolve/reject() in async functions or promise callbacks.
+      // [standardization] Return or throw directly in supported async contexts so redundant promise settlement wrappers do not obscure the outcome.
       'unicorn/no-useless-promise-resolve-reject': 'error',
-      // Reject simple recursive function calls that can be replaced with a loop.
+      // [architectural-prevention] Use loops for recognized simple recursion so repeated work does not consume an unbounded call stack.
       'unicorn/no-useless-recursion': 'error',
-      // Reject unnecessary Set construction around Set methods.
+      // [architectural-prevention] Avoid reconstructing Set results already returned as Sets so generated code does not allocate redundant collections.
       'unicorn/no-useless-set-construction': 'error',
-      // Reject unnecessary spread.
+      // [standardization] Omit spreads that add no behavior so reviewers can distinguish necessary iterable expansion from redundant syntax.
       'unicorn/no-useless-spread': 'error',
-      // Reject useless case in switch statements.
+      // [standardization] Remove switch cases equivalent to the default path so reviewers inspect only branches with distinct behavior.
       'unicorn/no-useless-switch-case': 'error',
-      // Reject useless template literal expressions.
+      // [standardization] Remove redundant template expressions so reviewers can read literal text without tracing needless interpolation.
       'unicorn/no-useless-template-literals': 'error',
-      // Reject useless undefined.
+      // [standardization] Omit ineffective explicit undefined values so visible absence handling identifies cases that change the contract.
       'unicorn/no-useless-undefined': 'error',
-      // Reject returning or exporting resources declared with using, including through capturing functions.
+      // [correctness] Keep using resources within their disposal scope so callers cannot receive or capture an already disposed resource.
       'unicorn/no-using-resource-escape': 'error',
-      // Reject the bitwise XOR operator where exponentiation was likely intended.
+      // [correctness] Catch XOR written as exponentiation before numeric calculations silently produce bitwise results.
       'unicorn/no-xor-as-exponentiation': 'error',
-      // Require consistent decimal numbers without redundant zeros.
+      // [standardization] Remove redundant decimal zeros so equivalent numbers use one searchable spelling.
       'unicorn/no-zero-fractions': 'error',
-      // Use consistent numeric prefixes and uppercase hexadecimal value digits.
+      // [standardization] Use consistent numeric prefixes and uppercase hexadecimal digits so literal spelling does not vary across generated files.
       'unicorn/number-literal-case': 'error',
-      // Group long decimal digits by three, binary and octal digits by four, and hexadecimal digits by two.
+      // [standardization] Group decimal digits by three, binary and octal digits by four, and hexadecimal digits by two so reviewers can compare long literals consistently.
       'unicorn/numeric-separators-style': 'error',
-      // Use compound assignments, including template-based string updates; this extends the core assignment check.
+      // [standardization] Use compound assignments, including template string updates, so self-updates have one recognizable form.
       'unicorn/operator-assignment': 'error',
-      // Use AbortSignal.any() over manually forwarding abort events between signals.
+      // [architectural-prevention] Use AbortSignal.any() to avoid hand-maintained forwarding listeners and their cleanup obligations.
       'unicorn/prefer-abort-signal-any': 'error',
-      // Use AbortSignal.timeout() over manually aborting an AbortController with setTimeout().
+      // [architectural-prevention] Use AbortSignal.timeout() instead of maintaining a controller and timer lifecycle for deadline cancellation.
       'unicorn/prefer-abort-signal-timeout': 'error',
-      // Use .addEventListener() and .removeEventListener() over on-functions.
+      // [architectural-prevention] Use event listener registration rather than on-properties so one consumer does not overwrite another consumer's handler.
       'unicorn/prefer-add-event-listener': 'error',
-      // Use an options object over a boolean in .addEventListener().
+      // [standardization] Name event listener options in an object so reviewers need not decode a positional capture boolean.
       'unicorn/prefer-add-event-listener-options': 'error',
-      // Use AggregateError when throwing collected errors.
+      // [standardization] Use AggregateError for collected failures so consumers inspect them through the standard errors property.
       'unicorn/prefer-aggregate-error': 'error',
-      // Use .find(...) and .findLast(...) over the first or last element from .filter(...).
+      // [architectural-prevention] Use find() or findLast() when only one match is needed to avoid allocating all matches and scanning beyond it.
       'unicorn/prefer-array-find': 'error',
-      // Use Array#flat() over legacy techniques to flatten arrays.
+      // [standardization] Use flat() for flattening so reviewers do not reconstruct the intent of concatenation or reducer code.
       'unicorn/prefer-array-flat': 'error',
-      // Use .flatMap(...) over .map(...).flat() and .filter(...).flatMap(...).
+      // [architectural-prevention] Use flatMap() for combined mapping and flattening to avoid an intermediate mapped array.
       'unicorn/prefer-array-flat-map': 'error',
-      // Use Array.fromAsync() over array accumulation loops.
+      // [standardization] Use Array.fromAsync() for asynchronous collection so generated code follows one supported collection API.
       'unicorn/prefer-array-from-async': 'error',
-      // Use using the Array.from() mapping function argument.
+      // [architectural-prevention] Map through Array.from() during construction instead of allocating an intermediate array for a subsequent map().
       'unicorn/prefer-array-from-map': 'error',
-      // Use Array.from({length}, ...) when creating range arrays.
+      // [standardization] Express range construction with Array.from({length}, ...) so reviewers can identify the range size and mapping together.
       'unicorn/prefer-array-from-range': 'error',
-      // Use Array#{indexOf,lastIndexOf}() over Array#{findIndex,findLastIndex}() when looking for the index of an item.
+      // [standardization] Use indexOf() or lastIndexOf() for direct item lookup so equality-only searches have one recognizable form.
       'unicorn/prefer-array-index-of': 'error',
-      // Use iterating an array directly or with Array#keys() over Array#entries() when the index or value is unused.
+      // [standardization] Iterate values directly or use keys() when only indexes matter so loop bindings state which part is consumed.
       'unicorn/prefer-array-iterable-methods': 'error',
-      // Use last-oriented array methods over Array#reverse() or Array#toReversed() followed by a method.
+      // [architectural-prevention] Use last-oriented lookup methods instead of reversing an array solely to search from its end.
       'unicorn/prefer-array-last-methods': 'error',
-      // Use Array#slice() over Array#splice() when reading from the returned array.
+      // [correctness] Use slice() for reading a range so extraction does not unexpectedly mutate the source array.
       'unicorn/prefer-array-slice': 'error',
-      // Use .some(...) over .filter(...).length check and .{find,findLast,findIndex,findLastIndex}(...).
+      // [standardization] Use some() for existence predicates so consumers see a boolean question rather than an incidental match or count.
       'unicorn/prefer-array-some': 'error',
-      // Use .at() method for index access and String#charAt().
+      // [standardization] Use at() for the supported indexed-access patterns so reviewers see one API for positive and negative positions.
       'unicorn/prefer-at': 'error',
-      // Use await over promise chaining.
+      // [standardization] Use await for asynchronous sequencing so reviewers follow one control-flow style rather than mixed promise chains.
       'unicorn/prefer-await': 'error',
-      // Use BigInt literals over the constructor.
+      // [standardization] Spell constant BigInt values as literals so their value and numeric kind are visible without a conversion call.
       'unicorn/prefer-bigint-literals': 'error',
-      // Use Blob#arrayBuffer() over FileReader#readAsArrayBuffer(...) and Blob#text() over FileReader#readAsText(...).
+      // [standardization] Read Blob data through text() or arrayBuffer() so asynchronous reads use promises rather than FileReader event state.
       'unicorn/prefer-blob-reading-methods': 'error',
-      // Use block statements over IIFEs used only for scoping.
+      // [standardization] Use blocks for lexical scoping so reviewers do not mistake an artificial function call for required execution behavior.
       'unicorn/prefer-block-statement-over-iife': 'error',
-      // Use directly returning boolean expressions over if statements.
+      // [standardization] Return boolean expressions directly so reviewers need not compare redundant true and false branches.
       'unicorn/prefer-boolean-return': 'error',
-      // Use class field declarations over this assignments in constructors.
+      // [standardization] Declare class fields explicitly so reviewers find instance state with its declarations rather than scattered constructor assignments.
       'unicorn/prefer-class-fields': 'error',
-      // Use using Element#classList.toggle() to toggle class names.
+      // [standardization] Use classList.toggle() so conditional class membership has one recognizable DOM operation.
       'unicorn/prefer-classlist-toggle': 'error',
-      // Use String#codePointAt(...) over String#charCodeAt(...) and String.fromCodePoint(...) over String.fromCharCode(...).
+      // [correctness] Use code-point APIs so characters outside the basic multilingual plane are not treated as independent surrogate halves.
       'unicorn/prefer-code-point': 'error',
-      // Use combining consecutive guards with identical exit statements.
+      // [standardization] Combine consecutive guards with identical exits so reviewers inspect one exit condition rather than repeated exit branches.
       'unicorn/prefer-combined-guards': 'error',
-      // Use early continues over conditionals wrapping the remainder of the loop body.
+      // [architectural-prevention] Use early continue statements to reduce nesting around the remaining loop body.
       'unicorn/prefer-continue': 'error',
-      // Use Date.now() to get the number of milliseconds since the Unix Epoch.
+      // [standardization] Use Date.now() for epoch milliseconds so timestamp reads do not masquerade as Date object construction.
       'unicorn/prefer-date-now': 'error',
-      // Use default parameters and destructuring defaults over reassignment and fallback expressions.
+      // [standardization] Put parameter defaults in the signature so reviewers see omitted-argument behavior at the function boundary.
       'unicorn/prefer-default-parameters': 'error',
-      // Use direct iteration over default iterator method calls.
+      // [standardization] Iterate supported values directly so explicit default iterator calls do not add another spelling of the same loop.
       'unicorn/prefer-direct-iteration': 'error',
-      // Use using using/await using over manual try/finally resource disposal.
+      // [architectural-prevention] Use using or await using to make resource ownership and disposal scope explicit instead of hand-maintained cleanup paths.
       'unicorn/prefer-dispose': 'error',
-      // Use Element#append() over Node#appendChild().
+      // [standardization] Use append() for DOM insertion so generated code follows the selected multi-node-capable API.
       'unicorn/prefer-dom-node-append': 'error',
-      // Use .getHTML() and .setHTML() over .innerHTML.
+      // [standardization] Use getHTML() and setHTML() for supported HTML operations so generated code follows the selected DOM API rather than property assignment.
       'unicorn/prefer-dom-node-html-methods': 'error',
-      // Use childNode.remove() over parentNode.removeChild(childNode).
+      // [standardization] Use remove() on the target node so removal does not require repeating its parent relationship.
       'unicorn/prefer-dom-node-remove': 'error',
-      // Use .replaceChildren() when replacing DOM children.
+      // [standardization] Use replaceChildren() so reviewers see child replacement as one named DOM operation.
       'unicorn/prefer-dom-node-replace-children': 'error',
-      // Use .textContent over .innerText.
+      // [architectural-prevention] Use textContent instead of layout-aware innerText so plain text access does not require rendered-layout computation.
       'unicorn/prefer-dom-node-text-content': 'error',
-      // Use early returns over conditionals wrapping the remainder of the function body.
+      // [architectural-prevention] Use early returns to reduce nesting around the remaining function body.
       'unicorn/prefer-early-return': 'error',
-      // Use else if over adjacent if statements with related conditions.
+      // [standardization] Use else if for recognized mutually exclusive conditions so reviewers see the branch relationship directly.
       'unicorn/prefer-else-if': 'error',
-      // Use Error.isError() when checking for errors.
+      // [correctness] Use Error.isError() so error recognition does not depend on the value sharing the caller's realm or constructor identity.
       'unicorn/prefer-error-is-error': 'error',
-      // Use escape sequences for irregular whitespace characters.
+      // [standardization] Escape irregular whitespace so reviewers can distinguish intended characters from invisible source formatting.
       'unicorn/prefer-escaped-irregular-whitespace': 'error',
-      // Use EventTarget over EventEmitter.
+      // [standardization] Use EventTarget as the selected event API so generated event abstractions follow the same registration contract.
       'unicorn/prefer-event-target': 'error',
-      // Use export...from when re-exporting.
+      // [standardization] Use export-from declarations for reexports so reviewers can distinguish forwarded APIs from locally used imports.
       'unicorn/prefer-export-from': 'error',
-      // Use flat Math.min() and Math.max() calls over nested calls.
+      // [standardization] Flatten nested min() and max() calls so reviewers inspect the compared values in one argument list.
       'unicorn/prefer-flat-math-min-max': 'error',
-      // Use .getOrInsertComputed() when the default value has side effects.
+      // [correctness] Compute map defaults only when insertion is needed so an existing key does not trigger the fallback's side effects.
       'unicorn/prefer-get-or-insert-computed': 'error',
-      // Use global numeric constants over Number static properties.
+      // [standardization] Use global numeric constants so these values have one spelling distinct from Number conversion and checking methods.
       'unicorn/prefer-global-number-constants': 'error',
-      // Use globalThis over window, self, and global.
+      // [standardization] Use globalThis so global access uses the same name across browser, worker, and Node environments.
       'unicorn/prefer-global-this': 'error',
-      // Use Object.groupBy() or Map.groupBy() over manual grouping.
+      // [standardization] Use Object.groupBy() or Map.groupBy() so reviewers recognize grouping without tracing a custom accumulator.
       'unicorn/prefer-group-by': 'error',
-      // Use .has() when checking existence.
+      // [standardization] Use has() for supported membership checks so existence tests do not depend on interpreting retrieved values.
       'unicorn/prefer-has-check': 'error',
-      // Use moving code shared by all branches of an if statement out of the branches.
+      // [architectural-prevention] Move code shared by every branch outside the branches so future edits do not leave duplicated behavior inconsistent.
       'unicorn/prefer-hoisting-branch-code': 'error',
-      // Use HTTPS over HTTP.
+      // [correctness] Prefer HTTPS URLs so requests do not expose payloads to plaintext transport when a secure endpoint is available.
       'unicorn/prefer-https': 'error',
-      // Use identifiers over string literals in import and export specifiers.
+      // [standardization] Use identifier import and export specifiers where possible so public names use ordinary searchable binding syntax.
       'unicorn/prefer-identifier-import-export-specifiers': 'error',
-      // Use import.meta.{dirname,filename} over legacy techniques for getting file paths.
+      // [standardization] Use import.meta.dirname and import.meta.filename so ESM file paths do not require repeated URL conversion boilerplate.
       'unicorn/prefer-import-meta-properties': 'error',
-      // Use .includes() over .indexOf(), .lastIndexOf(), and Array#some() when checking for existence or non-existence.
+      // [standardization] Use includes() for direct membership questions so reviewers do not decode index sentinels or equality callbacks.
       'unicorn/prefer-includes': 'error',
-      // Use .includes() over repeated equality comparisons.
+      // [standardization] Use includes() for repeated equality alternatives so reviewers see one candidate list and one tested value.
       'unicorn/prefer-includes-over-repeated-comparisons': 'error',
-      // Use passing iterables directly to constructors instead of filling empty collections.
+      // [standardization] Pass iterables to collection constructors so initial contents are explicit rather than assembled through repeated insertion.
       'unicorn/prefer-iterable-in-constructor': 'error',
-      // Use iterator helpers over temporary arrays from iterators.
+      // [architectural-prevention] Use iterator helpers instead of materializing temporary arrays solely to transform an iterator.
       'unicorn/prefer-iterator-helpers': 'error',
-      // Use Iterator#toArray() over temporary arrays from iterator spreads.
+      // [standardization] Use iterator toArray() for materialization so reviewers can identify the explicit conversion point.
       'unicorn/prefer-iterator-to-array': 'error',
-      // Use moving .toArray() to the end of iterator helper chains.
+      // [architectural-prevention] Materialize iterator chains at the end so intermediate transformations do not allocate avoidable arrays.
       'unicorn/prefer-iterator-to-array-at-end': 'error',
-      // Use JSON imports over reading and parsing JSON files.
+      // [standardization] Use JSON imports for supported static data dependencies so reviewers find them in the module dependency list.
       'unicorn/prefer-json-import': 'error',
-      // Use KeyboardEvent#key over deprecated keyboard event properties.
+      // [standardization] Use KeyboardEvent.key so generated handlers follow the supported keyboard API instead of deprecated numeric codes.
       'unicorn/prefer-keyboard-event-key': 'error',
-      // Use literal printable ASCII characters over escape sequences.
+      // [standardization] Write printable ASCII literally so reviewers read source text without decoding unnecessary escapes.
       'unicorn/prefer-literal-ascii': 'error',
-      // Use location.assign() over assigning to location.href.
+      // [standardization] Use location.assign() so navigation appears as an explicit operation rather than a property write.
       'unicorn/prefer-location-assign': 'error',
-      // Use using a logical operator over a ternary.
+      // [standardization] Use logical operators for recognized fallback ternaries so fallback expressions follow one selected syntax.
       'unicorn/prefer-logical-operator-over-ternary': 'error',
-      // Use new Map() over Object.fromEntries() when using the result as a map.
+      // [standardization] Use Map for recognized map-like entry collections so key storage follows an explicit collection contract.
       'unicorn/prefer-map-from-entries': 'error',
-      // Use Math.abs() over manual absolute value expressions and symmetric range checks.
+      // [standardization] Use Math.abs() for absolute values and symmetric bounds so reviewers need not reconstruct the numeric operation.
       'unicorn/prefer-math-abs': 'error',
-      // Use Math constants over their approximate numeric values.
+      // [correctness] Use named Math constants instead of hand-written approximations that can introduce avoidable numeric error.
       'unicorn/prefer-math-constants': 'error',
-      // Use Math.min() and Math.max() over ternaries for simple comparisons.
+      // [standardization] Use Math.min() and Math.max() for simple extrema so reviewers see the numeric operation rather than repeated branches.
       'unicorn/prefer-math-min-max': 'error',
-      // Use Math.trunc() for truncating numbers.
+      // [standardization] Use Math.trunc() for truncation so generated numeric code states its operation rather than relying on coercion tricks.
       'unicorn/prefer-math-trunc': 'error',
-      // Use moving ternaries into the minimal varying part of an expression.
+      // [standardization] Put a ternary around only the varying expression so reviewers can distinguish shared operations from branch differences.
       'unicorn/prefer-minimal-ternary': 'error',
-      // Use modern DOM APIs.
+      // [standardization] Use replaceWith(), before(), prepend(), append(), after(), and replaceChildren() in matched DOM updates so reviewers identify insertion and replacement without legacy parent or position-string arguments.
       'unicorn/prefer-modern-dom-apis': 'error',
-      // Use modern Math APIs over legacy patterns.
+      // [standardization] Use dedicated Math APIs for recognized operations so reviewers do not have to derive their meaning from legacy formulas.
       'unicorn/prefer-modern-math-apis': 'error',
-      // Require ESM and reject CommonJS globals, require(), exports assignments, and redundant strict directives.
+      // [standardization] Use ESM rather than CommonJS globals, require(), export assignments, or redundant strict directives so modules follow one loading model.
       'unicorn/prefer-module': 'error',
-      // Pass String, Number, BigInt, Boolean, and Symbol directly instead of wrapping them in callbacks.
+      // [standardization] Pass native coercion functions directly for supported callbacks so wrappers do not obscure a plain conversion.
       'unicorn/prefer-native-coercion-functions': 'error',
-      // Use negative index over .length - index when possible.
+      // [standardization] Use negative indexes where supported so end-relative access does not repeat length arithmetic.
       'unicorn/prefer-negative-index': 'error',
-      // Use using the node: protocol when importing Node.js builtin modules.
+      // [standardization] Prefix Node builtins with node: so reviewers can distinguish platform imports from installed packages.
       'unicorn/prefer-node-protocol': 'error',
-      // Use Number() over parseFloat() and base-10 parseInt().
+      // [standardization] Use Number() for recognized numeric coercions so conversion intent is distinct from explicit radix parsing.
       'unicorn/prefer-number-coercion': 'error',
-      // Use Number.isSafeInteger() over integer checks.
+      // [correctness] Check safe integer representability rather than integrality alone so integer operations do not silently accept imprecise numbers.
       'unicorn/prefer-number-is-safe-integer': 'error',
-      // Use Number static methods over global functions and optionally static properties over global constants.
+      // [standardization] Use Number static parsing and checking methods so numeric operations have a consistent namespace while constants retain their selected global spelling.
       'unicorn/prefer-number-properties': 'error',
-      // Use Object.defineProperties() over multiple Object.defineProperty() calls.
+      // [standardization] Define multiple descriptors with Object.defineProperties() so reviewers inspect a related property contract together.
       'unicorn/prefer-object-define-properties': 'error',
-      // Use object destructuring defaults over default object literals with spread.
+      // [standardization] Use destructuring defaults so per-property fallback behavior appears beside each binding rather than inside a spread merge.
       'unicorn/prefer-object-destructuring-defaults': 'error',
-      // Use using Object.fromEntries(...) to transform a list of key-value pairs into an object.
+      // [standardization] Use Object.fromEntries() for entry-to-object conversion so reviewers recognize the transformation without tracing an accumulator.
       'unicorn/prefer-object-from-entries': 'error',
-      // Use the most specific Object iterable method.
+      // [standardization] Select keys(), values(), or entries() to match consumed data so iteration does not imply unused key or value dependencies.
       'unicorn/prefer-object-iterable-methods': 'error',
-      // Use observer APIs over resize and scroll listeners with layout reads.
+      // [architectural-prevention] Use observer APIs for recognized layout tracking so scroll or resize handlers do not repeatedly force layout reads.
       'unicorn/prefer-observer-apis': 'error',
-      // Use omitting the catch binding parameter.
+      // [standardization] Omit unused catch bindings so error handling does not declare a value it never inspects.
       'unicorn/prefer-optional-catch-binding': 'error',
-      // Use Path2D for repeatedly drawn canvas paths.
+      // [architectural-prevention] Use Path2D for repeated drawing so a stable path does not need reconstruction on every draw.
       'unicorn/prefer-path2d': 'error',
-      // Use private class fields over the underscore-prefix convention.
+      // [architectural-prevention] Use private fields so class ownership is language-enforced rather than implied by a public underscore name.
       'unicorn/prefer-private-class-fields': 'error',
-      // Use Promise.resolve() and Promise.reject() over trivial new Promise() calls.
+      // [standardization] Use Promise.resolve() or Promise.reject() for trivial settlement so reviewers do not inspect an unnecessary executor.
       'unicorn/prefer-promise-static-methods': 'error',
-      // Use Promise.try() over promise-wrapping boilerplate.
+      // [standardization] Use Promise.try() for supported promise-wrapping patterns so generated code follows one API for invoking a potentially throwing operation.
       'unicorn/prefer-promise-try': 'error',
-      // Use Promise.withResolvers() when extracting resolver functions from new Promise().
+      // [standardization] Use Promise.withResolvers() when resolvers must escape construction so the promise and resolver contract is explicit.
       'unicorn/prefer-promise-with-resolvers': 'error',
-      // Use borrowing methods from the prototype instead of the instance.
+      // [standardization] Borrow methods from prototypes so reusable operations do not appear tied to an arbitrary instance.
       'unicorn/prefer-prototype-methods': 'error',
-      // Use .querySelector() and .querySelectorAll() over older DOM query methods.
+      // [standardization] Use querySelector() and querySelectorAll() so generated DOM queries follow one selector-based convention.
       'unicorn/prefer-query-selector': 'error',
-      // Use queueMicrotask() over process.nextTick(), setImmediate(), and setTimeout(..., 0).
+      // [standardization] Use queueMicrotask() for the rule's deferred-callback patterns so generated code follows the selected microtask scheduling contract.
       'unicorn/prefer-queue-microtask': 'error',
-      // Use Reflect.apply() over Function#apply().
+      // [standardization] Use Reflect.apply() so explicit receiver invocation follows one API rather than borrowing a function's apply property.
       'unicorn/prefer-reflect-apply': 'error',
-      // Use RegExp.escape() for escaping strings to use in regular expressions.
+      // [correctness] Use RegExp.escape() so interpolated text cannot accidentally become regex syntax through incomplete manual escaping.
       'unicorn/prefer-regexp-escape': 'error',
-      // Use RegExp#test() over String#match(), String#search(), and RegExp#exec().
+      // [standardization] Use test() for regex boolean questions so reviewers do not have to infer intent from discarded match data.
       'unicorn/prefer-regexp-test': 'error',
-      // Use Response.json() over new Response(JSON.stringify()).
+      // [standardization] Use Response.json() so JSON response construction and its content type follow the platform's named operation.
       'unicorn/prefer-response-static-json': 'error',
-      // Use :scope when using element query selector methods.
+      // [correctness] Anchor element queries with :scope so matching does not unexpectedly depend on ancestors outside the queried element.
       'unicorn/prefer-scoped-selector': 'error',
-      // Use Set#has() over Array#includes() when checking for existence or non-existence.
+      // [architectural-prevention] Use Set.has() for recognized repeated membership queries to avoid repeated linear array scans.
       'unicorn/prefer-set-has': 'error',
-      // Use Set methods for Set operations.
+      // [standardization] Use Set methods for set operations so reviewers can identify union, intersection, and related intent without tracing custom loops.
       'unicorn/prefer-set-methods': 'error',
-      // Use using Set#size instead of Array#length.
+      // [architectural-prevention] Read Set.size directly instead of materializing an array solely to count its elements.
       'unicorn/prefer-set-size': 'error',
-      // Use shorter alternatives to Unicode escape sequences.
+      // [standardization] Use shorter standard escapes so equivalent characters have one selected source spelling.
       'unicorn/prefer-short-escape-sequences': 'error',
-      // Use simple conditions first in logical expressions.
+      // [standardization] Put simple conditions first in recognized logical expressions so reviewers scan the least involved checks before complex ones.
       'unicorn/prefer-simple-condition-first': 'error',
-      // Use a simple comparison function for Array#sort().
+      // [standardization] Use the rule's simple sort comparator form so reviewers can identify ordering without equivalent conditional branches.
       'unicorn/prefer-simple-sort-comparator': 'error',
-      // Use simplified conditions.
+      // [standardization] Simplify recognized equivalent conditions so reviewers inspect the effective predicate rather than redundant logic.
       'unicorn/prefer-simplified-conditions': 'error',
-      // Use a single Array#some() or Array#every() with a combined predicate.
+      // [architectural-prevention] Combine compatible some() or every() predicates so one membership question does not require repeated array traversals.
       'unicorn/prefer-single-array-predicate': 'error',
-      // Require combining multiple Array#{push,unshift}(), Element#classList.{add,remove}(), and importScripts() into one call.
+      // [standardization] Combine compatible adjacent collection, class-list, and script-loading calls so related arguments appear in one operation.
       'unicorn/prefer-single-call': 'error',
-      // Use a single object destructuring declaration per local const source.
+      // [standardization] Use one destructuring declaration per local const source so reviewers find extracted dependencies together.
       'unicorn/prefer-single-object-destructuring': 'error',
-      // Require combining multiple single-character replacements into a single String#replaceAll() with a regular expression.
+      // [architectural-prevention] Combine compatible single-character replacements so the string is not repeatedly scanned and reallocated.
       'unicorn/prefer-single-replace': 'error',
-      // Use declaring variables and type aliases in the smallest possible scope.
+      // [architectural-prevention] Keep bindings in their smallest applicable scope so fewer statements can depend on or alter local state.
       'unicorn/prefer-smaller-scope': 'error',
-      // Use String#split() with a limit.
+      // [architectural-prevention] Limit split() when only a prefix is consumed so processing need not allocate every remaining segment.
       'unicorn/prefer-split-limit': 'error',
-      // Use the spread operator over Array.from(...), Array#concat(...), Array#{slice,toSpliced}(), and trivial for...of copies.
+      // [standardization] Use spread for the rule's supported copy and concatenation patterns so reviewers see one iterable expansion convention.
       'unicorn/prefer-spread': 'error',
-      // Use String#matchAll() over RegExp#exec() loops.
+      // [standardization] Use matchAll() for regex match iteration so reviewers do not need to trace an exec() loop's mutable lastIndex state.
       'unicorn/prefer-string-match-all': 'error',
-      // Use String#padStart() and String#padEnd() over manual string padding.
+      // [standardization] Use padStart() and padEnd() so padding direction and target length are explicit instead of reconstructed from manual operations.
       'unicorn/prefer-string-pad-start-end': 'error',
-      // Use using the String.raw tag to avoid escaping \.
+      // [standardization] Use String.raw for supported backslash-heavy strings so reviewers read intended text without duplicated escaping.
       'unicorn/prefer-string-raw': 'error',
-      // Use String#repeat() for repeated whitespace.
+      // [standardization] Use repeat() for repeated whitespace so reviewers see the repetition count rather than a manually constructed string.
       'unicorn/prefer-string-repeat': 'error',
-      // Use String#replaceAll() over regex searches with the global flag and String#split().join().
+      // [standardization] Use replaceAll() for supported global replacements so all-occurrence intent is explicit without split/join or regex flags.
       'unicorn/prefer-string-replace-all': 'error',
-      // Use String#slice() over String#substr() and String#substring().
+      // [standardization] Use slice() for substring extraction so reviewers need not switch between APIs with different index conventions.
       'unicorn/prefer-string-slice': 'error',
-      // Use String#startsWith() & String#endsWith() over regexes, String#indexOf() === 0, and slice checks.
+      // [standardization] Use startsWith() and endsWith() so prefix and suffix tests do not require decoding index or slice arithmetic.
       'unicorn/prefer-string-starts-ends-with': 'error',
-      // Use String#trimStart() / String#trimEnd() over String#trimLeft() / String#trimRight().
+      // [standardization] Use trimStart() and trimEnd() so generated code follows the selected names rather than legacy left/right aliases.
       'unicorn/prefer-string-trim-start-end': 'error',
-      // Use using structuredClone to create a deep clone.
+      // [standardization] Use structuredClone() for supported deep-copy patterns so generated code states cloning intent through the platform API.
       'unicorn/prefer-structured-clone': 'error',
-      // Use switch over multiple else-if.
+      // [standardization] Use switch for recognized repeated discriminant branches so reviewers see one dispatch value rather than repeated tests.
       'unicorn/prefer-switch': 'error',
-      // Use direct Temporal conversion methods.
+      // [standardization] Use direct Temporal conversions so reviewers see the intended target type without reconstructing an intermediate conversion chain.
       'unicorn/prefer-temporal-conversion': 'error',
-      // Use ternary expressions over simple if statements.
+      // [standardization] Use ternaries for the rule's simple conditional-value patterns so reviewers see a single value-producing expression.
       'unicorn/prefer-ternary': 'error',
-      // Use .then().catch() over .then(..., ...) for error handling.
+      // [standardization] Put rejection handling in catch() so generated promise code has a consistent visible error-handling stage.
       'unicorn/prefer-then-catch': 'error',
-      // Use using Element#toggleAttribute() to toggle attributes.
+      // [standardization] Use toggleAttribute() so conditional attribute presence is expressed as one named DOM operation.
       'unicorn/prefer-toggle-attribute': 'error',
-      // Use top-level await over top-level promises and async function calls.
+      // [correctness] Await asynchronous module initialization at top level so dependent modules do not observe exports before initialization finishes.
       'unicorn/prefer-top-level-await': 'error',
-      // Require throwing TypeError in type checking conditions.
+      // [standardization] Throw TypeError for type-check failures so consumers can recognize invalid argument types through the standard error class.
       'unicorn/prefer-type-error': 'error',
-      // Require type literals to be last in union types.
+      // [standardization] Put type literals last in unions so generated type declarations follow one reviewable ordering convention.
       'unicorn/prefer-type-literal-last': 'error',
-      // Use the unary minus operator over multiplying or dividing by -1.
+      // [standardization] Use unary minus for sign inversion so reviewers do not mistake it for meaningful multiplication or division.
       'unicorn/prefer-unary-minus': 'error',
-      // Use Unicode code point escapes over legacy escape sequences.
+      // [standardization] Use Unicode code-point escapes so escaped characters have a consistent notation without manually paired surrogate escapes.
       'unicorn/prefer-unicode-code-point-escapes': 'error',
-      // Use URL.canParse() over constructing a URL in a try/catch for validation.
+      // [standardization] Use URL.canParse() for validation so reviewers see a boolean question instead of exception-driven URL construction.
       'unicorn/prefer-url-can-parse': 'error',
-      // Use URL#href over stringifying a URL.
+      // [standardization] Read URL.href when requesting serialized text so reviewers see an explicit string property rather than implicit coercion.
       'unicorn/prefer-url-href': 'error',
-      // Use URLSearchParams over manually splitting query strings.
+      // [correctness] Use URLSearchParams so query parsing handles encoding and repeated parameters instead of relying on incomplete manual string splitting.
       'unicorn/prefer-url-search-parameters': 'error',
-      // Use putting the condition in the while statement.
+      // [standardization] Put a recognized loop guard in while so reviewers can find the continuation condition at the loop boundary.
       'unicorn/prefer-while-loop-condition': 'error',
-      // Do not prepend a redundant ./ to relative URLs; retain meaningful parent and root-relative paths.
+      // [standardization] Omit redundant ./ URL prefixes while retaining meaningful parent and root-relative paths so equivalent URLs have one selected spelling.
       'unicorn/relative-url-style': 'error',
-      // Require using the separator argument with Array#join().
+      // [standardization] Pass join() separators explicitly so reviewers need not infer whether the default comma is intentional.
       'unicorn/require-array-join-separator': 'error',
-      // Require a compare function when calling Array#sort() or Array#toSorted().
+      // [correctness] Supply sort comparators so numeric and other intended orders do not silently use the default lexicographic comparison.
       'unicorn/require-array-sort-compare': 'error',
-      // Require CSS.escape() for interpolated values in CSS selectors.
+      // [correctness] Escape interpolated CSS selector values so data cannot change selector meaning or create invalid selector syntax.
       'unicorn/require-css-escape': 'error',
-      // Require non-empty module attributes for imports and exports.
+      // [standardization] Remove empty module attributes so import declarations do not imply a loading constraint they never specify.
       'unicorn/require-module-attributes': 'error',
-      // Require non-empty specifier list in import and export statements.
+      // [standardization] Require meaningful module specifier lists so empty braces do not disguise a side-effect-only module operation.
       'unicorn/require-module-specifiers': 'error',
-      // Require using the digits argument with Number#toFixed().
+      // [standardization] Pass toFixed() digits explicitly so reviewers can see the chosen precision instead of an implicit zero-digit default.
       'unicorn/require-number-to-fixed-digits-argument': 'error',
-      // Require passive event listeners for high-frequency events.
+      // [architectural-prevention] Declare high-frequency listeners passive so the browser need not delay scrolling while waiting for possible cancellation.
       'unicorn/require-passive-events': 'error',
-      // Require using the targetOrigin argument with window.postMessage().
+      // [correctness] State postMessage() target origins explicitly so cross-window delivery boundaries are not left implicit.
       'unicorn/require-post-message-target-origin': 'error',
-      // Require boolean-returning Proxy traps to return booleans.
+      // [standardization] Return booleans from boolean Proxy traps so reviewers see the trap contract without relying on truthiness conversion.
       'unicorn/require-proxy-trap-boolean-return': 'error',
-      // Require streaming decoding of fetch-body chunks with TextDecoder.
+      // [correctness] Decode fetch chunks in streaming mode so multi-byte characters split across chunks are not corrupted.
       'unicorn/require-text-decoder-streaming': 'error',
-      // Expand block comments to multiline form instead of compact one-line blocks.
+      // [standardization] Expand block comments to multiline form so generated explanations follow one comment layout.
       'unicorn/single-line-block-comment-style': 'error',
-      // Wrap case bodies in braces so lexical bindings cannot leak into neighboring cases.
+      // [correctness] Wrap switch case bodies in braces so lexical bindings cannot leak into neighboring case clauses.
       'unicorn/switch-case-braces': 'error',
-      // Put case exit statements in a consistent position relative to the case block.
+      // [standardization] Put case exit statements in a consistent position so reviewers can scan switch control flow without layout variations.
       'unicorn/switch-case-break-position': 'error',
-      // Normalize indentation in known dedent, outdent, GraphQL, SQL, HTML, and styled template forms.
+      // [standardization] Normalize known dedent, GraphQL, SQL, HTML, and styled templates so embedded source follows a consistent indentation convention.
       'unicorn/template-indent': 'error',
-      // Use lowercase encoding identifiers without optional dashes so equivalent encodings have one spelling.
+      // [standardization] Use lowercase encoding names without optional dashes so equivalent encodings have one searchable spelling.
       'unicorn/text-encoding-identifier-case': 'error',
-      // Require new when creating an error.
+      // [standardization] Use new for error construction so thrown error objects follow the same visible construction convention as other instances.
       'unicorn/throw-new-error': 'error',
-      // Limit try blocks to one operation so the caught failure has an identifiable source.
+      // [architectural-prevention] One operation per try block is a chosen review ceiling to make the source of a caught failure identifiable, not proof of correct recovery.
       'unicorn/try-complexity': ['error', { max: 1 }],
 
-      // Ensure imports point to a file/module that can be resolved.
+      // [correctness] Catch unresolved dependencies before consumers encounter module-loading failures.
       'import-x/no-unresolved': 'error',
-      // Ensure named imports correspond to a named export in the remote file.
+      // [correctness] Catch imports of nonexistent named exports before module instantiation fails.
       'import-x/named': 'error',
-      // Ensure a default export is present, given a default import.
+      // [correctness] Catch default imports whose target has no default export before module loading fails.
       'import-x/default': 'error',
-      // Reject any invalid exports, i.e. re-export of the same name.
+      // [correctness] Catch duplicate or invalid exports before consumers encounter an invalid module contract.
       'import-x/export': 'error',
-      // Reject use of exported name as identifier of default export.
+      // [correctness] Catch default bindings confused with named exports so callers do not receive the wrong value.
       'import-x/no-named-as-default': 'error',
-      // Reject use of exported name as property of default export.
+      // [correctness] Do not treat named exports as properties of a default export because the module makes no such guarantee.
       'import-x/no-named-as-default-member': 'error',
-      // Merge imports from the same resolved module so each dependency has one declaration.
+      // [standardization] Merge imports from the same resolved module so reviewers see each dependency in one declaration.
       'import-x/no-duplicates': 'error',
-      // Require named dependency bindings instead of namespace imports so each imported name is explicit.
+      // [architectural-prevention] Enumerate imported bindings so reviewers can assess dependency usage without tracing namespace access.
       'import-x/no-namespace': 'error',
-      // Reject exported let and var bindings so module contracts do not expose reassignable values.
+      // [architectural-prevention] Keep exported bindings non-reassignable so consumers do not depend on hidden changes to module state.
       'import-x/no-mutable-exports': 'error',
-      // Group local public bindings in one named export list so the module contract is reviewable together.
+      // [standardization] Group local public bindings in one named export list so reviewers can inspect the module contract together.
       'import-x/group-exports': 'error',
-      // Use package exports instead of relative paths into sibling packages.
+      // [architectural-prevention] Use sibling packages through their package contracts rather than coupling consumers to internal paths.
       'import-x/no-relative-packages': 'error',
-      // Use top-level import type so runtime and type-only dependencies are separate declarations.
+      // [standardization] Use top-level import type declarations so reviewers can distinguish runtime dependencies from erased types.
       'import-x/consistent-type-specifier-style': 'error',
-      // Reject a module from importing itself.
+      // [correctness] Reject self-imports that read the module's own partially initialized exports instead of local bindings.
       'import-x/no-self-import': 'error',
-      // Reject a module from importing a module with a dependency path back to itself.
+      // [architectural-prevention] Reject dependency cycles because initialization order and ownership become harder to review across mutually dependent modules.
       'import-x/no-cycle': 'error',
-      // Reject importing a default export by a different name.
+      // [standardization] Preserve default export names at import sites so searches identify the same dependency consistently.
       'import-x/no-rename-default': 'error',
-      // Reject AMD require and define calls.
+      // [standardization] Use the selected ESM dependency model rather than introducing AMD loading conventions.
       'import-x/no-amd': 'error',
-      // Put imports before executable statements so dependencies are visible at the start of each module.
+      // [standardization] Put imports first so reviewers find dependencies before executable module code.
       'import-x/first': 'error',
-      // Limit each module to ten distinct dependencies so its integration responsibility stays bounded.
+      // [architectural-prevention] Ten dependencies is a chosen review ceiling for module coupling, not proof of a single responsibility.
       'import-x/max-dependencies': ['error', { max: 10 }],
-      // Reject import of modules using absolute paths.
+      // [correctness] Avoid machine-specific absolute imports that fail when consumers install the package elsewhere.
       'import-x/no-absolute-path': 'error',
-      // Reject webpack loader syntax in imports.
+      // [standardization] Keep imports independent of webpack loader syntax so generated modules use the selected standard module notation.
       'import-x/no-webpack-loader-syntax': 'error',
-      // Separate imports from module code with a blank line so the dependency list has a clear boundary.
+      // [standardization] Separate imports with a blank line so reviewers can distinguish dependencies from module implementation.
       'import-x/newline-after-import': 'error',
-      // Require module syntax so parser and runtime module classification agree.
+      // [correctness] Make ESM classification explicit so parsers and runtimes do not interpret a module as a script.
       'import-x/unambiguous': 'error',
-      // Bind imports explicitly so dependency side effects are not hidden in unassigned imports.
+      // [architectural-prevention] Require bound imports so reviewers can trace dependency use instead of accepting unexplained import-time effects.
       'import-x/no-unassigned-import': 'error',
-      // Reject unnecessary path segments in import and require statements.
+      // [standardization] Remove redundant path segments so searches and reviews see one spelling of a dependency path.
       'import-x/no-useless-path-segments': 'error',
-      // Reject empty named import blocks.
+      // [standardization] Avoid empty named import blocks that imply binding use while only triggering module evaluation.
       'import-x/no-empty-named-blocks': 'error',
-      // Put local export lists after their definitions so the public contract follows the implementation.
+      // [standardization] Put local export lists after their definitions so reviewers encounter implementation before the public contract.
       'import-x/exports-last': 'error',
-      // Reject imported names marked with @deprecated documentation tag.
+      // [standardization] Avoid APIs marked deprecated so generated code follows the dependency's currently supported interface.
       'import-x/no-deprecated': 'error',
-      // Enumerate public reexports so upstream additions cannot silently expand this module contract.
+      // [architectural-prevention] Enumerate reexports so an upstream addition cannot silently expand this module's public contract.
       'import-x/avoid-re-export-all': 'error',
-      // Require emitted extensions on relative imports; leave package specifiers independent of internal filenames.
+      // [correctness] Emit extensions on relative imports for ESM resolution; exempt package names because package exports select their files.
       'import-x/extensions': ['error', 'always', { ignorePackages: true }],
-      // Separate built-in, external, internal, parent, sibling, index, object, and type groups; alphabetize names case-insensitively with type specifiers first.
+      // [standardization] Separate dependency origin groups with blank lines and sort names case-insensitively with types first so reviewers can scan and compare imports predictably.
       'import-x/order': ['error', {
         groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type'],
         'newlines-between': 'always',
         alphabetize: { order: 'asc', caseInsensitive: true },
         named: { enabled: true, types: 'types-first' },
       }],
-      // Require named source exports so consumers import the declared public names.
+      // [standardization] Use named source exports so consumers and repository searches use the declared public names.
       'import-x/no-default-export': 'error',
-      // Require runtime and type imports to be declared dependencies so package installation can reproduce resolution.
+      // [correctness] Include type-only imports in dependency checks because consumer type resolution also requires reproducible package installation.
       'import-x/no-extraneous-dependencies': ['error', { includeTypes: true }],
 
-      // Reject quantifiers whose repeated expression can be empty so repetition counts do not imply a minimum match length.
+      // [correctness] Reject quantifiers over possibly empty expressions because their counts can misrepresent the minimum accepted input length.
       'regexp/confusing-quantifier': 'error',
-      // Reject regex elements that contradict nearby assertions so impossible branches do not remain.
+      // [correctness] Catch regex elements that contradict nearby assertions before an intended matching branch becomes impossible.
       'regexp/no-contradiction-with-assertion': 'error',
-      // Reject empty regex alternatives so an unintended empty match cannot bypass the other alternatives.
+      // [correctness] Reject empty regex alternatives so an unintended empty match cannot bypass the other alternatives.
       'regexp/no-empty-alternative': 'error',
-      // Reject character classes that match nothing, including constructor patterns and Unicode sets.
+      // [correctness] Catch character classes that cannot match any input, including constructor patterns and Unicode sets.
       'regexp/no-empty-character-class': 'error',
-      // Reject empty lookarounds because they unconditionally accept or reject without inspecting input.
+      // [correctness] Reject empty lookarounds because they accept or reject unconditionally instead of testing the intended input.
       'regexp/no-empty-lookarounds-assertion': 'error',
-      // Reject invalid constructor patterns and duplicate or incompatible regex flags before runtime compilation.
+      // [correctness] Catch invalid constructor patterns and duplicate or incompatible flags before regex compilation throws at runtime.
       'regexp/no-invalid-regexp': 'error',
-      // Reject lazy quantifiers at a pattern end when they cannot consume the intended complete match.
+      // [correctness] Catch terminal lazy quantifiers that can stop before consuming the text the match is intended to include.
       'regexp/no-lazy-ends': 'error',
-      // Reject captures whose repeated contents do not preserve the text implied by the group.
+      // [correctness] Catch captures whose repeated contents differ from the text consumers expect the group to preserve.
       'regexp/no-misleading-capturing-group': 'error',
-      // Reject multi-code-point characters split by character classes or quantifiers so matching respects the intended character.
+      // [correctness] Avoid splitting multi-code-point characters in classes or quantifiers because the regex then matches different text.
       'regexp/no-misleading-unicode-character': 'error',
-      // Require global regexes for matchAll() and replaceAll() so these calls cannot throw for missing g.
+      // [correctness] Require global patterns for matchAll() and replaceAll() because these APIs throw when the g flag is missing.
       'regexp/no-missing-g-flag': 'error',
-      // Reject nonstandard regex flags so patterns use only supported JavaScript flag meanings.
+      // [correctness] Catch nonstandard regex flags before JavaScript rejects the pattern.
       'regexp/no-non-standard-flag': 'error',
-      // Reject optional assertions because skipping them makes the asserted condition ineffective.
+      // [correctness] Reject optional assertions because bypassing them can accept input that the apparent condition excludes.
       'regexp/no-optional-assertion': 'error',
-      // Reject backreferences whose capture may be absent or reset so they cannot silently become empty matches.
+      // [correctness] Catch backreferences whose capture may be absent or reset before they silently accept empty text.
       'regexp/no-potentially-useless-backreference': 'error',
-      // Reject assertions that always accept or reject so the pattern does not imply checks it cannot perform.
+      // [correctness] Reject assertions that always accept or reject so a regex does not imply checks it cannot perform.
       'regexp/no-useless-assertions': 'error',
-      // Reject backreferences that always match empty text, including patterns composed through constructors.
+      // [correctness] Catch backreferences that always match empty text, including composed constructor patterns that can hide the missing constraint.
       'regexp/no-useless-backreference': 'error',
-      // Reject nonexistent numeric or named replacement references so replacement strings do not silently insert literal dollars.
+      // [correctness] Catch nonexistent replacement references before replacement strings insert literal dollar expressions instead of captured text.
       'regexp/no-useless-dollar-replacements': 'error',
-      // Reject zero-maximum quantifiers because the quantified expression can never consume input.
+      // [correctness] Reject zero-maximum quantifiers because the apparently required expression can never consume input.
       'regexp/no-zero-quantifier': 'error',
-      // Reject proven exponential or polynomial regex backtracking; report certain cases without assuming a rejecting suffix.
+      // [architectural-prevention] Reject certain exponential or polynomial backtracking risks without assuming a rejecting suffix; this bounds known regex resource risks rather than proving safe runtime cost.
       'regexp/no-super-linear-backtracking': ['error', { report: 'certain' }],
     },
   },
@@ -1233,7 +1236,7 @@ const base = defineConfig(
       '**/vitest.config.{js,mjs,cjs,ts,mts,cts}',
     ],
     rules: {
-      // ESLint and Vitest load their exact configuration filenames through framework-required default exports.
+      // [standardization] Off (compatibility): Only eslint.config and vitest.config files with js, mjs, cjs, ts, mts, or cts extensions may use the default export their configuration loaders require.
       'import-x/no-default-export': 'off',
     },
   },
