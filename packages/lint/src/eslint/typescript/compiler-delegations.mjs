@@ -4,8 +4,6 @@
 @type {import('eslint').Linter.RulesRecord}
 */
 const compilerDelegations = {
-  // [correctness] Off (covered): Consumer tsc reports getters without returns with TS2378; partial value-return paths need noImplicitReturns for TS7030 or strictNullChecks and a non-undefined return annotation for TS2366.
-  'getter-return': 'off',
   // [correctness] Off (covered): Consumer tsc reports missing named exports with TS2305 for resolved module declarations; accurate dependency declarations are required for type/value export checking.
   'import-x/named': 'off',
   // [correctness] Off (covered): Consumer tsc rejects replacing class declarations with TS2629, preserving the declared constructor binding.
