@@ -19,7 +19,7 @@ const coreSafetyRules = {
   'complexity': ['error', maximumCyclomaticComplexity],
   // [correctness] Keep return paths consistent so callers do not unexpectedly receive undefined from a function that otherwise returns a value.
   'consistent-return': 'error',
-  // [correctness] Call super() where required and only on derived constructors so instance initialization does not throw.
+  // [correctness] Require exactly one super() call per derived-constructor path; retain this check for TypeScript because its compiler accepts duplicate calls that throw at runtime.
   'constructor-super': 'error',
   // [architectural-prevention] Use braces for control statements so a later added statement cannot appear guarded while executing outside the branch.
   'curly': 'error',

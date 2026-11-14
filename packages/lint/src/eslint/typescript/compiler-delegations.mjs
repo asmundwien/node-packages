@@ -4,8 +4,6 @@
 @type {import('eslint').Linter.RulesRecord}
 */
 const compilerDelegations = {
-  // [correctness] Off (covered): Consumer tsc reports missing or invalid super calls with TS2377 and TS2337 during class checking.
-  'constructor-super': 'off',
   // [correctness] Off (covered): Consumer tsc reports getters without returns with TS2378; partial value-return paths need noImplicitReturns for TS7030 or strictNullChecks and a non-undefined return annotation for TS2366.
   'getter-return': 'off',
   // [correctness] Off (covered): Consumer tsc reports missing named exports with TS2305 for resolved module declarations; accurate dependency declarations are required for type/value export checking.
