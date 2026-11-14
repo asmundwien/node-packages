@@ -41,8 +41,11 @@ jobs:
       - name: 🔍 Validate GitHub Actions Workflows
         run: pnpm github-actions:check
 
-      - name: 🔍 Validate ESLint
-        run: pnpm lint:check
-
       - name: 🔍 Check types
         run: pnpm typecheck
+
+      - name: 🔍 Check code usage
+        run: pnpm knip:check
+
+      - name: 🔍 Check ESLint
+        run: pnpm lint:check
