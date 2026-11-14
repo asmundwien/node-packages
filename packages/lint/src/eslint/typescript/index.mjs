@@ -26,7 +26,10 @@ const typescript = defineConfig({
   },
   settings: {
     'import-x/extensions': ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'],
-    'import-x/resolver-next': [createTypeScriptImportResolver()],
+    // [correctness] Resolve declarations and ESM exports without enabling CommonJS or unrelated runtime branches.
+    'import-x/resolver-next': [createTypeScriptImportResolver({
+      conditionNames: ['types', 'import', 'default'],
+    })],
   },
 });
 

@@ -42,7 +42,11 @@ const base = defineConfig(
       // [correctness] Configure module analysis separately from resolution so JSX imports receive export and cycle checks.
       'import-x/extensions': ['.js', '.jsx', '.mjs', '.cjs'],
       'import-x/resolver-next': [
-        createNodeResolver({ extensions: ['.mjs', '.cjs', '.js', '.jsx', '.json', '.node'] }),
+        // [correctness] Resolve ESM imports without accepting require-only exports; runtime layers add their own conditions.
+        createNodeResolver({
+          conditionNames: ['import', 'default'],
+          extensions: ['.mjs', '.cjs', '.js', '.jsx', '.json', '.node'],
+        }),
       ],
     },
   },

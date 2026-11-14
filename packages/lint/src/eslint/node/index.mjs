@@ -1,4 +1,6 @@
 import { defineConfig } from 'eslint/config';
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
+import { createNodeResolver } from 'eslint-plugin-import-x';
 import n from 'eslint-plugin-n';
 import globals from 'globals';
 
@@ -69,7 +71,23 @@ const node = defineConfig({
     // [standardization] Use promise-based filesystem operations so IO failures follow the selected async/await control flow.
     'n/prefer-promises/fs': 'error',
   },
-  settings: { node: { version: '>=24.0.0' } },
+  settings: {
+    // [correctness] Match Node's ESM export conditions without accepting require-only or browser-only entries.
+    'import-x/resolver-next': [createNodeResolver({
+      conditionNames: ['node', 'node-addons', 'import', 'default'],
+      extensions: ['.mjs', '.cjs', '.js', '.jsx', '.json', '.node'],
+    })],
+    node: { version: '>=24.0.0' },
+  },
+}, {
+  files: ['**/*.{ts,tsx,mts,cts}'],
+  name: '@asmundwien/lint/node/typescript-resolution',
+  settings: {
+    // [correctness] Preserve declaration, extension-alias, and tsconfig path resolution when Node follows the TypeScript layer.
+    'import-x/resolver-next': [createTypeScriptImportResolver({
+      conditionNames: ['types', 'node', 'node-addons', 'import', 'default'],
+    })],
+  },
 });
 
 export { node };
