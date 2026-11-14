@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // [standardization] Inherit shared source policy before adding the Node environment so runtime selection does not discard the shared checks.
+  "extends": "./base.json",
+  "compilerOptions": {
+    // [standardization] Emit ES2024 syntax as the shared baseline supported by the Node 24 consumer minimum.
+    "target": "ES2024",
+    // [correctness] Expose ES2024 APIs supported by Node 24, including the lint policy's non-mutating array replacements, without browser globals.
+    "lib": ["ES2024"],
+    // [correctness] Load Node globals explicitly instead of auto-including every visible @types package; dependencies can still supply imported types.
+    "types": ["node"],
+    // [correctness] Match Node's ESM/CommonJS classification and resolution so checked import paths agree with runtime package metadata.
+    "module": "NodeNext"
+  }
+}

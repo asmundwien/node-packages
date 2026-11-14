@@ -1,0 +1,40 @@
+{
+  "name": "@asmundwien/tsconfig",
+  "version": "0.0.0",
+  "description": "Shared strict TypeScript compiler configurations for Node.js packages",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asmundwien/node-packages.git",
+    "directory": "packages/tsconfig"
+  },
+  "homepage": "https://github.com/asmundwien/node-packages/tree/main/packages/tsconfig#readme",
+  "bugs": {
+    "url": "https://github.com/asmundwien/node-packages/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    "./base.json": "./src/base.json",
+    "./node.json": "./src/node.json"
+  },
+  "files": [
+    "src/",
+    "docs/",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "@types/node": "24.10.0",
+    "typescript": "6.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "typescript": "6.0.3"
+  }
+}
