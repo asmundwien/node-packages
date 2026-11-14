@@ -8,6 +8,6 @@ Follow the [shared configuration policy](../../../docs/contributing.md#configura
 
 ## Verification
 
-Run `pnpm --filter @asmundwien/lint test` for the import-resolution regression fixtures and `pnpm --filter @asmundwien/lint typecheck` for compiler checks.
+Run `pnpm --filter @asmundwien/lint test` for the regression fixtures and `pnpm --filter @asmundwien/lint typecheck` for compiler checks.
 
 Exercise changed rules through composed configurations and real fixture files. Check rejected code, accepted alternatives, and file-scope boundaries.

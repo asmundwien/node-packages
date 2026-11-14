@@ -14,10 +14,10 @@ const unicornArchitectureRules = {
   'unicorn/no-array-front-mutation': 'error',
   // [architectural-prevention] Use explicit iteration instead of reduce() so accumulator ownership and update effects remain visible during review.
   'unicorn/no-array-reduce': 'error',
-  // [architectural-prevention] Use toReversed() so reversing order does not mutate an array that other consumers may share.
-  'unicorn/no-array-reverse': 'error',
-  // [architectural-prevention] Use toSorted() so ordering does not mutate an array that other consumers may share.
-  'unicorn/no-array-sort': 'error',
+  // [architectural-prevention] Use toReversed(), including for standalone calls, so reversing order does not mutate an array that other consumers may share.
+  'unicorn/no-array-reverse': ['error', { allowExpressionStatement: false }],
+  // [architectural-prevention] Use toSorted(), including for standalone calls, so ordering does not mutate an array that other consumers may share.
+  'unicorn/no-array-sort': ['error', { allowExpressionStatement: false }],
   // [architectural-prevention] Find extrema directly instead of sorting every element solely to read one endpoint.
   'unicorn/no-array-sort-for-min-max': 'error',
   // [architectural-prevention] Use toSpliced() so range updates do not mutate an array that other consumers may share.
