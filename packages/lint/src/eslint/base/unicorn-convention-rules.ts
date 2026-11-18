@@ -1,7 +1,6 @@
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const unicornConventionRules = {
+import type { Linter } from 'eslint';
+
+const unicornConventionRules: Linter.RulesRecord = {
   // [standardization] Use element-specific traversal when only elements are intended so reviewers do not infer text or comment node handling.
   'unicorn/better-dom-traversing': 'error',
   // [standardization] Name caught exceptions error so reviewers recognize error-handling bindings consistently across generated modules.

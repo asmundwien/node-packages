@@ -1,7 +1,6 @@
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const importRules = {
+import type { Linter } from 'eslint';
+
+const importRules: Linter.RulesRecord = {
   // [architectural-prevention] Enumerate reexports so an upstream addition cannot silently expand this module's public contract.
   'import-x/avoid-re-export-all': 'error',
   // [standardization] Use top-level import type declarations so reviewers can distinguish runtime dependencies from erased types.

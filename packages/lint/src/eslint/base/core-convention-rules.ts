@@ -1,7 +1,6 @@
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const coreConventionRules = {
+import type { Linter } from 'eslint';
+
+const coreConventionRules: Linter.RulesRecord = {
   // [standardization] Pair setters with getters so generated properties follow the selected readable-and-writable accessor contract rather than write-only interfaces.
   'accessor-pairs': 'error',
   // [standardization] Keep variable use inside its declaring block so reviewers can follow block boundaries even for function-scoped declarations.

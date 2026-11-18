@@ -1,7 +1,6 @@
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const regexpRules = {
+import type { Linter } from 'eslint';
+
+const regexpRules: Linter.RulesRecord = {
   // [correctness] Reject quantifiers over possibly empty expressions because their counts can misrepresent the minimum accepted input length.
   'regexp/confusing-quantifier': 'error',
   // [correctness] Catch regex elements that contradict nearby assertions before an intended matching branch becomes impossible.

@@ -1,7 +1,6 @@
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const unicornApiRules = {
+import type { Linter } from 'eslint';
+
+const unicornApiRules: Linter.RulesRecord = {
   // [standardization] Name event listener options in an object so reviewers need not decode a positional capture boolean.
   'unicorn/prefer-add-event-listener-options': 'error',
   // [standardization] Use AggregateError for collected failures so consumers inspect them through the standard errors property.

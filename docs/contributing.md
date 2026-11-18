@@ -15,6 +15,12 @@ Install dependencies with `pnpm install --frozen-lockfile`. `pnpm install` also 
 | `pnpm rulesync:preview`        | Previews generated rules without writing them.                                                                        |
 | `pnpm rulesync:apply`          | Writes generated rules.                                                                                               |
 
+## Source and workspace execution
+
+Implement package source, scripts and tests in TypeScript ESM. Keep JavaScript limited to small tool configuration entry points or explicit interoperability requirements.
+
+Installing dependencies, running checks and using workspace packages must not require a build first. Keep type checking separate from execution and include it in CI.
+
 ## Configuration policy
 
 The lint and compiler packages constrain agent-generated code to reduce human review burden. Choose constraints for a concrete risk or deliberate convention, not strictness alone. Prevention does not require a prior incident. Fix the underlying concern rather than evade a check.

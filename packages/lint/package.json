@@ -21,8 +21,8 @@
   },
   "exports": {
     "./eslint": {
-      "types": "./src/eslint/index.d.mts",
-      "import": "./src/eslint/index.mjs"
+      "types": "./src/eslint/index.ts",
+      "import": "./src/eslint/index.ts"
     }
   },
   "files": [
@@ -34,7 +34,6 @@
   "scripts": {
     "lint": "eslint . --fix --max-warnings=0",
     "lint:check": "eslint . --max-warnings=0",
-    "test": "vitest run",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -57,7 +56,6 @@
     "@asmundwien/tsconfig": "workspace:*",
     "@types/node": "24.10.0",
     "eslint": "10.14.0",
-    "typescript": "6.0.3",
-    "vitest": "5.1.0"
+    "typescript": "6.0.3"
   }
 }

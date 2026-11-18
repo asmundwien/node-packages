@@ -1,36 +1,34 @@
 # @asmundwien/lint
 
-Preventive ESLint policy for agent-generated JavaScript and TypeScript, intended to reduce human review burden. Requires Node.js 24+.
+Preventive ESLint policy for TypeScript ESM projects, intended to reduce human review burden. Requires Node.js 24+.
 
 ## Setup
 
 Install `@asmundwien/lint` with the ESLint and TypeScript peer versions in [package.json](./package.json).
 
-Compose `base` first, then the layers your project needs:
+Create `eslint.config.mjs` with `setup(options)`. Type-aware TypeScript checks and test-scoped Vitest policy always apply.
 
-| Layer | Use |
+| Option | Use |
 | --- | --- |
-| `base` | Shared ESM policy. |
-| `typescript` | TypeScript files included in your `tsconfig.json`. |
-| `node` | Node.js code. |
-| `react` | React 19 browser code, after `typescript`. |
-| `vitest` | Tests, after their language and runtime layers. |
+| `runtime` | `node` for Node.js, `react` for React 19 browser projects, or `generic` for runtime-neutral TypeScript. |
+| `tsconfigRootDir` | Absolute directory containing your `tsconfig.json`. |
 
-For a Node.js TypeScript project with Vitest, create `eslint.config.mjs`:
+For a Node.js TypeScript project:
 
 ```js
-import { defineConfig } from "eslint/config";
-import { base, typescript, node, vitest } from "@asmundwien/lint/eslint";
+import { setup } from "@asmundwien/lint/eslint";
 
-export default defineConfig(base, typescript, node, vitest, {
-  files: ["**/*.{ts,tsx,mts,cts}"],
-  languageOptions: {
-    parserOptions: { tsconfigRootDir: import.meta.dirname },
-  },
+export default setup({
+  runtime: "node",
+  tsconfigRootDir: import.meta.dirname,
 });
 ```
 
-TypeScript projects must also run `tsc --noEmit` in CI with `strict` and `noImplicitReturns` enabled, `allowUnreachableCode: false`, and `noCheck: false`. The [shared compiler presets](../tsconfig/README.md) supply these settings.
+TypeScript files must belong to the selected compiler project. JavaScript tool configuration receives the shared ESM policy.
+
+For human-approved file-scoped exceptions or additional configuration, compose `defineConfig(setup(options), { files: [...], rules: { ... } })` using `defineConfig` from `eslint/config`.
+
+Use the [shared compiler presets](../tsconfig/README.md) and run compiler checks in CI alongside ESLint.
 
 Run `eslint . --max-warnings=0` in CI so attempted inline configuration also fails validation.
 

@@ -1,7 +1,6 @@
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const unicornArchitectureRules = {
+import type { Linter } from 'eslint';
+
+const unicornArchitectureRules: Linter.RulesRecord = {
   // [architectural-prevention] Move noncapturing functions out of enclosing scopes, including arrows, so their available dependencies and allocation lifetime stay explicit.
   'unicorn/consistent-function-scoping': 'error',
   // [architectural-prevention] Guard optional loop sources instead of constructing empty fallback collections solely to perform no iterations.

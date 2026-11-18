@@ -1,7 +1,6 @@
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const typeSafety = {
+import type { Linter } from 'eslint';
+
+const typeSafety: Linter.RulesRecord = {
   // [correctness] Reject awaits of non-thenables and iteration patterns that leave promised elements unresolved instead of producing the values callers expect.
   '@typescript-eslint/await-thenable': 'error',
   // [enforcement-integrity] Reject compiler-check bypasses; expected errors need at least ten description characters to make suppression intent reviewable, not to prove it justified.

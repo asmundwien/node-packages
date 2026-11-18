@@ -1,3 +1,5 @@
+import type { Linter } from 'eslint';
+
 const maximumBlockDepth = 4;
 const maximumCallbackDepth = 10;
 const maximumClassesPerFile = 1;
@@ -12,10 +14,7 @@ const restrictedProperties = [{
   property: 'splice',
 }];
 
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const coreSafetyRules = {
+const coreSafetyRules: Linter.RulesRecord = {
   // [correctness] Return values from array transformation callbacks so missing returns do not silently produce undefined elements.
   'array-callback-return': 'error',
   // [architectural-prevention] Keep instance methods dependent on instance state so class ownership does not hide otherwise standalone behavior.

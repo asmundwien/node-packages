@@ -1,7 +1,9 @@
+import type { Linter } from 'eslint';
+
 import plugin from '@vitest/eslint-plugin';
 import { defineConfig } from 'eslint/config';
 
-import { restrictedProperties } from '../base/core-safety-rules.mjs';
+import { restrictedProperties } from '../base/core-safety-rules.ts';
 
 const testFiles = [
   '**/*.{test,spec}.{js,jsx,mjs,cjs,ts,tsx,mts,cts}',
@@ -20,7 +22,7 @@ const runnerConfigFiles = [
   '**/.mocharc.*',
 ];
 
-const vitest = defineConfig({
+const vitest: Linter.Config[] = defineConfig({
   files: testFiles,
   ignores: runnerConfigFiles,
   name: '@asmundwien/lint/vitest',
@@ -195,6 +197,23 @@ const vitest = defineConfig({
     'vitest/warn-todo': 'error',
   },
 }, {
+  files: [...testFiles, '**/__snapshots__/*.snap'],
+  ignores: runnerConfigFiles,
+  linterOptions: {
+    // [enforcement-integrity] Block source-level configuration in snapshot files so generated output cannot weaken the surrounding test policy.
+    noInlineConfig: true,
+    // [enforcement-integrity] Set unused-suppression diagnostics to errors; noInlineConfig is the active source-suppression protection.
+    reportUnusedDisableDirectives: 'error',
+    // [enforcement-integrity] Set unused inline-policy diagnostics to errors; noInlineConfig remains the active source-configuration protection.
+    reportUnusedInlineConfigs: 'error',
+  },
+  name: '@asmundwien/lint/vitest/snapshots',
+  plugins: { vitest: plugin },
+  rules: {
+    // [architectural-prevention] Snapshot ceilings of 50 external lines and 20 inline lines are chosen review limits to discourage opaque expected output, not guarantees of useful checks.
+    'vitest/no-large-snapshots': ['error', { inlineMaxSize: 20, maxSize: 50 }],
+  },
+}, {
   files: typedTestFiles,
   ignores: runnerConfigFiles,
   name: '@asmundwien/lint/vitest/typescript',
@@ -213,23 +232,6 @@ const vitest = defineConfig({
     'vitest/unbound-method': ['error', { ignoreStatic: false }],
   },
   settings: { vitest: { typecheck: true } },
-}, {
-  files: [...testFiles, '**/__snapshots__/*.snap'],
-  ignores: runnerConfigFiles,
-  linterOptions: {
-    // [enforcement-integrity] Block source-level configuration in snapshot files so generated output cannot weaken the surrounding test policy.
-    noInlineConfig: true,
-    // [enforcement-integrity] Set unused-suppression diagnostics to errors; noInlineConfig is the active source-suppression protection.
-    reportUnusedDisableDirectives: 'error',
-    // [enforcement-integrity] Set unused inline-policy diagnostics to errors; noInlineConfig remains the active source-configuration protection.
-    reportUnusedInlineConfigs: 'error',
-  },
-  name: '@asmundwien/lint/vitest/snapshots',
-  plugins: { vitest: plugin },
-  rules: {
-    // [architectural-prevention] Snapshot ceilings of 50 external lines and 20 inline lines are chosen review limits to discourage opaque expected output, not guarantees of useful checks.
-    'vitest/no-large-snapshots': ['error', { inlineMaxSize: 20, maxSize: 50 }],
-  },
 });
 
 export { vitest };

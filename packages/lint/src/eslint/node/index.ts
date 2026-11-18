@@ -1,10 +1,12 @@
+import type { Linter } from 'eslint';
+
 import { defineConfig } from 'eslint/config';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import { createNodeResolver } from 'eslint-plugin-import-x';
 import n from 'eslint-plugin-n';
 import globals from 'globals';
 
-const node = defineConfig({
+const node: Linter.Config[] = defineConfig({
   files: ['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'],
   languageOptions: {
     globals: {

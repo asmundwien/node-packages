@@ -1,7 +1,6 @@
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const coreRuleReplacements = {
+import type { Linter } from 'eslint';
+
+const coreRuleReplacements: Linter.RulesRecord = {
   // [standardization] Off (covered): @typescript-eslint/naming-convention owns the selected value/type naming policy, including PascalCase components and permitted underscores.
   camelcase: 'off',
   // [architectural-prevention] Off (covered): @typescript-eslint/class-methods-use-this checks receiver ownership without misreading typed class declarations.

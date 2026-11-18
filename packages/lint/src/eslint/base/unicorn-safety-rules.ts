@@ -1,7 +1,6 @@
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const unicornSafetyRules = {
+import type { Linter } from 'eslint';
+
+const unicornSafetyRules: Linter.RulesRecord = {
   // [correctness] Use this in matched static methods so inherited calls refer to the receiving subclass rather than a hard-coded base class.
   'unicorn/class-reference-in-static-methods': 'error',
   // [correctness] Use strict Node assertions so coercion cannot make tests accept values with the wrong type.

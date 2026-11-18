@@ -1,15 +1,17 @@
+import type { Linter } from 'eslint';
+
 import { defineConfig } from 'eslint/config';
 import { createNodeResolver, importX } from 'eslint-plugin-import-x';
 import regexp from 'eslint-plugin-regexp';
 import unicorn from 'eslint-plugin-unicorn';
 
-import { coreConventionRules } from './core-convention-rules.mjs';
-import { coreSafetyRules } from './core-safety-rules.mjs';
-import { importRules } from './import-rules.mjs';
-import { regexpRules } from './regexp-rules.mjs';
-import { unicornRules } from './unicorn-rules.mjs';
+import { coreConventionRules } from './core-convention-rules.ts';
+import { coreSafetyRules } from './core-safety-rules.ts';
+import { importRules } from './import-rules.ts';
+import { regexpRules } from './regexp-rules.ts';
+import { unicornRules } from './unicorn-rules.ts';
 
-const base = defineConfig(
+const base: Linter.Config[] = defineConfig(
   {
     files: ['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'],
     languageOptions: {

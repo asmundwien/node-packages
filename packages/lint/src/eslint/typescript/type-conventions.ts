@@ -1,7 +1,6 @@
-/**
-@type {import('eslint').Linter.RulesRecord}
-*/
-const typeConventions = {
+import type { Linter } from 'eslint';
+
+const typeConventions: Linter.RulesRecord = {
   // [standardization] Keep overloads adjacent so reviewers can compare the complete callable contract without searching through generated declarations.
   '@typescript-eslint/adjacent-overload-signatures': 'error',
   // [standardization] Choose T[] array syntax so generated contracts do not alternate it with the equivalent Array<T> spelling.

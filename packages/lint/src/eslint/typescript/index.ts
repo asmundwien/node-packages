@@ -1,14 +1,16 @@
+import type { Linter } from 'eslint';
+
 import { defineConfig } from 'eslint/config';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import unicorn from 'eslint-plugin-unicorn';
 import ts from 'typescript-eslint';
 
-import { compilerDelegations } from './compiler-delegations.mjs';
-import { coreRuleReplacements } from './core-rule-replacements.mjs';
-import { typeConventions } from './type-conventions.mjs';
-import { typeSafety } from './type-safety.mjs';
+import { compilerDelegations } from './compiler-delegations.ts';
+import { coreRuleReplacements } from './core-rule-replacements.ts';
+import { typeConventions } from './type-conventions.ts';
+import { typeSafety } from './type-safety.ts';
 
-const typescript = defineConfig({
+const typescript: Linter.Config[] = defineConfig({
   files: ['**/*.{ts,tsx,mts,cts}'],
   languageOptions: {
     parser: ts.parser,
