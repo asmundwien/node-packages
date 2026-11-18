@@ -1,6 +1,8 @@
 import plugin from '@vitest/eslint-plugin';
 import { defineConfig } from 'eslint/config';
 
+import { restrictedProperties } from '../base/core-safety-rules.mjs';
+
 const testFiles = [
   '**/*.{test,spec}.{js,jsx,mjs,cjs,ts,tsx,mts,cts}',
   '**/{test,tests,__tests__}/**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}',
@@ -51,7 +53,7 @@ const vitest = defineConfig({
       ],
     }],
     // [enforcement-integrity] Reject skipIf and runIf on ordinary and fixture APIs so runtime conditions cannot silently omit registered verification.
-    'no-restricted-properties': ['error', {
+    'no-restricted-properties': ['error', ...restrictedProperties, {
       message: 'Register unconditional test cases. Put environment-specific suites in scoped Vitest projects.',
       property: 'skipIf',
     }, {

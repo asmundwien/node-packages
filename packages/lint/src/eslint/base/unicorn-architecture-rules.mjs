@@ -20,8 +20,6 @@ const unicornArchitectureRules = {
   'unicorn/no-array-sort': ['error', { allowExpressionStatement: false }],
   // [architectural-prevention] Find extrema directly instead of sorting every element solely to read one endpoint.
   'unicorn/no-array-sort-for-min-max': 'error',
-  // [architectural-prevention] Use toSpliced() so range updates do not mutate an array that other consumers may share.
-  'unicorn/no-array-splice': 'error',
   // [architectural-prevention] Keep finally cleanup synchronous under this policy so completion does not depend on an additional asynchronous cleanup chain.
   'unicorn/no-async-promise-finally': 'error',
   // [architectural-prevention] Avoid break targets hidden inside nested loops or switches so reviewers can identify which iteration ends.

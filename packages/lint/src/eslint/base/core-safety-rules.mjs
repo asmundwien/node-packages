@@ -7,6 +7,11 @@ const maximumFunctionLines = 50;
 const maximumFunctionStatements = 10;
 const maximumParameters = 3;
 
+const restrictedProperties = [{
+  message: 'Use toSpliced() for an updated copy or slice() for removed elements; return the result explicitly.',
+  property: 'splice',
+}];
+
 /**
 @type {import('eslint').Linter.RulesRecord}
 */
@@ -131,6 +136,8 @@ const coreSafetyRules = {
   'no-prototype-builtins': 'error',
   // [correctness] Catch redeclarations that can hide a conflicting binding or overwrite a function-scoped declaration's intended meaning.
   'no-redeclare': 'error',
+  // [architectural-prevention] Reject statically named splice access regardless of ownership so caller-owned arrays remain unchanged; this also restricts non-array methods with that name.
+  'no-restricted-properties': ['error', ...restrictedProperties],
   // [correctness] Avoid JavaScript URLs because navigation can execute embedded code instead of loading a resource.
   'no-script-url': 'error',
   // [correctness] Catch self-assignments that leave an intended update unperformed and can hide a mistaken source binding.
@@ -201,4 +208,4 @@ const coreSafetyRules = {
   'valid-typeof': 'error',
 };
 
-export { coreSafetyRules };
+export { coreSafetyRules, restrictedProperties };
