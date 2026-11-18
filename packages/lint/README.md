@@ -11,7 +11,7 @@ Create `eslint.config.mjs` with `setup(options)`. Type-aware TypeScript checks a
 | Option | Use |
 | --- | --- |
 | `runtime` | `node` for Node.js, `react` for React 19 browser projects, or `generic` for runtime-neutral TypeScript. |
-| `tsconfigRootDir` | Absolute directory containing your `tsconfig.json`. |
+| `tsconfigRootDir` | Absolute directory containing your `tsconfig.json`, used for type-aware checks and TypeScript import resolution. |
 
 For a Node.js TypeScript project:
 

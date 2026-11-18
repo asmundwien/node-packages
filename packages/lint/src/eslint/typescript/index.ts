@@ -1,5 +1,4 @@
 import { defineConfig } from 'eslint/config';
-import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import { parser, plugin } from 'typescript-eslint';
 
@@ -28,10 +27,6 @@ const typescript: Linter.Config[] = defineConfig({
   },
   settings: {
     'import-x/extensions': ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'],
-    // [correctness] Resolve declarations and ESM exports without enabling CommonJS or unrelated runtime branches.
-    'import-x/resolver-next': [createTypeScriptImportResolver({
-      conditionNames: ['types', 'import', 'default'],
-    })],
   },
 });
 

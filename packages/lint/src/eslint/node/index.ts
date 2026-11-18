@@ -1,5 +1,4 @@
 import { defineConfig } from 'eslint/config';
-import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import { createNodeResolver } from 'eslint-plugin-import-x';
 import n from 'eslint-plugin-n';
 import globals from 'globals';
@@ -80,15 +79,6 @@ const node: Linter.Config[] = defineConfig({
       extensions: ['.mjs', '.cjs', '.js', '.jsx', '.json', '.node'],
     })],
     node: { version: '>=26.0.0' },
-  },
-}, {
-  files: ['**/*.{ts,tsx,mts,cts}'],
-  name: '@asmundwien/lint/node/typescript-resolution',
-  settings: {
-    // [correctness] Preserve declaration, extension-alias, and tsconfig path resolution when Node follows the TypeScript layer.
-    'import-x/resolver-next': [createTypeScriptImportResolver({
-      conditionNames: ['types', 'node', 'node-addons', 'import', 'default'],
-    })],
   },
 });
 

@@ -1,3 +1,7 @@
+import path from 'node:path';
+
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
+
 import { base } from './base/index.ts';
 import { node } from './node/index.ts';
 import { react } from './react/index.ts';
@@ -38,16 +42,24 @@ export default setup({
 */
 function setup({ runtime, tsconfigRootDir }: SetupOptions): Linter.Config[] {
   const runtimeConfigs = { generic: [], node, react };
+  const runtimeConditions = { generic: [], node: ['node', 'node-addons'], react: ['browser'] };
 
   return [
     ...base,
     ...typescript,
+    ...runtimeConfigs[runtime],
     {
       files: ['**/*.{ts,tsx,mts,cts}'],
       languageOptions: { parserOptions: { tsconfigRootDir } },
       name: '@asmundwien/lint/typescript/project-root',
+      settings: {
+        // [correctness] Resolve aliases from the parser's compiler project while preserving the selected runtime's ESM export conditions.
+        'import-x/resolver-next': [createTypeScriptImportResolver({
+          conditionNames: ['types', ...runtimeConditions[runtime], 'import', 'default'],
+          project: path.join(tsconfigRootDir, 'tsconfig.json'),
+        })],
+      },
     },
-    ...runtimeConfigs[runtime],
     ...vitest,
   ];
 }

@@ -1,6 +1,5 @@
 import finalPlugin from '@eslint-react/eslint-plugin';
 import { defineConfig } from 'eslint/config';
-import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import hooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
@@ -186,10 +185,6 @@ const react: Linter.Config[] = defineConfig({
     'react-hooks/void-use-memo': 'error',
   },
   settings: {
-    // [correctness] Resolve browser ESM exports and declarations without selecting Node or CommonJS branches.
-    'import-x/resolver-next': [createTypeScriptImportResolver({
-      conditionNames: ['types', 'browser', 'import', 'default'],
-    })],
     'react-x': {
       importSource: 'react',
       polymorphicPropName: 'as',
