@@ -82,8 +82,12 @@ const typeSafety: Linter.RulesRecord = {
   '@typescript-eslint/no-useless-default-assignment': 'error',
   // [correctness] Use primitive types instead of boxed object types because wrapper contracts can accept objects with truthiness and equality behavior unlike primitive values.
   '@typescript-eslint/no-wrapper-object-types': 'error',
-  // [correctness] Throw Error values so consumers can inspect ordinary error messages and stack diagnostics instead of receiving arbitrary thrown data.
-  '@typescript-eslint/only-throw-error': 'error',
+  // [correctness] Throw Error values, including narrowed or wrapped caught values, so consumers receive messages and stack diagnostics instead of unchecked unknown or any data.
+  '@typescript-eslint/only-throw-error': ['error', {
+    allowRethrowing: false,
+    allowThrowingAny: false,
+    allowThrowingUnknown: false,
+  }],
   // [correctness] Initialize enum members explicitly so inserting or reordering earlier members does not silently renumber values that consumers may persist or exchange.
   '@typescript-eslint/prefer-enum-initializers': 'error',
   // [correctness] Prefer nullish defaults so valid false, zero or empty-string inputs are not replaced merely because a generated fallback used truthiness.
