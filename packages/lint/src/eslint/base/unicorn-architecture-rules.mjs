@@ -118,7 +118,7 @@ const unicornArchitectureRules = {
   'unicorn/prefer-split-limit': 'error',
   // [architectural-prevention] Declare high-frequency listeners passive so the browser need not delay scrolling while waiting for possible cancellation.
   'unicorn/require-passive-events': 'error',
-  // [architectural-prevention] One operation per try block is a chosen review ceiling to make the source of a caught failure identifiable, not proof of correct recovery.
+  // [architectural-prevention] Limit try blocks to cyclomatic complexity 1 to avoid branching paths within a catch handler's protected code.
   'unicorn/try-complexity': ['error', { max: 1 }],
 };
 
