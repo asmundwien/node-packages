@@ -8,4 +8,5 @@ Follow the [repository contributing guide](../../../docs/contributing.md) for wo
 
 ## Verification
 
-Run `pnpm --filter @asmundwien/lint typecheck` for compiler checks.
+Run `pnpm --filter @asmundwien/lint typecheck` for compiler checks of the TypeScript source under `src/`.
+Run `pnpm --filter @asmundwien/lint lint:check` for ESLint checks of the source and tool configuration.
