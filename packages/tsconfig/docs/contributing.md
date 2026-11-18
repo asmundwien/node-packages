@@ -1,6 +1,6 @@
 # Contributing to @asmundwien/tsconfig
 
-Follow the [shared configuration policy](../../../docs/contributing.md#configuration-policy) and [repository workflow](../../../docs/contributing.md#development).
+Follow the [repository contributing guide](../../../docs/contributing.md) for workflow and source standards, and the [shared configuration policy](../../../docs/configuration-policy.md) for decision rationale and exceptions.
 
 Keep shared source policy in `base.json` and runtime requirements in environment presets. Leave project-specific file selection and build options to consumers.
 
