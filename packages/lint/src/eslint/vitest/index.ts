@@ -1,9 +1,9 @@
-import type { Linter } from 'eslint';
-
 import plugin from '@vitest/eslint-plugin';
 import { defineConfig } from 'eslint/config';
 
 import { restrictedProperties } from '../base/core-safety-rules.ts';
+
+import type { Linter } from 'eslint';
 
 const testFiles = [
   '**/*.{test,spec}.{js,jsx,mjs,cjs,ts,tsx,mts,cts}',

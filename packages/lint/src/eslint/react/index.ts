@@ -1,10 +1,10 @@
-import type { Linter } from 'eslint';
-
 import finalPlugin from '@eslint-react/eslint-plugin';
 import { defineConfig } from 'eslint/config';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import hooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
+
+import type { Linter } from 'eslint';
 
 const react: Linter.Config[] = defineConfig({
   files: ['**/*.{ts,tsx,mts,cts}'],

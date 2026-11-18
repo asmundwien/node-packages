@@ -1,15 +1,15 @@
-import type { Linter } from 'eslint';
-
 import { defineConfig } from 'eslint/config';
 import { createNodeResolver, importX } from 'eslint-plugin-import-x';
 import regexp from 'eslint-plugin-regexp';
-import unicorn from 'eslint-plugin-unicorn';
+import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 
 import { coreConventionRules } from './core-convention-rules.ts';
 import { coreSafetyRules } from './core-safety-rules.ts';
 import { importRules } from './import-rules.ts';
 import { regexpRules } from './regexp-rules.ts';
 import { unicornRules } from './unicorn-rules.ts';
+
+import type { Linter } from 'eslint';
 
 const base: Linter.Config[] = defineConfig(
   {
@@ -31,7 +31,7 @@ const base: Linter.Config[] = defineConfig(
     plugins: {
       'import-x': importX,
       regexp,
-      unicorn,
+      unicorn: eslintPluginUnicorn,
     },
     rules: {
       ...coreConventionRules,

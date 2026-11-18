@@ -4,6 +4,8 @@ The lint and compiler packages constrain agent-generated code to reduce human re
 
 ## Decision rationale
 
+Give each rule exactly one single-line rationale comment immediately before its configuration. Combine requirements and exceptions in that line; do not wrap it or add separate rationale comments.
+
 Keep rationale beside each configuration decision, including overrides. Explain the chosen value and material tradeoffs. Label it with applicable purposes in this order:
 
 | Purpose                    | Intent                                                                        |
