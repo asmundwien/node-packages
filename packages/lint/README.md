@@ -1,6 +1,6 @@
 # @asmundwien/lint
 
-Preventive ESLint policy for TypeScript ESM projects, intended to reduce human review burden. Requires Node.js 24+.
+Preventive ESLint policy for TypeScript ESM projects, intended to reduce human review burden. See the [runtime baseline](../../docs/adr/0001-runtime-and-language-baseline.md) for developer and consumer requirements.
 
 ## Setup
 

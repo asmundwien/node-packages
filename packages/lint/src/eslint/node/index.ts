@@ -42,11 +42,11 @@ const node: Linter.Config[] = defineConfig({
     'n/no-unpublished-bin': 'error',
     // [correctness] Reject imports excluded by npm publication so a working checkout cannot hide a broken installed package.
     'n/no-unpublished-import': 'error',
-    // [correctness] Restrict ECMAScript built-ins to the Node 24.0.0 minimum so supported installations can execute them.
+    // [correctness] Restrict ECMAScript built-ins to the Node 26.0.0 minimum so supported installations can execute them.
     'n/no-unsupported-features/es-builtins': 'error',
     // [correctness] Reject syntax unsupported by the Node minimum; allow native ESM modules because this package requires ESM.
     'n/no-unsupported-features/es-syntax': ['error', { ignores: ['modules'] }],
-    // [correctness] Restrict Node-specific built-ins to the Node 24.0.0 minimum so newer development runtimes cannot hide incompatibility.
+    // [correctness] Restrict Node-specific built-ins to the Node 26.0.0 minimum so newer development runtimes cannot hide incompatibility.
     'n/no-unsupported-features/node-builtins': 'error',
     // [standardization] Use Node's global Buffer so access to the same constructor has one spelling.
     'n/prefer-global/buffer': 'error',
@@ -56,9 +56,9 @@ const node: Linter.Config[] = defineConfig({
     'n/prefer-global/crypto': 'error',
     // [standardization] Use Node's global process so process operations have one recognizable access pattern.
     'n/prefer-global/process': 'error',
-    // [standardization] Use the global TextDecoder supported by Node 24 so decoding does not alternate between equivalent bindings.
+    // [standardization] Use the global TextDecoder so decoding does not alternate between equivalent bindings.
     'n/prefer-global/text-decoder': 'error',
-    // [standardization] Use the global TextEncoder supported by Node 24 so encoding does not alternate between equivalent bindings.
+    // [standardization] Use the global TextEncoder so encoding does not alternate between equivalent bindings.
     'n/prefer-global/text-encoder': 'error',
     // [standardization] Use global callback timers so scheduling does not alternate between global and imported spellings.
     'n/prefer-global/timers': 'error',
@@ -79,7 +79,7 @@ const node: Linter.Config[] = defineConfig({
       conditionNames: ['node', 'node-addons', 'import', 'default'],
       extensions: ['.mjs', '.cjs', '.js', '.jsx', '.json', '.node'],
     })],
-    node: { version: '>=24.0.0' },
+    node: { version: '>=26.0.0' },
   },
 }, {
   files: ['**/*.{ts,tsx,mts,cts}'],
