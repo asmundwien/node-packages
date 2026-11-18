@@ -1,5 +1,5 @@
 import { defineConfig } from 'eslint/config';
-import { createNodeResolver, importX } from 'eslint-plugin-import-x';
+import { importX } from 'eslint-plugin-import-x';
 import regexp from 'eslint-plugin-regexp';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 
@@ -43,13 +43,6 @@ const base: Linter.Config[] = defineConfig(
     settings: {
       // [correctness] Configure module analysis separately from resolution so JSX imports receive export and cycle checks.
       'import-x/extensions': ['.js', '.jsx', '.mjs', '.cjs'],
-      'import-x/resolver-next': [
-        // [correctness] Resolve ESM imports without accepting require-only exports; runtime layers add their own conditions.
-        createNodeResolver({
-          conditionNames: ['import', 'default'],
-          extensions: ['.mjs', '.cjs', '.js', '.jsx', '.json', '.node'],
-        }),
-      ],
     },
   },
   {

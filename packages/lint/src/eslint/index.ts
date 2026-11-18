@@ -1,13 +1,11 @@
-import path from 'node:path';
-
-import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
-
 import { base } from './base/index.ts';
+import { importResolution } from './import-resolution.ts';
 import { node } from './node/index.ts';
 import { react } from './react/index.ts';
 import { typescript } from './typescript/index.ts';
 import { vitest } from './vitest/index.ts';
 
+import type { Runtime } from './import-resolution.ts';
 import type { Linter } from 'eslint';
 
 /**
@@ -17,7 +15,7 @@ interface SetupOptions {
   /**
   Selects environment-specific rules, globals and import resolution. Use `generic` for runtime-neutral code, `node` for Node.js, or `react` for React 19 browser projects.
   */
-  readonly runtime: 'generic' | 'node' | 'react';
+  readonly runtime: Runtime;
   /**
   Absolute directory containing the project's `tsconfig.json`.
   */
@@ -42,24 +40,12 @@ export default setup({
 */
 function setup({ runtime, tsconfigRootDir }: SetupOptions): Linter.Config[] {
   const runtimeConfigs = { generic: [], node, react };
-  const runtimeConditions = { generic: [], node: ['node', 'node-addons', 'module-sync'], react: ['browser'] };
 
   return [
     ...base,
     ...typescript,
     ...runtimeConfigs[runtime],
-    {
-      files: ['**/*.{ts,tsx,mts,cts}'],
-      languageOptions: { parserOptions: { tsconfigRootDir } },
-      name: '@asmundwien/lint/typescript/project-root',
-      settings: {
-        // [correctness] Resolve aliases from the parser's compiler project while preserving the selected runtime's ESM export conditions.
-        'import-x/resolver-next': [createTypeScriptImportResolver({
-          conditionNames: ['types', ...runtimeConditions[runtime], 'import', 'default'],
-          project: path.join(tsconfigRootDir, 'tsconfig.json'),
-        })],
-      },
-    },
+    ...importResolution({ runtime, tsconfigRootDir }),
     ...vitest,
   ];
 }

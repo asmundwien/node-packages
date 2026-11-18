@@ -1,5 +1,4 @@
 import { defineConfig } from 'eslint/config';
-import { createNodeResolver } from 'eslint-plugin-import-x';
 import n from 'eslint-plugin-n';
 import globals from 'globals';
 
@@ -73,11 +72,6 @@ const node: Linter.Config[] = defineConfig({
     'n/prefer-promises/fs': 'error',
   },
   settings: {
-    // [correctness] Match Node's ESM export conditions without accepting require-only or browser-only entries.
-    'import-x/resolver-next': [createNodeResolver({
-      conditionNames: ['node', 'node-addons', 'module-sync', 'import', 'default'],
-      extensions: ['.mjs', '.cjs', '.js', '.jsx', '.json', '.node'],
-    })],
     node: { version: '>=26.0.0' },
   },
 });
