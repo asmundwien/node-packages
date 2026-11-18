@@ -42,7 +42,7 @@ export default setup({
 */
 function setup({ runtime, tsconfigRootDir }: SetupOptions): Linter.Config[] {
   const runtimeConfigs = { generic: [], node, react };
-  const runtimeConditions = { generic: [], node: ['node', 'node-addons'], react: ['browser'] };
+  const runtimeConditions = { generic: [], node: ['node', 'node-addons', 'module-sync'], react: ['browser'] };
 
   return [
     ...base,

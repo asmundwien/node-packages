@@ -75,7 +75,7 @@ const node: Linter.Config[] = defineConfig({
   settings: {
     // [correctness] Match Node's ESM export conditions without accepting require-only or browser-only entries.
     'import-x/resolver-next': [createNodeResolver({
-      conditionNames: ['node', 'node-addons', 'import', 'default'],
+      conditionNames: ['node', 'node-addons', 'module-sync', 'import', 'default'],
       extensions: ['.mjs', '.cjs', '.js', '.jsx', '.json', '.node'],
     })],
     node: { version: '>=26.0.0' },
