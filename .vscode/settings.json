@@ -1,35 +1,36 @@
 {
   "json.schemaDownload.trustedDomains": {
-    "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json": true
+    "https://github.com/dyoshikawa/rulesync/releases/latest/download/config-schema.json": true,
+    "https://turborepo.com/schema.json": true
   },
   "workbench.colorCustomizations": {
-    "activityBar.activeBackground": "#ab307e",
+    "activityBar.activeBackground": "#fa1b49",
     "activityBar.activeBorder": "#e7e7e7",
-    "activityBar.background": "#ab307e",
+    "activityBar.background": "#fa1b49",
     "activityBar.foreground": "#e7e7e7",
     "activityBar.inactiveForeground": "#e7e7e799",
-    "activityBarBadge.background": "#25320e",
+    "activityBarBadge.background": "#155e02",
     "activityBarBadge.foreground": "#e7e7e7",
-    "activityBarTop.activeBackground": "#ab307e",
+    "activityBarTop.activeBackground": "#fa1b49",
     "activityBarTop.activeBorder": "#e7e7e7",
-    "activityBarTop.background": "#ab307e",
+    "activityBarTop.background": "#fa1b49",
     "activityBarTop.foreground": "#e7e7e7",
     "activityBarTop.inactiveForeground": "#e7e7e799",
     "commandCenter.border": "#e7e7e799",
     "commandCenter.foreground": "#e7e7e7",
-    "sash.hoverBorder": "#ab307e",
-    "statusBar.background": "#832561",
-    "statusBar.debuggingBackground": "#832561",
+    "sash.hoverBorder": "#fa1b49",
+    "statusBar.background": "#dd0531",
+    "statusBar.debuggingBackground": "#dd0531",
     "statusBar.debuggingForeground": "#e7e7e7",
     "statusBar.foreground": "#e7e7e7",
-    "statusBar.inactiveBackground": "#832561",
-    "statusBarItem.hoverBackground": "#ab307e",
-    "statusBarItem.remoteBackground": "#121907",
+    "statusBar.inactiveBackground": "#dd0531",
+    "statusBarItem.hoverBackground": "#fa1b49",
+    "statusBarItem.remoteBackground": "#0e3e01",
     "statusBarItem.remoteForeground": "#e7e7e7",
-    "titleBar.activeBackground": "#832561",
+    "titleBar.activeBackground": "#dd0531",
     "titleBar.activeForeground": "#e7e7e7",
-    "titleBar.inactiveBackground": "#83256199",
+    "titleBar.inactiveBackground": "#dd053199",
     "titleBar.inactiveForeground": "#e7e7e799"
   },
-  "peacock.color": "#832561"
+  "peacock.color": "#dd0531"
 }

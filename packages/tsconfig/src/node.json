@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // [standardization] Inherit shared source policy before adding the Node environment so runtime selection does not discard the shared checks.
+  "extends": "./base.json",
+  "compilerOptions": {
+    // [standardization] Emit the newest named yearly syntax baseline supported by the pinned compiler and Node consumer target.
+    "target": "ES2025",
+    // [correctness] Expose ES2025 and the lint-required ES2026 APIs still named ESNext by the pinned compiler, without browser globals.
+    "lib": ["ES2025", "ESNext.Array", "ESNext.Error"],
+    // [correctness] Load Node globals explicitly instead of auto-including every visible @types package; dependencies can still supply imported types.
+    "types": ["node"],
+    // [correctness] Match Node's ESM/CommonJS classification and resolution so checked import paths agree with runtime package metadata.
+    "module": "NodeNext"
+  }
+}

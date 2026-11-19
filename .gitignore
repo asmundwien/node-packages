@@ -1,3 +1,9 @@
+# Agents
 .omp/
 .rulesync/
+
+# Node.js
 node_modules/
+
+# Frameworks
+.turbo/

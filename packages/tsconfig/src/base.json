@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    // [correctness] Enable TypeScript's strict checks so implicit any, invalid null access, and incompatible contracts fail compilation.
+    "strict": true,
+    // [correctness] Reject partial value-returning paths, including inferred getters, rather than silently return undefined.
+    "noImplicitReturns": true,
+    // [correctness] Report unreachable statements as compiler errors because the lint layer delegates that check to TypeScript.
+    "allowUnreachableCode": false,
+    // [enforcement-integrity] Keep semantic diagnostics enabled so a compiler invocation cannot silently become syntax-only checking.
+    "noCheck": false,
+    // [correctness] Off (scope): Trust declaration-file consistency to avoid rechecking declaration bodies; use sites remain checked, but declaration errors can escape.
+    "skipLibCheck": true,
+    // [correctness] Include undefined in unchecked indexed reads so absent keys and array elements require handling.
+    "noUncheckedIndexedAccess": true,
+    // [correctness] Distinguish an absent optional property from a present undefined value so assignments preserve the declared object contract.
+    "exactOptionalPropertyTypes": true,
+    // [correctness] Require override on inherited members so changes to a base class cannot silently turn an override into an unrelated declaration.
+    "noImplicitOverride": true,
+    // [correctness] Reject nonempty switch branches that fall through so one case cannot accidentally execute the next case's work.
+    "noFallthroughCasesInSwitch": true,
+    // [correctness] Reject inconsistent import-path casing so case-insensitive development filesystems cannot hide deployment failures.
+    "forceConsistentCasingInFileNames": true,
+    // [correctness] Reject source constructs that isolated transpilers cannot interpret safely so per-file builds preserve compiler assumptions.
+    "isolatedModules": true,
+    // [standardization] Use only erasable TypeScript syntax so the shared source subset also works with type-stripping runtimes.
+    "erasableSyntaxOnly": true,
+    // [correctness, standardization] Preserve runtime imports and require explicit type-only imports so compiler elision cannot hide dependency effects.
+    "verbatimModuleSyntax": true
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "extends": "@asmundwien/tsconfig/node.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src/**/*"]
+}
