@@ -8,5 +8,8 @@ Follow the [repository contributing guide](../../../docs/contributing.md) for wo
 
 ## Verification
 
-Run `pnpm --filter @asmundwien/lint typecheck` for compiler checks of the TypeScript source under `src/`.
+Run `pnpm --filter @asmundwien/lint typecheck` for compiler checks of the TypeScript implementation and tests.
 Run `pnpm --filter @asmundwien/lint lint:check` for ESLint checks of the source and tool configuration.
+Run `pnpm --filter @asmundwien/lint test` for native ESLint rule diagnostics, fixes and consumer-policy regression cases.
+
+Maintain rule implementations and their behavioral cases together. Keep each rule's leading description and source link, and preserve the licenses beside the local rules and spacing engine.

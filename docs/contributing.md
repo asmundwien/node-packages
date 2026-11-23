@@ -7,6 +7,7 @@ Install dependencies with `pnpm install --frozen-lockfile`. `pnpm install` also 
 | `pnpm lint`                    | Runs each package's lint command and applies available ESLint fixes.                                                  |
 | `pnpm lint:check`              | Checks each package without fixes and fails on ESLint errors or warnings.                                             |
 | `pnpm typecheck`               | Checks each package's compiler project, including its selected source files and tooling.                              |
+| `pnpm test`                    | Runs tests in every workspace package that defines a test command.                                                   |
 | `pnpm package-manifests`       | Applies Sherif's automatic fixes to package manifests and workspace configuration.                                    |
 | `pnpm package-manifests:check` | Checks package manifests for dependency consistency, valid workspace references and other Sherif rules without fixes. |
 | `pnpm github-actions:check`    | Runs actionlint against all `.github/workflows/*.yml` files.                                                          |

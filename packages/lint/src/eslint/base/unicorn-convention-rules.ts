@@ -116,8 +116,6 @@ const unicornConventionRules: Linter.RulesRecord = {
   'unicorn/no-subtraction-comparison': 'error',
   // [standardization] Use lexical receiver access rather than aliasing this so reviewers do not track multiple names for the same receiver.
   'unicorn/no-this-assignment': 'error',
-  // [standardization] Compare declared values with undefined directly so absence checks do not disguise themselves as type-name checks.
-  'unicorn/no-typeof-undefined': 'error',
   // [standardization] Declare class members explicitly so reviewers can inventory instance state without tracing assignments throughout methods.
   'unicorn/no-undeclared-class-members': 'error',
   // [standardization] Omit flat()'s default depth of one so ordinary shallow flattening has one selected spelling.

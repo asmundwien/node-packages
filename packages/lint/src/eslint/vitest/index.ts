@@ -112,11 +112,9 @@ const vitest: Linter.Config[] = defineConfig({
     'vitest/no-identical-title': 'error',
     // [enforcement-integrity] Interpolated snapshot expectations can derive the expected output from runtime data instead of checking a fixed contract.
     'vitest/no-interpolation-in-snapshots': 'error',
-    // [architectural-prevention] Ban module replacement through mock, doMock and importMock so generated tests expose doubles through explicit dependency ownership.
+    // [architectural-prevention] Reject automatic mock imports so tests pass doubles through explicit dependencies instead of loading a replaced module.
     'vitest/no-restricted-vi-methods': ['error', {
-      doMock: 'Pass a test double through an explicit parameter, constructor or factory dependency instead of replacing a module with vi.doMock().',
       importMock: 'Import the real module and pass test doubles through explicit dependencies instead of loading an automatically mocked module.',
-      mock: 'Pass a test double through an explicit parameter, constructor or factory dependency instead of replacing a module with vi.mock().',
     }],
     // [correctness] Assertions in suite-definition code run outside the intended test lifecycle and can fail before a case owns the failure.
     'vitest/no-standalone-expect': 'error',

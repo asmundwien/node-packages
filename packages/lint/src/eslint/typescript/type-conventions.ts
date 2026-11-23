@@ -152,8 +152,8 @@ const typeConventions: Linter.RulesRecord = {
   '@typescript-eslint/prefer-optional-chain': 'error',
   // [architectural-prevention] Mark initialization-only private members readonly so later generated code cannot mutate state that the class currently treats as fixed.
   '@typescript-eslint/prefer-readonly': 'error',
-  // [architectural-prevention] Require readonly parameter contracts even for inferred types so mutation through caller-owned inputs stays restricted; inference is not an exemption, and readonly does not prove deep runtime immutability.
-  '@typescript-eslint/prefer-readonly-parameter-types': ['error', { ignoreInferredTypes: false }],
+  // [architectural-prevention] Require readonly explicit input contracts while permitting inferred callback state such as fresh reducer accumulators; inferred inputs do not establish ownership.
+  '@typescript-eslint/prefer-readonly-parameter-types': ['error', { ignoreInferredTypes: true }],
   // [standardization] Choose RegExp.exec for non-global matching so generated callers use the matching API without String.match's global-dependent result contract.
   '@typescript-eslint/prefer-regexp-exec': 'error',
   // [standardization] Choose startsWith and endsWith for supported boundary tests so generated string checks state the comparison without index or regex encodings.

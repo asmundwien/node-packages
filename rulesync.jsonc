@@ -18,6 +18,10 @@
     {
       "source": "asmundwien/agentic:node/skills",
       "skills": ["*"]
+    },
+    {
+      "source": "asmundwien/agentic:version-control/skills",
+      "skills": ["*"]
     }
   ]
 }

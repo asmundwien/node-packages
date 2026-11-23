@@ -1,5 +1,7 @@
 import { base } from './base/index.ts';
 import { importResolution } from './import-resolution.ts';
+import { effect as effectPolicy } from './local/effect/index.ts';
+import { local } from './local/index.ts';
 import { node } from './node/index.ts';
 import { react } from './react/index.ts';
 import { typescript } from './typescript/index.ts';
@@ -20,6 +22,10 @@ interface SetupOptions {
   Absolute directory containing the project's `tsconfig.json`.
   */
   readonly tsconfigRootDir: string;
+  /**
+  Enables Effect service, tagged-value construction and matching conventions.
+  */
+  readonly effect?: boolean;
 }
 
 /**
@@ -38,7 +44,7 @@ export default setup({
 });
 ```
 */
-function setup({ runtime, tsconfigRootDir }: SetupOptions): Linter.Config[] {
+function setup({ runtime, tsconfigRootDir, effect = false }: SetupOptions): Linter.Config[] {
   const runtimeConfigs = { generic: [], node, react };
 
   return [
@@ -47,8 +53,11 @@ function setup({ runtime, tsconfigRootDir }: SetupOptions): Linter.Config[] {
     ...runtimeConfigs[runtime],
     ...importResolution({ runtime, tsconfigRootDir }),
     ...vitest,
+    local,
+    ...(effect ? [effectPolicy] : []),
   ];
 }
 
 export { setup };
+
 export type { SetupOptions };

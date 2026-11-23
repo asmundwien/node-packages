@@ -17,6 +17,7 @@
     "knip": "knip",
     "knip:check": "knip",
     "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
     "package-manifests": "sherif --fix",
     "package-manifests:check": "sherif",
     "github-actions:check": "github-actionlint .github/workflows/*.yml",

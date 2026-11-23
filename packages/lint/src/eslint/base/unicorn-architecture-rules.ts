@@ -11,8 +11,6 @@ const unicornArchitectureRules: Linter.RulesRecord = {
   'unicorn/no-array-concat-in-loop': 'error',
   // [architectural-prevention] Avoid front-of-array mutation because shifting existing elements can create repeated linear copying during accumulation.
   'unicorn/no-array-front-mutation': 'error',
-  // [architectural-prevention] Use explicit iteration instead of reduce() so accumulator ownership and update effects remain visible during review.
-  'unicorn/no-array-reduce': 'error',
   // [architectural-prevention] Use toReversed(), including for standalone calls, so reversing order does not mutate an array that other consumers may share.
   'unicorn/no-array-reverse': ['error', { allowExpressionStatement: false }],
   // [architectural-prevention] Use toSorted(), including for standalone calls, so ordering does not mutate an array that other consumers may share.
