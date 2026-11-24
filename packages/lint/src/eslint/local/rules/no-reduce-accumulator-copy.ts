@@ -1,6 +1,8 @@
 /** Reject copies of growing reducer accumulators, including array and object spreads.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-reduce-accumulator-copy.ts
 */
+import { AST_NODE_TYPES as nodeTypes, TSESLint as tsEslint } from "@typescript-eslint/utils";
+
 import {
   arrayMethodTarget,
   isKnownArrayExpression,
@@ -11,21 +13,21 @@ import {
 import type { CreateRule, ESTree, SourceCode, Variable } from "../types.ts";
 
 
-function enclosingReducer(node: ESTree.Node) {
-  if (node.type === "Program") {return null;}
+function enclosingReducer(sourceCode: SourceCode, node: ESTree.Node) {
+  if (node.type === nodeTypes.Program) {return null;}
 
   let parent = node.parent;
 
-  while (parent.type !== "Program") {
-    if (parent.type === "FunctionDeclaration") {return null;}
+  while (parent.type !== nodeTypes.Program) {
+    if (parent.type === nodeTypes.FunctionDeclaration) {return null;}
 
-    if (parent.type === "ArrowFunctionExpression" || parent.type === "FunctionExpression") {
+    if (parent.type === nodeTypes.ArrowFunctionExpression || parent.type === nodeTypes.FunctionExpression) {
       const callback = parent;
       let owner = callback.parent;
 
-      while (owner.type !== "Program" && unwrapArrayExpression(owner) === callback) {owner = owner.parent;}
+      while (owner.type !== nodeTypes.Program && unwrapArrayExpression(owner) === callback) {owner = owner.parent;}
 
-      if (owner.type !== "CallExpression") {return null;}
+      if (owner.type !== nodeTypes.CallExpression) {return null;}
 
       const method = arrayMethodTarget(owner.callee);
       const firstArgument = owner.arguments[0];
@@ -37,9 +39,15 @@ function enclosingReducer(node: ESTree.Node) {
       ) {return null;}
 
       const firstParameter = callback.params[0];
-      const accumulator = firstParameter?.type === "AssignmentPattern" ? firstParameter.left : firstParameter;
+      const accumulatorParameter = firstParameter?.type === nodeTypes.AssignmentPattern ? firstParameter.left : firstParameter;
 
-      return accumulator?.type === "Identifier" ? { callback, accumulator, initialValue: owner.arguments[1] } : null;
+      if (accumulatorParameter?.type !== nodeTypes.Identifier) {return null;}
+
+      const accumulator = sourceCode.getDeclaredVariables(callback).find(variable =>
+        variable.identifiers.some(identifier => identifier.range[0] === accumulatorParameter.range[0]),
+      );
+
+      return accumulator === undefined ? null : { accumulator, initialValue: owner.arguments[1] };
     }
 
     parent = parent.parent;
@@ -48,39 +56,51 @@ function enclosingReducer(node: ESTree.Node) {
   return null;
 }
 
-function referencesAccumulator(
-  sourceCode: SourceCode,
-  node: ESTree.Node,
-  accumulator: Variable,
-  visited = new Set<Variable>(),
-): boolean {
-  const variable = resolveArrayBinding(sourceCode, node);
-
-  if (variable === null || visited.has(variable)) {return false;}
-
-  if (variable === accumulator) {return true;}
-
-  visited.add(variable);
-
-  if (variable.references.some(reference => reference.isWrite() && reference.init !== true)) {return false;}
-
+function constInitializer(variable: Variable): ESTree.Node | null {
   for (const definition of variable.defs) {
     if (
-      definition.type === "Variable" &&
-      definition.node.id.type === "Identifier" && definition.node.init !== null &&
+      definition.type === tsEslint.Scope.DefinitionType.Variable &&
+      definition.node.id.type === nodeTypes.Identifier && definition.node.init !== null &&
       definition.node.parent.kind === "const"
     ) {
-      return referencesAccumulator(sourceCode, definition.node.init, accumulator, visited);
+      return definition.node.init;
     }
   }
 
-  return false;
+  return null;
+}
+
+function isAccumulatorReference(
+  sourceCode: SourceCode,
+  node: ESTree.Node,
+  accumulator: Variable,
+): boolean {
+  const visited = new Set<Variable>();
+  let current = node;
+
+  for (;;) {
+    const variable = resolveArrayBinding(sourceCode, current);
+
+    if (variable === null || visited.has(variable)) {return false;}
+
+    if (variable === accumulator) {return true;}
+
+    visited.add(variable);
+
+    if (variable.references.some(reference => reference.isWrite() && reference.init !== true)) {return false;}
+
+    const initializer = constInitializer(variable);
+
+    if (initializer === null) {return false;}
+
+    current = initializer;
+  }
 }
 
 function isGlobalCopyOwner(sourceCode: SourceCode, node: ESTree.Node, name: string): boolean {
   const expression = unwrapArrayExpression(node);
 
-  if (expression.type !== "Identifier" || expression.name !== name) {return false;}
+  if (expression.type !== nodeTypes.Identifier || expression.name !== name) {return false;}
 
   const variable = resolveArrayBinding(sourceCode, expression);
 
@@ -88,74 +108,67 @@ function isGlobalCopyOwner(sourceCode: SourceCode, node: ESTree.Node, name: stri
 }
 
 export const noReduceAccumulatorCopyRule: CreateRule = {
-  meta: {
-    schema: [],
-    type: "problem",
-    docs: { description: "Disallow copying growing reducer accumulators with spreads, Object.assign, Array.from, or array copy methods." },
-    messages: {
-      accumulatorCopy: "Do not copy the reducer accumulator on every iteration; growing copies can cause quadratic work. Mutate a fresh, locally owned accumulator and return it, or use an iterator pipeline/flatMap.",
-    },
-  },
   create(context) {
     return {
-      SpreadElement(node) {
-        if (node.parent.type !== "ArrayExpression" && node.parent.type !== "ObjectExpression") {return;}
-
-        const reducer = enclosingReducer(node);
-
-        if (reducer === null) {return;}
-
-        const accumulator = context.sourceCode.getDeclaredVariables(reducer.callback).find(variable =>
-          variable.identifiers.some(identifier => identifier.range[0] === reducer.accumulator.range[0]),
-        );
-
-        if (accumulator === undefined) {return;}
-
-        if (referencesAccumulator(context.sourceCode, node.argument, accumulator)) {
-          context.report({ node, messageId: "accumulatorCopy" });
-        }
-      },
-      CallExpression(node) {
-        const method = arrayMethodTarget(node.callee);
-
-        if (method === null) {return;}
-
-        const reducer = enclosingReducer(node);
-
-        if (reducer === null) {return;}
-
-        const accumulator = context.sourceCode.getDeclaredVariables(reducer.callback).find(variable =>
-          variable.identifiers.some(identifier => identifier.range[0] === reducer.accumulator.range[0]),
-        );
-
-        if (accumulator === undefined) {return;}
-
-        const isAccumulator = (expression: ESTree.Node) =>
-          referencesAccumulator(context.sourceCode, expression, accumulator);
-
-        let isCopiesAccumulator = false;
-
-        if (method.name === "assign" && isGlobalCopyOwner(context.sourceCode, method.object, "Object")) {
-          const target = node.arguments[0];
-          isCopiesAccumulator = (
-            target !== undefined && unwrapArrayExpression(target).type === "ObjectExpression" &&
-            node.arguments.slice(1).some(isAccumulator)
-          );
-        } else if (method.name === "from" && isGlobalCopyOwner(context.sourceCode, method.object, "Array")) {
-          const source = node.arguments[0];
-          isCopiesAccumulator = source !== undefined && isAccumulator(source);
-        } else if (["concat", "slice", "toSpliced", "toSorted", "toReversed", "with"].includes(method.name)) {
-          const initialValue = reducer.initialValue;
-
-          const arrayAccumulator = initialValue !== undefined &&
-            isKnownArrayExpression(context.sourceCode, initialValue);
-
-          isCopiesAccumulator = arrayAccumulator && isAccumulator(method.object);
-        }
-
-        if (isCopiesAccumulator) {context.report({ node, messageId: "accumulatorCopy" });}
-      },
-    };
+          CallExpression(node) {
+            const method = arrayMethodTarget(node.callee);
+    
+            if (method === null) {return;}
+    
+            const reducer = enclosingReducer(context.sourceCode, node);
+    
+            if (reducer === null) {return;}
+    
+            const { accumulator } = reducer;
+            let isAccumulatorCopy = false;
+    
+            if (method.name === "assign" && isGlobalCopyOwner(context.sourceCode, method.object, "Object")) {
+              const target = node.arguments[0];
+    
+              if (target !== undefined && unwrapArrayExpression(target).type === nodeTypes.ObjectExpression) {
+                for (let index = 1; index < node.arguments.length; index += 1) {
+                  const argument = node.arguments[index];
+    
+                  if (argument !== undefined && isAccumulatorReference(context.sourceCode, argument, accumulator)) {
+                    isAccumulatorCopy = true;
+                    break;
+                  }
+                }
+              }
+            } else if (method.name === "from" && isGlobalCopyOwner(context.sourceCode, method.object, "Array")) {
+              const source = node.arguments[0];
+              isAccumulatorCopy = source !== undefined && isAccumulatorReference(context.sourceCode, source, accumulator);
+            } else if (["concat", "slice", "toSpliced", "toSorted", "toReversed", "with"].includes(method.name)) {
+              const initialValue = reducer.initialValue;
+    
+              const isArrayAccumulator = initialValue !== undefined &&
+                isKnownArrayExpression(context.sourceCode, initialValue);
+    
+              isAccumulatorCopy = isArrayAccumulator && isAccumulatorReference(context.sourceCode, method.object, accumulator);
+            }
+    
+            if (isAccumulatorCopy) {context.report({ messageId: "accumulatorCopy", node });}
+          },
+          SpreadElement(node) {
+            if (node.parent.type !== nodeTypes.ArrayExpression && node.parent.type !== nodeTypes.ObjectExpression) {return;}
+    
+            const reducer = enclosingReducer(context.sourceCode, node);
+    
+            if (reducer === null) {return;}
+    
+            if (isAccumulatorReference(context.sourceCode, node.argument, reducer.accumulator)) {
+              context.report({ messageId: "accumulatorCopy", node });
+            }
+          },
+        };
   },
+  meta: {
+      docs: { description: "Disallow copying growing reducer accumulators with spreads, Object.assign, Array.from, or array copy methods." },
+      messages: {
+        accumulatorCopy: "Do not copy the reducer accumulator on every iteration; growing copies can cause quadratic work. Mutate a fresh, locally owned accumulator and return it, or use an iterator pipeline/flatMap.",
+      },
+      schema: [],
+      type: "problem",
+    },
 };
 

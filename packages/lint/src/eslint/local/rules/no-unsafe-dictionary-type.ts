@@ -2,6 +2,8 @@
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unsafe-dictionary-type.ts
 */
 
+import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+
 import {
 	type TypeEnvironment,
 	classifyUnsafeDictionary,
@@ -57,14 +59,14 @@ function isTypeNode(node: ESTree.Node): node is ESTree.TypeNode {
 }
 
 function typeReferenceName(type: ESTree.TSTypeReference): string | null {
-	return type.typeName.type === "Identifier" ? type.typeName.name : null;
+	return type.typeName.type === nodeTypes.Identifier ? type.typeName.name : null;
 }
 
 function isInsideTypeAliasDeclaration(node: ESTree.TypeNode): boolean {
 	let current = node.parent;
 
-	while (current.type !== "Program") {
-		if (current.type === "TSTypeAliasDeclaration") {return true;}
+	while (current.type !== nodeTypes.Program) {
+		if (current.type === nodeTypes.TSTypeAliasDeclaration) {return true;}
 
 		current = current.parent;
 	}
@@ -73,7 +75,7 @@ function isInsideTypeAliasDeclaration(node: ESTree.TypeNode): boolean {
 }
 
 function isPlainAliasConsumerUse(node: ESTree.TypeNode, environment: TypeEnvironment): boolean {
-	if (node.type !== "TSTypeReference" || (node.typeArguments?.params.length ?? 0) > 0) {return false;}
+	if (node.type !== nodeTypes.TSTypeReference || (node.typeArguments?.params.length ?? 0) > 0) {return false;}
 
 	const name = typeReferenceName(node);
 
@@ -88,8 +90,8 @@ function isInsideTypeParameterConstraint(node: ESTree.TypeNode): boolean {
 	let child: ESTree.Node = node;
 	let parent = node.parent;
 
-	while (parent.type !== "Program") {
-		if (parent.type === "TSTypeParameter" && parent.constraint === child) {return true;}
+	while (parent.type !== nodeTypes.Program) {
+		if (parent.type === nodeTypes.TSTypeParameter && parent.constraint === child) {return true;}
 
 		child = parent;
 		parent = child.parent;
@@ -99,11 +101,11 @@ function isInsideTypeParameterConstraint(node: ESTree.TypeNode): boolean {
 }
 
 function shouldReportType(node: ESTree.TypeNode, environment: TypeEnvironment): boolean {
-	if (isInsideTypeParameterConstraint(node) || isPlainAliasConsumerUse(node, environment) || (classifyUnsafeDictionary(node, environment) === null)) {return false;}
+	if (isInsideTypeParameterConstraint(node) || isPlainAliasConsumerUse(node, environment)) {return false;}
 
 	let current = node.parent;
 
-	while (current.type !== "Program") {
+	while (current.type !== nodeTypes.Program) {
 		if (isTypeNode(current) && classifyUnsafeDictionary(current, environment) !== null)
 			{return false;}
 
@@ -114,61 +116,59 @@ function shouldReportType(node: ESTree.TypeNode, environment: TypeEnvironment): 
 }
 
 export const noUnsafeDictionaryTypeRule: CreateRule = {
-	meta: {
-    schema: [],
-		type: "problem",
-		docs: {
-			description:
-				"Disallow object-dictionary contracts whose direct value type is unknown, any, object, {}, or a union/alias containing one of those escape hatches.",
-		},
-		messages: {
-			unsafeDictionary:
-				"This dictionary's {{value}} value type gives callers no concrete value contract. Use an owner/schema-derived value type; parse external payloads before insertion.",
-		},
-	},
-	create(context) {
-		let environment: TypeEnvironment | null = null;
-
-		const report = (node: ESTree.Node, value: string) => {
-			context.report({ node, messageId: "unsafeDictionary", data: { value } });
-		};
-
-		const reportIfUnsafe = (node: ESTree.TypeNode) => {
-			if (environment === null || !shouldReportType(node, environment)) {return;}
-
-			const unsafe = classifyUnsafeDictionary(node, environment);
-
-			if (unsafe === null) {return;}
-
-			report(node, unsafe.unsafeValue);
-		};
-
-		return {
-			Program(node) {
-				environment = createTypeEnvironment(
-					node,
-					context.sourceCode.visitorKeys,
-				);
-			},
-			TSTypeReference: reportIfUnsafe,
-			TSTypeLiteral: reportIfUnsafe,
-			TSMappedType: reportIfUnsafe,
-			TSIndexSignature(node) {
-				if (
-					environment === null ||
-					node.typeAnnotation === undefined ||
-					node.parent.type === "TSTypeLiteral"
-				)
-					{return;}
-
-				const unsafe = classifyUnsafeDictionaryValue(
-					node.typeAnnotation.typeAnnotation,
-					environment,
-				);
-
-				if (unsafe !== null) {report(node, unsafe.unsafeValue);}
-			},
-		};
-	},
+  create(context) {
+    let environment: TypeEnvironment | null = null;
+    
+    		function reportIfUnsafe(node: ESTree.TypeNode) {
+    			if (environment === null) {return;}
+    
+    			const unsafe = classifyUnsafeDictionary(node, environment);
+    
+    			if (unsafe === null || !shouldReportType(node, environment)) {return;}
+    
+    			context.report({ data: { value: unsafe.unsafeValue }, messageId: "unsafeDictionary", node });
+    		}
+    
+    		return {
+        			Program(node) {
+        				environment = createTypeEnvironment(
+        					node,
+        					context.sourceCode.visitorKeys,
+        				);
+        			},
+        			TSIndexSignature(node) {
+        				if (
+        					environment === null ||
+        					node.typeAnnotation === undefined ||
+        					node.parent.type === nodeTypes.TSTypeLiteral
+        				)
+        					{return;}
+        
+        				const unsafe = classifyUnsafeDictionaryValue(
+        					node.typeAnnotation.typeAnnotation,
+        					environment,
+        				);
+        
+        				if (unsafe !== null) {
+        					context.report({ data: { value: unsafe.unsafeValue }, messageId: "unsafeDictionary", node });
+        				}
+        			},
+        			TSMappedType: reportIfUnsafe,
+        			TSTypeLiteral: reportIfUnsafe,
+        			TSTypeReference: reportIfUnsafe,
+        		};
+  },
+  meta: {
+      docs: {
+      			description:
+      				"Disallow object-dictionary contracts whose direct value type is unknown, any, object, {}, or a union/alias containing one of those escape hatches.",
+      		},
+      messages: {
+      			unsafeDictionary:
+      				"This dictionary's {{value}} value type gives callers no concrete value contract. Use an owner/schema-derived value type; parse external payloads before insertion.",
+      		},
+      schema: [],
+      type: "problem",
+    },
 };
 

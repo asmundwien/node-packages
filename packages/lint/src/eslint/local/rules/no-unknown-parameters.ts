@@ -1,10 +1,12 @@
 /** Disallow unknown inputs except explicitly named error-cause enrichment.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unknown-parameters.ts
 */
+import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+
 import {
-  containsUnknownType,
   functionParameterBindingName,
   functionParameterTypeAnnotation,
+  hasUnknownType,
 } from "../shared/function-parameters.ts";
 
 import type { CreateRule, ESTree } from "../types.ts";
@@ -22,43 +24,31 @@ function isTypePredicateSubject(owner: ParameterOwner, parameterName: string): b
   const predicate = owner.returnType?.typeAnnotation;
 
   return (
-    predicate?.type === "TSTypePredicate" &&
-    predicate.parameterName.type === "Identifier" &&
+    predicate?.type === nodeTypes.TSTypePredicate &&
+    predicate.parameterName.type === nodeTypes.Identifier &&
     predicate.parameterName.name === parameterName
   );
 }
 
 export const noUnknownParametersRule: CreateRule = {
-  meta: {
-    schema: [],
-    type: "problem",
-    docs: {
-      description:
-        "Disallow explicitly unknown function parameters except `cause` and type-predicate subjects; decode unknown input at its I/O boundary instead.",
-    },
-    messages: {
-      unknownParameter:
-        "Parameter `{{parameter}}` leaves input unparsed. Accept a named domain type; run the expected schema or parser at the I/O boundary before calling this function.",
-    },
-  },
   create(context) {
-    const checkParameters = (node: ParameterOwner) => {
+    function checkParameters(node: ParameterOwner) {
       for (const parameter of node.params) {
         const annotation = functionParameterTypeAnnotation(parameter);
 
-        if (annotation === null || annotation === undefined || !containsUnknownType(annotation.typeAnnotation)) {continue;}
+        if (annotation === null || annotation === undefined || !hasUnknownType(annotation.typeAnnotation)) {continue;}
 
         const name = functionParameterBindingName(parameter, context.sourceCode);
 
         if (name === "cause" || isTypePredicateSubject(node, name)) {continue;}
 
         context.report({
-          node: annotation.typeAnnotation,
-          messageId: "unknownParameter",
-          data: { parameter: name },
-        });
+                data: { parameter: name },
+                messageId: "unknownParameter",
+                node: annotation.typeAnnotation,
+              });
       }
-    };
+    }
 
     return {
       ArrowFunctionExpression: checkParameters,
@@ -73,5 +63,17 @@ export const noUnknownParametersRule: CreateRule = {
       TSMethodSignature: checkParameters,
     };
   },
+  meta: {
+      docs: {
+        description:
+          "Disallow explicitly unknown function parameters except `cause` and type-predicate subjects; decode unknown input at its I/O boundary instead.",
+      },
+      messages: {
+        unknownParameter:
+          "Parameter `{{parameter}}` leaves input unparsed. Accept a named domain type; run the expected schema or parser at the I/O boundary before calling this function.",
+      },
+      schema: [],
+      type: "problem",
+    },
 };
 

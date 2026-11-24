@@ -48,7 +48,7 @@ function importResolution({ runtime, tsconfigRootDir }: {
       languageOptions: { parserOptions: { tsconfigRootDir } },
       name: '@asmundwien/lint/import-resolution/typescript',
       settings: {
-        // [correctness] Resolve aliases from the parser's compiler project while applying the runtime's TypeScript entry policy.
+        // [correctness] Resolve aliases from the root tsconfig while applying the runtime's TypeScript entry policy.
         'import-x/resolver-next': [createTypeScriptImportResolver({
           ...policy.typescript,
           project: path.join(tsconfigRootDir, 'tsconfig.json'),

@@ -6,21 +6,6 @@ const tester = new RuleTester();
 const error = { messageId: "unknownReturn" };
 
 tester.run("local/no-unknown-returns", noUnknownReturnsRule, {
-  valid: [
-    "type ImportedValue = unknown;",
-    "function parse(): ImportedValue { return input; }",
-    "function parse(): User { return user; }",
-    "function infer() { return input; }",
-    "function generic<Value>(): Value { return value; }",
-    "type Value = unknown; function generic<Value>(): Value { return value; }",
-    "type Key = unknown; type Mapped<Input> = { [Key in keyof Input]: () => Key };",
-    "type Item = unknown; type Unpacked<Input> = Input extends Promise<infer Item> ? () => Item : never;",
-    "function cause(): { cause: unknown } { return { cause: input }; }",
-    "type Result = { value: unknown }; function load(): Result { return result; }",
-    "function load(): Promise<User> { return promise; }",
-    "type Identity<T> = T; function load(): Identity<User> { return user; }",
-    "type Value = unknown; function outer() { type Value = User; function load(): Value { return user; } }",
-  ],
   invalid: [
     { code: "function load(): unknown { return input; }", errors: [error] },
     { code: "const load = (): unknown => input;", errors: [error] },
@@ -43,5 +28,20 @@ tester.run("local/no-unknown-returns", noUnknownReturnsRule, {
       code: "type Identity<T> = T; type Wrapped<T> = Promise<Identity<T>>; function load(): Wrapped<unknown> { return promise; }",
       errors: [error],
     },
+  ],
+  valid: [
+    "type ImportedValue = unknown;",
+    "function parse(): ImportedValue { return input; }",
+    "function parse(): User { return user; }",
+    "function infer() { return input; }",
+    "function generic<Value>(): Value { return value; }",
+    "type Value = unknown; function generic<Value>(): Value { return value; }",
+    "type Key = unknown; type Mapped<Input> = { [Key in keyof Input]: () => Key };",
+    "type Item = unknown; type Unpacked<Input> = Input extends Promise<infer Item> ? () => Item : never;",
+    "function cause(): { cause: unknown } { return { cause: input }; }",
+    "type Result = { value: unknown }; function load(): Result { return result; }",
+    "function load(): Promise<User> { return promise; }",
+    "type Identity<T> = T; function load(): Identity<User> { return user; }",
+    "type Value = unknown; function outer() { type Value = User; function load(): Value { return user; } }",
   ],
 });

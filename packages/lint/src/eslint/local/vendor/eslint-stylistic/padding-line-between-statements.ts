@@ -2,6 +2,8 @@
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/vendor/eslint-stylistic/padding-line-between-statements.ts
 */
 // Vendored from ESLint Stylistic; see LICENSE in this directory.
+import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+
 import {
   isClosingBraceToken,
   isFunction,
@@ -30,16 +32,8 @@ const CJS_EXPORT = /^(?:module\s*\.\s*)?exports(?:\s*\.|\s*\[|$)/u
 const CJS_IMPORT = /^require\(/u
 
 /**
-This rule is a replica of padding-line-between-statements.
-
-Ideally we would want to extend the rule support TypeScript specific support.
-But since not all the state is exposed by the ESLint and ESLint has frozen stylistic rules,
-(see - https://eslint.org/blog/2020/05/changes-to-rules-policies for details.)
-we are forced to re-implement the rule here.
-
-We have tried to keep the implementation as close as possible to the ESLint implementation, to make patching easier for future contributors.
-
-Reference rule - https://github.com/eslint/eslint/blob/main/lib/rules/padding-line-between-statements.js
+Statement matchers include TypeScript syntax and caller-defined selectors.
+Grammar reference: https://github.com/eslint/eslint/blob/main/lib/rules/padding-line-between-statements.js
 */
 
 type NodeTest = (
@@ -47,7 +41,7 @@ type NodeTest = (
   sourceCode: SourceCode,
 ) => boolean
 
-export interface NodeTestObject {
+interface NodeTestObject {
   test: NodeTest
 }
 
@@ -55,12 +49,12 @@ export interface NodeTestObject {
 A policy entry may name a caller-defined statement type (registered through
 `createPaddingLineRule`) anywhere the upstream statement types are accepted.
 */
-export type PolicyStatementOption<Extra extends string = never> =
+type PolicyStatementOption<Extra extends string = never> =
   | StatementMatcher
   | Extra
   | [StatementMatcher | Extra, ...(StatementMatcher | Extra)[]]
 
-export type PolicyOptions<Extra extends string = never> = {
+type PolicyOptions<Extra extends string = never> = {
   blankLine: PaddingType
   prev: PolicyStatementOption<Extra>
   next: PolicyStatementOption<Extra>
@@ -83,8 +77,8 @@ Creates tester which check if a node starts with specific keyword with the appro
 @returns the created tester.
 @private
 */
-function newKeywordTester(
-  type: string | string[],
+function createKeywordTester(
+  type: ASTNode["type"] | ASTNode["type"][],
   keyword: string,
 ): NodeTestObject {
   return {
@@ -106,9 +100,9 @@ Creates tester which check if a node is specific type.
 @returns the created tester.
 @private
 */
-function newNodeTypeTester(type: string): NodeTestObject {
+function createNodeTypeTester(type: ASTNode["type"]): NodeTestObject {
   return {
-    test: (node): boolean => node.type === type,
+    test(node): boolean { return node.type === type; },
   }
 }
 
@@ -119,16 +113,16 @@ Checks the given node is an expression statement of IIFE.
 @private
 */
 function isIIFEStatement(node: ASTNode): boolean {
-  if (node.type === 'ExpressionStatement') {
+  if (node.type === nodeTypes.ExpressionStatement) {
     let expression = skipChainExpression(node.expression)
 
-    if (expression.type === 'UnaryExpression')
+    if (expression.type === nodeTypes.UnaryExpression)
       {expression = skipChainExpression(expression.argument)}
 
-    if (expression.type === 'CallExpression') {
+    if (expression.type === nodeTypes.CallExpression) {
       let callee: ASTNode = expression.callee
 
-      while (callee.type === 'SequenceExpression') {
+      while (callee.type === nodeTypes.SequenceExpression) {
         const lastExpression = callee.expressions.at(-1)
 
         if (lastExpression === undefined)
@@ -151,18 +145,18 @@ Checks the given node is a CommonJS require statement
 @private
 */
 function isCJSRequire(node: ASTNode): boolean {
-  if (node.type === 'VariableDeclaration') {
+  if (node.type === nodeTypes.VariableDeclaration) {
     const declaration = node.declarations[0]
 
-    if (declaration.init) {
+    if (declaration.init !== null) {
       let call = declaration.init
 
-      while (call.type === 'MemberExpression')
+      while (call.type === nodeTypes.MemberExpression)
         {call = call.object}
 
       if (
-        call.type === 'CallExpression'
-        && call.callee.type === 'Identifier'
+        call.type === nodeTypes.CallExpression
+        && call.callee.type === nodeTypes.Identifier
       ) {
         return call.callee.name === 'require'
       }
@@ -186,8 +180,8 @@ function isBlockLikeStatement(
 ): boolean {
   // Do-while with a block is a block-like statement.
   if (
-    node.type === 'DoWhileStatement'
-    && node.body.type === 'BlockStatement'
+    node.type === nodeTypes.DoWhileStatement
+    && node.body.type === nodeTypes.BlockStatement
   ) {
     return true
   }
@@ -201,15 +195,14 @@ function isBlockLikeStatement(
   // Checks the last token is a closing brace of blocks.
   const lastToken = sourceCode.getLastToken(node, isNotSemicolonToken)
 
-  const belongingNode
-    = lastToken && isClosingBraceToken(lastToken)
-      ? sourceCode.getNodeByRangeIndex(lastToken.range[0])
-      : null
+  const belongingNode = lastToken !== null && isClosingBraceToken(lastToken)
+    ? sourceCode.getNodeByRangeIndex(lastToken.range[0])
+    : null
 
   return (
     belongingNode !== null
-    && (belongingNode.type === 'BlockStatement'
-      || belongingNode.type === 'SwitchStatement')
+    && (belongingNode.type === nodeTypes.BlockStatement
+      || belongingNode.type === nodeTypes.SwitchStatement)
   )
 }
 
@@ -225,7 +218,7 @@ function isDirective(
 ): boolean {
   return (
     isTopLevelExpressionStatement(node)
-    && node.expression.type === 'Literal'
+    && node.expression.type === nodeTypes.Literal
     && typeof node.expression.value === 'string'
     && !isParenthesized(node.expression, sourceCode)
   )
@@ -243,7 +236,7 @@ function isDirectivePrologue(
 ): boolean {
   if (
     isDirective(node, sourceCode)
-    && node.parent
+    && node.parent !== undefined
     && 'body' in node.parent
     && Array.isArray(node.parent.body)
   ) {
@@ -268,21 +261,21 @@ Checks the given node is a CommonJS export statement
 @private
 */
 function isCJSExport(node: ASTNode): boolean {
-  if (node.type === 'ExpressionStatement') {
+  if (node.type === nodeTypes.ExpressionStatement) {
     const expression = node.expression
 
-    if (expression.type === 'AssignmentExpression') {
+    if (expression.type === nodeTypes.AssignmentExpression) {
       let left = expression.left
 
-      if (left.type === 'MemberExpression') {
-        while (left.object.type === 'MemberExpression')
+      if (left.type === nodeTypes.MemberExpression) {
+        while (left.object.type === nodeTypes.MemberExpression)
           {left = left.object}
 
         return (
-          left.object.type === 'Identifier'
+          left.object.type === nodeTypes.Identifier
           && (left.object.name === 'exports'
             || (left.object.name === 'module'
-              && left.property.type === 'Identifier'
+              && left.property.type === nodeTypes.Identifier
               && left.property.name === 'exports'))
         )
       }
@@ -303,7 +296,7 @@ function isExpression(
   sourceCode: SourceCode,
 ): boolean {
   return (
-    node.type === 'ExpressionStatement'
+    node.type === nodeTypes.ExpressionStatement
     && !isDirectivePrologue(node, sourceCode)
   )
 }
@@ -528,25 +521,25 @@ const PaddingTypes = {
 const MaybeMultilineStatementType = {
   'block-like': { test: isBlockLikeStatement },
   'expression': { test: isExpression },
-  'return': newKeywordTester('ReturnStatement', 'return'),
-  'export': newKeywordTester(
+  'return': createKeywordTester(nodeTypes.ReturnStatement, 'return'),
+  'export': createKeywordTester(
     [
-      'ExportAllDeclaration',
-      'ExportDefaultDeclaration',
-      'ExportNamedDeclaration',
+      nodeTypes.ExportAllDeclaration,
+      nodeTypes.ExportDefaultDeclaration,
+      nodeTypes.ExportNamedDeclaration,
     ],
     'export',
   ),
-  'var': newKeywordTester('VariableDeclaration', 'var'),
-  'let': newKeywordTester('VariableDeclaration', 'let'),
-  'const': newKeywordTester('VariableDeclaration', 'const'),
+  'var': createKeywordTester(nodeTypes.VariableDeclaration, 'var'),
+  'let': createKeywordTester(nodeTypes.VariableDeclaration, 'let'),
+  'const': createKeywordTester(nodeTypes.VariableDeclaration, 'const'),
   'using': {
-    test: node => {
-      return node.type === 'VariableDeclaration'
+    test(node) {
+      return node.type === nodeTypes.VariableDeclaration
         && (node.kind === 'using' || node.kind === 'await using');
     },
   },
-  'type': newKeywordTester('TSTypeAliasDeclaration', 'type'),
+  'type': createKeywordTester(nodeTypes.TSTypeAliasDeclaration, 'type'),
 } satisfies Record<string, NodeTestObject>
 
 /**
@@ -555,82 +548,82 @@ Those have `test` method to check it matches to the given statement.
 @private
 */
 const StatementTypes = new Map<string, NodeTestObject>(Object.entries({
-  '*': { test: (): boolean => true },
+  '*': { test(): boolean { return true; } },
   'exports': { test: isCJSExport },
   'require': { test: isCJSRequire },
   'directive': { test: isDirectivePrologue },
   'iife': { test: isIIFEStatement },
 
-  'block': newNodeTypeTester('BlockStatement'),
-  'empty': newNodeTypeTester('EmptyStatement'),
-  'function': newNodeTypeTester('FunctionDeclaration'),
-  'ts-method': newNodeTypeTester('TSMethodSignature'),
+  'block': createNodeTypeTester(nodeTypes.BlockStatement),
+  'empty': createNodeTypeTester(nodeTypes.EmptyStatement),
+  'function': createNodeTypeTester(nodeTypes.FunctionDeclaration),
+  'ts-method': createNodeTypeTester(nodeTypes.TSMethodSignature),
 
-  'break': newKeywordTester('BreakStatement', 'break'),
-  'case': newKeywordTester('SwitchCase', 'case'),
-  'class': newKeywordTester('ClassDeclaration', 'class'),
-  'continue': newKeywordTester('ContinueStatement', 'continue'),
-  'debugger': newKeywordTester('DebuggerStatement', 'debugger'),
-  'default': newKeywordTester(
-    ['SwitchCase', 'ExportDefaultDeclaration'],
+  'break': createKeywordTester(nodeTypes.BreakStatement, 'break'),
+  'case': createKeywordTester(nodeTypes.SwitchCase, 'case'),
+  'class': createKeywordTester(nodeTypes.ClassDeclaration, 'class'),
+  'continue': createKeywordTester(nodeTypes.ContinueStatement, 'continue'),
+  'debugger': createKeywordTester(nodeTypes.DebuggerStatement, 'debugger'),
+  'default': createKeywordTester(
+    [nodeTypes.SwitchCase, nodeTypes.ExportDefaultDeclaration],
     'default',
   ),
-  'do': newKeywordTester('DoWhileStatement', 'do'),
-  'for': newKeywordTester(
+  'do': createKeywordTester(nodeTypes.DoWhileStatement, 'do'),
+  'for': createKeywordTester(
     [
-      'ForStatement',
-      'ForInStatement',
-      'ForOfStatement',
+      nodeTypes.ForStatement,
+      nodeTypes.ForInStatement,
+      nodeTypes.ForOfStatement,
     ],
     'for',
   ),
-  'if': newKeywordTester('IfStatement', 'if'),
-  'import': newKeywordTester('ImportDeclaration', 'import'),
-  'switch': newKeywordTester('SwitchStatement', 'switch'),
-  'throw': newKeywordTester('ThrowStatement', 'throw'),
-  'try': newKeywordTester('TryStatement', 'try'),
-  'while': newKeywordTester(
-    ['WhileStatement', 'DoWhileStatement'],
+  'if': createKeywordTester(nodeTypes.IfStatement, 'if'),
+  'import': createKeywordTester(nodeTypes.ImportDeclaration, 'import'),
+  'switch': createKeywordTester(nodeTypes.SwitchStatement, 'switch'),
+  'throw': createKeywordTester(nodeTypes.ThrowStatement, 'throw'),
+  'try': createKeywordTester(nodeTypes.TryStatement, 'try'),
+  'while': createKeywordTester(
+    [nodeTypes.WhileStatement, nodeTypes.DoWhileStatement],
     'while',
   ),
-  'with': newKeywordTester('WithStatement', 'with'),
+  'with': createKeywordTester(nodeTypes.WithStatement, 'with'),
 
   'cjs-export': {
-    test: (node, sourceCode) => {
-      return node.type === 'ExpressionStatement'
-        && node.expression.type === 'AssignmentExpression'
+    test(node, sourceCode) {
+      return node.type === nodeTypes.ExpressionStatement
+        && node.expression.type === nodeTypes.AssignmentExpression
         && CJS_EXPORT.test(sourceCode.getText(node.expression.left));
     },
   },
   'cjs-import': {
-    test: (node, sourceCode) => {
-      return node.type === 'VariableDeclaration'
+    test(node, sourceCode) {
+      return node.type === nodeTypes.VariableDeclaration
         && node.declarations.length > 0
-        && node.declarations[0].init != null
+        && node.declarations[0].init !== null
         && CJS_IMPORT.test(sourceCode.getText(node.declarations[0].init));
     },
   },
 
-  'enum': newKeywordTester(
-    'TSEnumDeclaration',
+  'enum': createKeywordTester(
+    nodeTypes.TSEnumDeclaration,
     'enum',
   ),
-  'interface': newKeywordTester(
-    'TSInterfaceDeclaration',
+  'interface': createKeywordTester(
+    nodeTypes.TSInterfaceDeclaration,
     'interface',
   ),
-  'function-overload': newNodeTypeTester('TSDeclareFunction'),
+  'function-overload': createNodeTypeTester(nodeTypes.TSDeclareFunction),
 } satisfies Record<string, NodeTestObject>))
 
 for (const [name, matcher] of Object.entries(MaybeMultilineStatementType)) {
   StatementTypes.set(name, matcher)
   StatementTypes.set(`singleline-${name}`, {
     ...matcher,
-    test: (node, sourceCode) => matcher.test(node, sourceCode) && isSingleLine(node),
+    test(node, sourceCode) { return matcher.test(node, sourceCode) && isSingleLine(node); },
   })
   StatementTypes.set(`multiline-${name}`, {
     ...matcher,
-    test: (node, sourceCode) => matcher.test(node, sourceCode) && !isSingleLine(node),
+    test(node, sourceCode) { return matcher.test(node, sourceCode) && !isSingleLine(node); },
   })
 }
 
@@ -639,7 +632,7 @@ Build the vendored padding rule with caller-owned, typed policy options.
 `statementTypes` registers caller-defined statement types, looked up before
 the upstream table, for syntax the upstream matchers do not distinguish.
 */
-export function createPaddingLineRule<Extra extends string = never>(
+function createPaddingLineRule<Extra extends string = never>(
   options: PolicyOptions<NoInfer<Extra>>,
   statementTypes?: Record<Extra, NodeTestObject>,
 ): CreateRule {
@@ -766,7 +759,7 @@ return {
     @private
     */
     function exitScope(): void {
-      if (scopeInfo)
+      if (scopeInfo !== null)
         {scopeInfo = scopeInfo.upper}
     }
 
@@ -780,11 +773,16 @@ return {
     function match(node: ASTNode, type: PolicyStatementOption<Extra>): boolean {
       let innerStatementNode = node
 
-      while (innerStatementNode.type === 'LabeledStatement')
+      while (innerStatementNode.type === nodeTypes.LabeledStatement)
         {innerStatementNode = innerStatementNode.body}
 
-      if (Array.isArray(type))
-        {return type.some(match.bind(null, innerStatementNode))}
+      if (Array.isArray(type)) {
+        for (const alternative of type) {
+          if (match(innerStatementNode, alternative)) {return true;}
+        }
+
+        return false;
+      }
 
       if (isSelectorOption(type)) {
         const matchedNodes = selectorMatchedNodes.get(type.selector)
@@ -883,16 +881,16 @@ return {
     */
     function verify(node: ASTNode): void {
       if (
-        !node.parent
-        || ![
-          'BlockStatement',
-          'Program',
-          'StaticBlock',
-          'SwitchCase',
-          'SwitchStatement',
-          'TSInterfaceBody',
-          'TSModuleBlock',
-          'TSTypeLiteral',
+        node.parent === undefined ||
+        ![
+          nodeTypes.BlockStatement,
+          nodeTypes.Program,
+          nodeTypes.StaticBlock,
+          nodeTypes.SwitchCase,
+          nodeTypes.SwitchStatement,
+          nodeTypes.TSInterfaceBody,
+          nodeTypes.TSModuleBlock,
+          nodeTypes.TSTypeLiteral,
         ].includes(node.parent.type)
       ) {
         return
@@ -908,7 +906,7 @@ return {
       const previousNode = activeScope.prevNode
 
       // Verify.
-      if (previousNode)
+      if (previousNode !== null)
         {pendingPairs.push({ prevNode: previousNode, nextNode: node })}
 
       activeScope.prevNode = node
@@ -948,7 +946,7 @@ return {
 
     return {
       'Program': enterScope,
-      'Program:exit': () => {
+      'Program:exit'() {
         verifyPendingPairs()
         exitScope()
       },
@@ -978,3 +976,7 @@ return {
   },
 }
 }
+
+export { createPaddingLineRule };
+
+export type { NodeTestObject, PolicyOptions, PolicyStatementOption };

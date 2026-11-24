@@ -10,21 +10,7 @@ import {
 
 import type { CreateRule } from "../../types.ts";
 
-
-export const noManualEffectErrorTagRule: CreateRule = {
-	meta: {
-		type: "problem",
-		schema: [],
-		docs: {
-			description:
-				"Use Effect tagged error handlers instead of manually branching on `_tag` in a catch handler.",
-		},
-		messages: {
-			tag: "Use Effect.catchTag or Effect.catchTags instead of manually discriminating a tagged error in a broad Effect catch handler.",
-			reason:
-				"Use Effect.catchReason or Effect.catchReasons instead of manually discriminating a tagged `reason` in a broad Effect catch handler.",
-		},
-	},
+const noManualEffectErrorTagRule: CreateRule = {
 	create(context) {
 		return {
 			BinaryExpression(node) {
@@ -38,8 +24,8 @@ export const noManualEffectErrorTagRule: CreateRule = {
 				}
 
 				context.report({
-					node,
 					messageId: isReasonTagMember(tagMember) ? "reason" : "tag",
+					node,
 				});
 			},
 			SwitchStatement(node) {
@@ -51,10 +37,25 @@ export const noManualEffectErrorTagRule: CreateRule = {
 				}
 
 				context.report({
-					node,
 					messageId: isReasonTagMember(node.discriminant) ? "reason" : "tag",
+					node,
 				});
 			},
 		};
 	},
+	meta: {
+		docs: {
+			description:
+				"Use Effect tagged error handlers instead of manually branching on `_tag` in a catch handler.",
+		},
+		messages: {
+			reason:
+				"Use Effect.catchReason or Effect.catchReasons instead of manually discriminating a tagged `reason` in a broad Effect catch handler.",
+			tag: "Use Effect.catchTag or Effect.catchTags instead of manually discriminating a tagged error in a broad Effect catch handler.",
+		},
+		schema: [],
+		type: "problem",
+	},
 };
+
+export { noManualEffectErrorTagRule };

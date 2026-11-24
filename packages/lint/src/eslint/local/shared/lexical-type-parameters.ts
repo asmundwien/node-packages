@@ -1,14 +1,37 @@
+import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+
 import type { ESTree } from "../types.ts";
 
 type VisitorKeys = Readonly<Record<string, readonly string[]>>;
 
-function isNode(value: unknown): value is ESTree.Node {
-	return (
-		typeof value === "object" &&
-		value !== null &&
-		"type" in value &&
-		typeof value.type === "string"
-	);
+
+/**
+Visit parser-owned child fields without allocating a child list.
+*/
+function forEachChild(
+	node: ESTree.Node,
+	visitorKeys: VisitorKeys,
+	visit: (child: ESTree.Node) => void,
+): void {
+	// SAFETY: Parser visitor keys select only child nodes, arrays of nullable child nodes, or absent fields.
+	const fields = node as ESTree.Node & Readonly<Record<string, ESTree.Node | readonly (ESTree.Node | null)[] | null | undefined>>;
+	const keys = visitorKeys[node.type];
+
+	if (keys === undefined) {return;}
+
+	for (const key of keys) {
+		const value = fields[key];
+
+		if (value === null || value === undefined) {continue;}
+
+		if ("type" in value) {
+			visit(value);
+		} else {
+			for (const child of value) {
+				if (child !== null) {visit(child);}
+			}
+		}
+	}
 }
 
 function collectInferTypeParameterNames(
@@ -16,35 +39,19 @@ function collectInferTypeParameterNames(
 	visitorKeys: VisitorKeys,
 	names: Set<string>,
 ): void {
-	if (node.type === "TSInferType") {names.add(node.typeParameter.name.name);}
+	function collect(current: ESTree.Node) {
+		if (current.type === nodeTypes.TSInferType) {names.add(current.typeParameter.name.name);}
 
-  // SAFETY: Parser visitor keys below select only child-node fields from this AST node.
-  const record = node as ESTree.Node & Readonly<Record<string, ESTree.Node | readonly ESTree.Node[] | null | undefined>>;
-
-  const keys = visitorKeys[node.type];
-
-  if (keys !== undefined) {
-    for (const key of keys) {
-			const value = record[key];
-
-			if (isNode(value)) {
-				collectInferTypeParameterNames(value, visitorKeys, names);
-				continue;
-			}
-
-			if (!Array.isArray(value)) {continue;}
-
-			for (const child of value) {
-				if (isNode(child)) {collectInferTypeParameterNames(child, visitorKeys, names);}
-			}
-		}
+		forEachChild(current, visitorKeys, collect);
 	}
+
+	collect(node);
 }
 
 /**
 Collect type binders that are in scope at a node and can shadow module aliases.
 */
-export function lexicalTypeParameterNames(
+function lexicalTypeParameterNames(
 	node: ESTree.Node,
 	visitorKeys: VisitorKeys,
 ): ReadonlySet<string> {
@@ -52,7 +59,7 @@ export function lexicalTypeParameterNames(
 	let descendant: ESTree.Node = node;
 	let current = node;
 
-	while (current.type !== "Program") {
+	while (current.type !== nodeTypes.Program) {
 		if ("typeParameters" in current && current.typeParameters !== undefined) {
 			for (const parameter of current.typeParameters.params) {
 				names.add(parameter.name.name);
@@ -60,13 +67,13 @@ export function lexicalTypeParameterNames(
 		}
 
 		if (
-			current.type === "TSMappedType" &&
+			current.type === nodeTypes.TSMappedType &&
 			(descendant === current.nameType || descendant === current.typeAnnotation)
 		) {
 			names.add(current.key.name);
 		}
 
-		if (current.type === "TSConditionalType" && descendant === current.trueType) {
+		if (current.type === nodeTypes.TSConditionalType && descendant === current.trueType) {
 			collectInferTypeParameterNames(current.extendsType, visitorKeys, names);
 		}
 
@@ -76,3 +83,5 @@ export function lexicalTypeParameterNames(
 
 	return names;
 }
+
+export { forEachChild, lexicalTypeParameterNames };

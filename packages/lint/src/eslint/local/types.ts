@@ -1,8 +1,6 @@
 import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
 import type { Rule } from 'eslint';
 
-export type { TSESTree as ESTree } from '@typescript-eslint/utils';
-
 type SourceCode = TSESLint.SourceCode;
 
 type Variable = TSESLint.Scope.Variable;
@@ -23,3 +21,5 @@ type Comment = TSESTree.Comment;
 type Location = TSESTree.SourceLocation;
 
 export type { Comment, Context, CreateRule, Location, SourceCode, Token, Variable, VisitorObject };
+
+export type { TSESTree as ESTree } from '@typescript-eslint/utils';

@@ -1,6 +1,8 @@
 /** Ban test framework module mocking in favor of real dependency seams.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-module-mocking.ts
 */
+import { AST_NODE_TYPES as nodeTypes, TSESLint as tsEslint } from "@typescript-eslint/utils";
+
 import { resolveVariable } from "../shared/scope.ts";
 
 import type { CreateRule, ESTree, SourceCode } from "../types.ts";
@@ -10,16 +12,16 @@ import type { CreateRule, ESTree, SourceCode } from "../types.ts";
 const moduleMockMethods = new Set(["doMock", "mock", "unstable_mockModule"]);
 
 function importedName(node: ESTree.Node): string | null {
-  if (node.type !== "ImportSpecifier") {return null;}
+  if (node.type !== nodeTypes.ImportSpecifier) {return null;}
 
-  return node.imported.type === "Identifier" ? node.imported.name : node.imported.value;
+  return node.imported.type === nodeTypes.Identifier ? node.imported.name : node.imported.value;
 }
 
 function isTestFrameworkObject(
   sourceCode: SourceCode,
   expression: ESTree.Expression,
 ): expression is ESTree.Identifier {
-  if (expression.type !== "Identifier") {return false;}
+  if (expression.type !== nodeTypes.Identifier) {return false;}
 
   const variable = resolveVariable(sourceCode, expression);
 
@@ -28,7 +30,7 @@ function isTestFrameworkObject(
   }
 
   return variable.defs.some((definition) => {
-    if (definition.type !== "ImportBinding" || definition.parent.type !== "ImportDeclaration") {
+    if (definition.type !== tsEslint.Scope.DefinitionType.ImportBinding || definition.parent.type !== nodeTypes.ImportDeclaration) {
       return false;
     }
 
@@ -45,13 +47,13 @@ function moduleMockCall(sourceCode: SourceCode, callee: ESTree.Expression): bool
   const property = callee.property;
 
   const method = callee.computed
-    ? (property.type === "Literal" &&
+    ? (property.type === nodeTypes.Literal &&
       (property.value === "doMock" ||
         property.value === "mock" ||
         property.value === "unstable_mockModule")
       ? property.value
       : null)
-    : (property.type === "Identifier"
+    : (property.type === nodeTypes.Identifier
       ? property.name
       : null);
 
@@ -59,28 +61,28 @@ function moduleMockCall(sourceCode: SourceCode, callee: ESTree.Expression): bool
 }
 
 export const noModuleMockingRule: CreateRule = {
-  meta: {
-    schema: [],
-    type: "problem",
-    docs: {
-      description:
-        "Disallow Vitest and Jest module mocking; tests must replace dependencies through real interfaces.",
-    },
-    messages: {
-      moduleMock:
-        "Replace module mocking with dependency injection through a real interface, service layer, or faithful test implementation.",
-    },
-  },
   create(context) {
     return {
       CallExpression(node) {
-        if (node.callee.type === "Super") {return;}
+        if (node.callee.type === nodeTypes.Super) {return;}
 
         if (moduleMockCall(context.sourceCode, node.callee)) {
-          context.report({ node, messageId: "moduleMock" });
+          context.report({ messageId: "moduleMock", node });
         }
       },
     };
   },
+  meta: {
+      docs: {
+        description:
+          "Disallow Vitest and Jest module mocking; tests must replace dependencies through real interfaces.",
+      },
+      messages: {
+        moduleMock:
+          "Replace module mocking with dependency injection through a real interface, service layer, or faithful test implementation.",
+      },
+      schema: [],
+      type: "problem",
+    },
 };
 

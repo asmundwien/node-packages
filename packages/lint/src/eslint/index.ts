@@ -19,7 +19,7 @@ interface SetupOptions {
   */
   readonly runtime: Runtime;
   /**
-  Absolute directory containing the project's `tsconfig.json`.
+  Absolute project root containing the import resolver's `tsconfig.json`.
   */
   readonly tsconfigRootDir: string;
   /**
@@ -31,7 +31,7 @@ interface SetupOptions {
 /**
 Creates an ordered ESLint flat configuration for a TypeScript ESM project.
 
-Shared rules and type-aware TypeScript checks always apply. Runtime settings follow the shared policy, and Vitest rules apply within their test-file scopes. TypeScript files must belong to the compiler project in `tsconfigRootDir`.
+Shared rules and type-aware TypeScript checks always apply. Runtime settings follow the shared policy, and Vitest rules apply within their test-file scopes. See the [project-selection contract](../../README.md#setup) for compiler project discovery.
 
 @param options - Runtime selection and compiler-project location.
 @returns Flat configuration ready to export or compose with file-scoped overrides.

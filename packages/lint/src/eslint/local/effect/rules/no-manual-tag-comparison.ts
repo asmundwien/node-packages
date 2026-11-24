@@ -9,22 +9,7 @@ import {
 
 import type { CreateRule } from "../../types.ts";
 
-
-export const noManualTagComparisonRule: CreateRule = {
-	meta: {
-		type: "problem",
-		schema: [],
-		docs: {
-			description:
-				"Use Effect Match or Predicate helpers instead of manually branching on `_tag`.",
-		},
-		messages: {
-			manualComparison:
-				"Use Match.tag/Match.tags for tagged-value branching, or Predicate.isTagged for a simple reusable predicate.",
-			manualSwitch:
-				"Use Match.value(value).pipe(Match.tag/Match.tags/Match.tagsExhaustive) or the tagged enum `$match` helper instead of switching on `_tag`.",
-		},
-	},
+const noManualTagComparisonRule: CreateRule = {
 	create(context) {
 		return {
 			BinaryExpression(node) {
@@ -35,7 +20,7 @@ export const noManualTagComparisonRule: CreateRule = {
 					return;
 				}
 
-				context.report({ node, messageId: "manualComparison" });
+				context.report({ messageId: "manualComparison", node });
 			},
 			SwitchStatement(node) {
 				if (
@@ -45,8 +30,24 @@ export const noManualTagComparisonRule: CreateRule = {
 					return;
 				}
 
-				context.report({ node, messageId: "manualSwitch" });
+				context.report({ messageId: "manualSwitch", node });
 			},
 		};
 	},
+	meta: {
+		docs: {
+			description:
+				"Use Effect Match or Predicate helpers instead of manually branching on `_tag`.",
+		},
+		messages: {
+			manualComparison:
+				"Use Match.tag/Match.tags for tagged-value branching, or Predicate.isTagged for a simple reusable predicate.",
+			manualSwitch:
+				"Use Match.value(value).pipe(Match.tag/Match.tags/Match.tagsExhaustive) or the tagged enum `$match` helper instead of switching on `_tag`.",
+		},
+		schema: [],
+		type: "problem",
+	},
 };
+
+export { noManualTagComparisonRule };

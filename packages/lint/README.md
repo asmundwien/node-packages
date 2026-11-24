@@ -11,7 +11,7 @@ Create `eslint.config.mjs` with `setup(options)`. Type-aware TypeScript checks, 
 | Option | Use |
 | --- | --- |
 | `runtime` | `node` for Node.js, `react` for React 19 browser projects, or `generic` for runtime-neutral TypeScript. |
-| `tsconfigRootDir` | Absolute directory containing your `tsconfig.json`, used for type-aware checks and TypeScript import resolution. |
+| `tsconfigRootDir` | Absolute project root for parser configuration and TypeScript import resolution. |
 | `effect` | Set to `true` for Effect service, tagged-value construction and matching conventions. |
 
 For a Node.js TypeScript project:
@@ -25,7 +25,7 @@ export default setup({
 });
 ```
 
-TypeScript files must belong to the selected compiler project. JavaScript tool configuration receives the shared ESM policy.
+Project Service selects the nearest `tsconfig.json` for each TypeScript file and supports project references. Files must belong to a discovered compiler project. TypeScript import aliases resolve from the root `tsconfig.json` in `tsconfigRootDir`. JavaScript tool configuration receives the shared ESM policy.
 
 Use the [shared compiler presets](../tsconfig/README.md) and run compiler checks in CI alongside ESLint.
 

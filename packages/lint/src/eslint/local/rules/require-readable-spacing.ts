@@ -1,6 +1,8 @@
 /** Require blank lines between logical statement groups while keeping bindings and overloads grouped.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/require-readable-spacing.ts
 */
+import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+
 import { createPaddingLineRule } from "../vendor/eslint-stylistic/padding-line-between-statements.ts";
 
 import type { CreateRule, ESTree, SourceCode } from "../types.ts";
@@ -10,9 +12,9 @@ import type { NodeTestObject } from "../vendor/eslint-stylistic/padding-line-bet
 A `const`/`let`/`var`/`using` declaration, optionally exported, written on one line.
 */
 function isSinglelineBinding(node: ESTree.Node): boolean {
-  const declaration = node.type === "ExportNamedDeclaration" ? node.declaration : node;
+  const declaration = node.type === nodeTypes.ExportNamedDeclaration ? node.declaration : node;
 
-  return declaration?.type === "VariableDeclaration" && node.loc.start.line === node.loc.end.line;
+  return declaration?.type === nodeTypes.VariableDeclaration && node.loc.start.line === node.loc.end.line;
 }
 
 /**
@@ -27,47 +29,35 @@ function hasLeadingComment(node: ESTree.Node, sourceCode: SourceCode): boolean {
 }
 
 const singlelineBinding: NodeTestObject = {
-  test: (node) => isSinglelineBinding(node),
+  test(node) { return isSinglelineBinding(node); },
 };
 
 const undocumentedSinglelineBinding: NodeTestObject = {
-  test: (node, sourceCode) => isSinglelineBinding(node) && !hasLeadingComment(node, sourceCode),
+  test(node, sourceCode) { return isSinglelineBinding(node) && !hasLeadingComment(node, sourceCode); },
 };
 
 const paddingRule = createPaddingLineRule(
   [
-    { blankLine: "always", prev: "import", next: "*" },
-    { blankLine: "always", prev: "*", next: { selector: "Program > :not(ImportDeclaration)" } },
-    { blankLine: "always", prev: { selector: "Program > :not(ImportDeclaration)" }, next: "*" },
-    { blankLine: "always", prev: "*", next: ["function", "class", "interface", "type"] },
-    { blankLine: "always", prev: ["function", "class", "interface", "type"], next: "*" },
-    {
-      blankLine: "always",
-      prev: "*",
-      next: ["multiline-const", "multiline-let", "multiline-var", "multiline-using"],
-    },
-    {
-      blankLine: "always",
-      prev: ["multiline-const", "multiline-let", "multiline-var", "multiline-using"],
-      next: "*",
-    },
-    { blankLine: "always", prev: "*", next: ["return", "if", "switch", "try", "for", "while", "do"] },
-    { blankLine: "always", prev: "block-like", next: "*" },
-    { blankLine: "any", prev: "import", next: "import" },
+    { blankLine: "always", next: "*", prev: "import" },
+    { blankLine: "always", next: { selector: "Program > :not(ImportDeclaration)" }, prev: "*" },
+    { blankLine: "always", next: "*", prev: { selector: "Program > :not(ImportDeclaration)" } },
+    { blankLine: "always", next: ["function", "class", "interface", "type"], prev: "*" },
+    { blankLine: "always", next: "*", prev: ["function", "class", "interface", "type"] },
+    { blankLine: "always", next: ["multiline-const", "multiline-let", "multiline-var", "multiline-using"], prev: "*" },
+    { blankLine: "always", next: "*", prev: ["multiline-const", "multiline-let", "multiline-var", "multiline-using"] },
+    { blankLine: "always", next: ["return", "if", "switch", "try", "for", "while", "do"], prev: "*" },
+    { blankLine: "always", next: "*", prev: "block-like" },
+    { blankLine: "any", next: "import", prev: "import" },
     // Consecutive single-line bindings form one group at any scope, including
     // Module scope. A binding with its own leading comment starts a new group.
-    { blankLine: "any", prev: "singleline-binding", next: "undocumented-singleline-binding" },
-    {
-      blankLine: "any",
-      prev: {
-        selector:
-          ':matches(TSDeclareFunction, ExportNamedDeclaration[declaration.type="TSDeclareFunction"])',
-      },
-      next: {
-        selector:
-          ':matches(TSDeclareFunction, FunctionDeclaration, ExportNamedDeclaration[declaration.type="TSDeclareFunction"], ExportNamedDeclaration[declaration.type="FunctionDeclaration"])',
-      },
-    },
+    { blankLine: "any", next: "undocumented-singleline-binding", prev: "singleline-binding" },
+    { blankLine: "any", next: {
+      selector:
+        ':matches(TSDeclareFunction, FunctionDeclaration, ExportNamedDeclaration[declaration.type="TSDeclareFunction"], ExportNamedDeclaration[declaration.type="FunctionDeclaration"])',
+    }, prev: {
+      selector:
+        ':matches(TSDeclareFunction, ExportNamedDeclaration[declaration.type="TSDeclareFunction"])',
+    } },
   ],
   {
     "singleline-binding": singlelineBinding,

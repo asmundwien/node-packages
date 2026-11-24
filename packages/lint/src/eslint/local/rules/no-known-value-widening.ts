@@ -2,6 +2,8 @@
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-known-value-widening.ts
 */
 
+import { AST_NODE_TYPES as nodeTypes, TSESLint as tsEslint } from "@typescript-eslint/utils";
+
 import {
 	type TypeEnvironment,
 	type WideningTarget,
@@ -11,9 +13,9 @@ import {
 	isKnownEvidenceExpression,
 } from "../shared/dictionary-types.ts";
 import {
-	containsUnknownType,
 	functionParameterBindingName,
 	functionParameterTypeAnnotation,
+	hasUnknownType,
 } from "../shared/function-parameters.ts";
 import { resolveVariable } from "../shared/scope.ts";
 
@@ -26,10 +28,10 @@ function unwrapExpression(expression: ESTree.Expression): ESTree.Expression {
 	let current = expression;
 
 	while (
-		current.type === "TSAsExpression" ||
-		current.type === "TSSatisfiesExpression" ||
-		current.type === "TSTypeAssertion" ||
-		current.type === "TSNonNullExpression"
+		current.type === nodeTypes.TSAsExpression ||
+		current.type === nodeTypes.TSSatisfiesExpression ||
+		current.type === nodeTypes.TSTypeAssertion ||
+		current.type === nodeTypes.TSNonNullExpression
 	) {
 		current = current.expression;
 	}
@@ -42,7 +44,7 @@ function variableDeclarator(variable: Variable): ESTree.VariableDeclarator | nul
 
 	const [definition] = variable.defs;
 
-	return definition?.type === "Variable"
+	return definition?.type === tsEslint.Scope.DefinitionType.Variable
 		? definition.node
 		: null;
 }
@@ -57,40 +59,43 @@ function isStableConstVariable(variable: Variable, declarator: ESTree.VariableDe
 function hasKnownEvidence(
 	sourceCode: SourceCode,
 	expression: ESTree.Expression,
-	visitedVariables = new Set<Variable>(),
 ): boolean {
-	if (isKnownEvidenceExpression(expression)) {return true;}
+	const visitedVariables = new Set<Variable>();
+	let current = expression;
 
-	const unwrapped = unwrapExpression(expression);
+	for (;;) {
+		if (isKnownEvidenceExpression(current)) {return true;}
 
-	if (unwrapped.type !== "Identifier") {return false;}
+		const unwrapped = unwrapExpression(current);
 
-	const variable = resolveVariable(sourceCode, unwrapped);
+		if (unwrapped.type !== nodeTypes.Identifier) {return false;}
 
-	if (variable === null || visitedVariables.has(variable)) {return false;}
+		const variable = resolveVariable(sourceCode, unwrapped);
 
-	const declarator = variableDeclarator(variable);
+		if (variable === null || visitedVariables.has(variable)) {return false;}
 
-	if (
-		declarator === null ||
-		declarator.init === null ||
-		!isStableConstVariable(variable, declarator)
-	) {
-		return false;
+		const declarator = variableDeclarator(variable);
+
+		if (
+			declarator === null ||
+			declarator.init === null ||
+			!isStableConstVariable(variable, declarator)
+		) {
+			return false;
+		}
+
+		visitedVariables.add(variable);
+		current = declarator.init;
 	}
-
-	visitedVariables.add(variable);
-
-	return hasKnownEvidence(sourceCode, declarator.init, visitedVariables);
 }
 
 function isFunctionExpression(node: ESTree.Node): node is FunctionExpression {
 	return (
-		node.type === "ArrowFunctionExpression" ||
-		node.type === "FunctionDeclaration" ||
-		node.type === "FunctionExpression" ||
-		node.type === "TSDeclareFunction" ||
-		node.type === "TSEmptyBodyFunctionExpression"
+		node.type === nodeTypes.ArrowFunctionExpression ||
+		node.type === nodeTypes.FunctionDeclaration ||
+		node.type === nodeTypes.FunctionExpression ||
+		node.type === nodeTypes.TSDeclareFunction ||
+		node.type === nodeTypes.TSEmptyBodyFunctionExpression
 	);
 }
 
@@ -102,7 +107,7 @@ function localFunctionForCall(
 
 	if (isFunctionExpression(unwrapped)) {return unwrapped;}
 
-	if (unwrapped.type !== "Identifier") {return null;}
+	if (unwrapped.type !== nodeTypes.Identifier) {return null;}
 
 	const variable = resolveVariable(sourceCode, unwrapped);
 
@@ -112,11 +117,11 @@ function localFunctionForCall(
 
 	if (definition === undefined) {return null;}
 
-	if (definition.type === "FunctionName" && isFunctionExpression(definition.node)) {
+	if (definition.type === tsEslint.Scope.DefinitionType.FunctionName && isFunctionExpression(definition.node)) {
 		return definition.node;
 	}
 
-	if (definition.type !== "Variable") {
+	if (definition.type !== tsEslint.Scope.DefinitionType.Variable) {
 		return null;
 	}
 
@@ -140,13 +145,13 @@ function variableTypeAnnotation(
 	if (definition === undefined) {return null;}
 
 	if (
-		definition.type === "Variable" &&
-		definition.node.id.type === "Identifier"
+		definition.type === tsEslint.Scope.DefinitionType.Variable &&
+		definition.node.id.type === nodeTypes.Identifier
 	) {
 		return definition.node.id.typeAnnotation ?? null;
 	}
 
-	if (definition.type !== "Parameter" || !isFunctionExpression(definition.node)) {
+	if (definition.type !== tsEslint.Scope.DefinitionType.Parameter || !isFunctionExpression(definition.node)) {
 		return null;
 	}
 
@@ -169,67 +174,52 @@ function hasKnownCallArgumentEvidence(
 	sourceCode: SourceCode,
 	expression: ESTree.Expression,
 	environment: TypeEnvironment,
-	visitedVariables = new Set<Variable>(),
 ): boolean {
-	if (expression.type === "TSNonNullExpression") {
-		return hasKnownCallArgumentEvidence(
-			sourceCode,
-			expression.expression,
-			environment,
-			visitedVariables,
-		);
+	const visitedVariables = new Set<Variable>();
+	let current = expression;
+
+	for (;;) {
+		if (current.type === nodeTypes.TSNonNullExpression || current.type === nodeTypes.TSSatisfiesExpression) {
+			current = current.expression;
+			continue;
+		}
+
+		if (current.type === nodeTypes.TSAsExpression || current.type === nodeTypes.TSTypeAssertion) {
+			return hasInformativeType(current.typeAnnotation, environment);
+		}
+
+		if (current.type === nodeTypes.CallExpression) {
+			const owner = localFunctionForCall(sourceCode, current.callee);
+			const returnType = owner?.returnType?.typeAnnotation;
+
+			return returnType !== undefined && hasInformativeType(returnType, environment);
+		}
+
+		if (current.type !== nodeTypes.Identifier) {return isKnownEvidenceExpression(current);}
+
+		const variable = resolveVariable(sourceCode, current);
+
+		if (variable === null || visitedVariables.has(variable)) {return false;}
+
+		const annotation = variableTypeAnnotation(sourceCode, variable);
+
+		if (annotation !== null) {
+			return hasInformativeType(annotation.typeAnnotation, environment);
+		}
+
+		const declarator = variableDeclarator(variable);
+
+		if (
+			declarator === null ||
+			declarator.init === null ||
+			!isStableConstVariable(variable, declarator)
+		) {
+			return false;
+		}
+
+		visitedVariables.add(variable);
+		current = declarator.init;
 	}
-
-	if (expression.type === "TSAsExpression" || expression.type === "TSTypeAssertion") {
-		return hasInformativeType(expression.typeAnnotation, environment);
-	}
-
-	if (expression.type === "TSSatisfiesExpression") {
-		return hasKnownCallArgumentEvidence(
-			sourceCode,
-			expression.expression,
-			environment,
-			visitedVariables,
-		);
-	}
-
-	if (expression.type === "CallExpression") {
-		const owner = localFunctionForCall(sourceCode, expression.callee);
-		const returnType = owner?.returnType?.typeAnnotation;
-
-		return returnType !== undefined && hasInformativeType(returnType, environment);
-	}
-
-	if (expression.type !== "Identifier") {return isKnownEvidenceExpression(expression);}
-
-	const variable = resolveVariable(sourceCode, expression);
-
-	if (variable === null || visitedVariables.has(variable)) {return false;}
-
-	const annotation = variableTypeAnnotation(sourceCode, variable);
-
-	if (annotation !== null) {
-		return hasInformativeType(annotation.typeAnnotation, environment);
-	}
-
-	const declarator = variableDeclarator(variable);
-
-	if (
-		declarator === null ||
-		declarator.init === null ||
-		!isStableConstVariable(variable, declarator)
-	) {
-		return false;
-	}
-
-	visitedVariables.add(variable);
-
-	return hasKnownCallArgumentEvidence(
-		sourceCode,
-		declarator.init,
-		environment,
-		visitedVariables,
-	);
 }
 
 function typePredicateSubjectIndex(
@@ -238,7 +228,7 @@ function typePredicateSubjectIndex(
 ): number | null {
 	const predicate = owner.returnType?.typeAnnotation;
 
-	if (predicate?.type !== "TSTypePredicate" || predicate.parameterName.type !== "Identifier") {
+	if (predicate?.type !== nodeTypes.TSTypePredicate || predicate.parameterName.type !== nodeTypes.Identifier) {
 		return null;
 	}
 
@@ -262,15 +252,15 @@ function annotationTarget(
 }
 
 function enclosingFunction(node: ESTree.Node): FunctionExpression | null {
-	if (node.type === "Program") {return null;}
+	if (node.type === nodeTypes.Program) {return null;}
 
 	let current = node.parent;
 
-	while (current.type !== "Program") {
+	while (current.type !== nodeTypes.Program) {
 		if (
-			current.type === "ArrowFunctionExpression" ||
-			current.type === "FunctionDeclaration" ||
-			current.type === "FunctionExpression"
+			current.type === nodeTypes.ArrowFunctionExpression ||
+			current.type === nodeTypes.FunctionDeclaration ||
+			current.type === nodeTypes.FunctionExpression
 		) {
 			return current;
 		}
@@ -282,9 +272,9 @@ function enclosingFunction(node: ESTree.Node): FunctionExpression | null {
 }
 
 function sourceKeyName(sourceCode: SourceCode, key: ESTree.PropertyName): string {
-	if (key.type === "Identifier" || key.type === "PrivateIdentifier") {return key.name;}
+	if (key.type === nodeTypes.Identifier || key.type === nodeTypes.PrivateIdentifier) {return key.name;}
 
-	if (key.type === "Literal") {return String(key.value);}
+	if (key.type === nodeTypes.Literal) {return String(key.value);}
 
 	return sourceCode.getText(key);
 }
@@ -296,10 +286,10 @@ function functionName(sourceCode: SourceCode, owner: FunctionExpression | null):
 
 	const parent = owner.parent;
 
-	if (parent.type === "VariableDeclarator" && parent.id.type === "Identifier")
+	if (parent.type === nodeTypes.VariableDeclarator && parent.id.type === nodeTypes.Identifier)
 		{return parent.id.name;}
 
-	if (parent.type === "MethodDefinition") {return sourceKeyName(sourceCode, parent.key);}
+	if (parent.type === nodeTypes.MethodDefinition) {return sourceKeyName(sourceCode, parent.key);}
 
 	return "anonymous function";
 }
@@ -307,7 +297,7 @@ function functionName(sourceCode: SourceCode, owner: FunctionExpression | null):
 function isEmptyObjectExpression(expression: ESTree.Expression): boolean {
 	const unwrapped = unwrapExpression(expression);
 
-	return unwrapped.type === "ObjectExpression" && unwrapped.properties.length === 0;
+	return unwrapped.type === nodeTypes.ObjectExpression && unwrapped.properties.length === 0;
 }
 
 function isDictionaryAccumulatorTarget(destination: WideningTarget): boolean {
@@ -315,179 +305,180 @@ function isDictionaryAccumulatorTarget(destination: WideningTarget): boolean {
 }
 
 function hasParentAssertion(node: ESTree.TSAsExpression | ESTree.TSTypeAssertion): boolean {
-	return node.parent.type === "TSAsExpression" || node.parent.type === "TSTypeAssertion";
+	return node.parent.type === nodeTypes.TSAsExpression || node.parent.type === nodeTypes.TSTypeAssertion;
 }
 
 export const noKnownValueWideningRule: CreateRule = {
-	meta: {
-    schema: [],
-		type: "problem",
-		docs: {
-			description:
-				"Disallow syntactically established values from flowing into explicitly broad or anonymous target types that discard useful evidence.",
-		},
-		messages: {
-			widening:
-				"The explicit {{target}} type on {{subject}} discards known type evidence. Keep inference, validate with `satisfies`, or use a named owner contract.",
-		},
-	},
-	create(context) {
-		let environment: TypeEnvironment | null = null;
-
-		const reportFlow = (
-			expression: ESTree.Expression,
-			destination: WideningTarget | null,
-			subject: string,
-		) => {
-			if (destination === null) {return;}
-
-			if (
-				isDictionaryAccumulatorTarget(destination) &&
-				isEmptyObjectExpression(expression)
-			) {
-				return;
-			}
-
-			if (!hasKnownEvidence(context.sourceCode, expression)) {return;}
-
-			context.report({
-				node: expression,
-				messageId: "widening",
-				data: { subject, target: destination.kind },
-			});
-		};
-
-		const targetFromAnnotation = (annotation: ESTree.TSTypeAnnotation | null | undefined) =>
-			environment === null ? null : annotationTarget(annotation, environment);
-
-		return {
-			Program(node) {
-				environment = createTypeEnvironment(
-					node,
-					context.sourceCode.visitorKeys,
-				);
-			},
-			VariableDeclarator(node) {
-				if (node.init === null || node.id.type !== "Identifier") {return;}
-
-				reportFlow(
-					node.init,
-					targetFromAnnotation(node.id.typeAnnotation),
-					`binding \`${node.id.name}\``,
-				);
-			},
-			PropertyDefinition(node) {
-				if (node.value === null) {return;}
-
-				reportFlow(
-					node.value,
-					targetFromAnnotation(node.typeAnnotation),
-					`property \`${sourceKeyName(context.sourceCode, node.key)}\``,
-				);
-			},
-			AccessorProperty(node) {
-				if (node.value === null) {return;}
-
-				reportFlow(
-					node.value,
-					targetFromAnnotation(node.typeAnnotation),
-					`property \`${sourceKeyName(context.sourceCode, node.key)}\``,
-				);
-			},
-			AssignmentExpression(node) {
-				if (node.operator !== "=" || node.left.type !== "Identifier") {return;}
-
-				const variable = resolveVariable(context.sourceCode, node.left);
-
-				if (variable === null) {return;}
-
-				const declarator = variableDeclarator(variable);
-
-				if (declarator === null || declarator.id.type !== "Identifier") {return;}
-
-				reportFlow(
-					node.right,
-					targetFromAnnotation(declarator.id.typeAnnotation),
-					`binding \`${declarator.id.name}\``,
-				);
-			},
-			CallExpression(node) {
-				if (environment === null) {return;}
-
-				const owner = localFunctionForCall(context.sourceCode, node.callee);
-
-				if (owner === null) {return;}
-
-				const parameterIndex = typePredicateSubjectIndex(context.sourceCode, owner);
-
-				if (parameterIndex === null) {return;}
-
-				const parameter = owner.params[parameterIndex];
-				const argument = node.arguments[parameterIndex];
-
-				if (parameter === undefined || argument === undefined || argument.type === "SpreadElement") {
-					return;
-				}
-
-				const parameterAnnotation = functionParameterTypeAnnotation(parameter);
-
-				if (parameterAnnotation === null ||
-					parameterAnnotation === undefined ||
-					!containsUnknownType(parameterAnnotation.typeAnnotation) || !hasKnownCallArgumentEvidence(
-						context.sourceCode,
-						argument,
-						environment,
-					)) {
-					return;
-				}
-
-				context.report({
-					node: argument,
-					messageId: "widening",
-					data: {
-						subject: `argument for parameter \`${functionParameterBindingName(parameter, context.sourceCode)}\` of \`${functionName(context.sourceCode, owner)}\``,
-						target: "unknown",
-					},
-				});
-			},
-			ReturnStatement(node) {
-				if (node.argument === null) {return;}
-
-				const owner = enclosingFunction(node);
-				reportFlow(
-					node.argument,
-					targetFromAnnotation(owner?.returnType),
-					`return value of \`${functionName(context.sourceCode, owner)}\``,
-				);
-			},
-			ArrowFunctionExpression(node) {
-				if (node.body.type === "BlockStatement") {return;}
-
-				reportFlow(
-					node.body,
-					targetFromAnnotation(node.returnType),
-					`return value of \`${functionName(context.sourceCode, node)}\``,
-				);
-			},
-			TSAsExpression(node) {
-				if (environment === null || hasParentAssertion(node)) {return;}
-
-				reportFlow(
-					node.expression,
-					classifyWideningTarget(node.typeAnnotation, environment),
-					"assertion",
-				);
-			},
-			TSTypeAssertion(node) {
-				if (environment === null || hasParentAssertion(node)) {return;}
-
-				reportFlow(
-					node.expression,
-					classifyWideningTarget(node.typeAnnotation, environment),
-					"assertion",
-				);
-			},
-		};
-	},
+  create(context) {
+    let environment: TypeEnvironment | null = null;
+    
+    		function reportFlow(
+    			expression: ESTree.Expression,
+    			destination: WideningTarget | null,
+    			subject: string,
+    		) {
+    			if (destination === null) {return;}
+    
+    			if (
+    				isDictionaryAccumulatorTarget(destination) &&
+    				isEmptyObjectExpression(expression)
+    			) {
+    				return;
+    			}
+    
+    			if (!hasKnownEvidence(context.sourceCode, expression)) {return;}
+    
+    			context.report({
+            data: { subject, target: destination.kind },
+            messageId: "widening",
+            node: expression,
+          });
+    		}
+    
+    		function targetFromAnnotation(annotation: ESTree.TSTypeAnnotation | null | undefined) {
+    			return environment === null ? null : annotationTarget(annotation, environment);
+    		}
+    
+    		return {
+        			AccessorProperty(node) {
+        				if (node.value === null) {return;}
+        
+        				reportFlow(
+        					node.value,
+        					targetFromAnnotation(node.typeAnnotation),
+        					`property \`${sourceKeyName(context.sourceCode, node.key)}\``,
+        				);
+        			},
+        			ArrowFunctionExpression(node) {
+        				if (node.body.type === nodeTypes.BlockStatement) {return;}
+        
+        				reportFlow(
+        					node.body,
+        					targetFromAnnotation(node.returnType),
+        					`return value of \`${functionName(context.sourceCode, node)}\``,
+        				);
+        			},
+        			AssignmentExpression(node) {
+        				if (node.operator !== "=" || node.left.type !== nodeTypes.Identifier) {return;}
+        
+        				const variable = resolveVariable(context.sourceCode, node.left);
+        
+        				if (variable === null) {return;}
+        
+        				const declarator = variableDeclarator(variable);
+        
+        				if (declarator === null || declarator.id.type !== nodeTypes.Identifier) {return;}
+        
+        				reportFlow(
+        					node.right,
+        					targetFromAnnotation(declarator.id.typeAnnotation),
+        					`binding \`${declarator.id.name}\``,
+        				);
+        			},
+        			CallExpression(node) {
+        				if (environment === null) {return;}
+        
+        				const owner = localFunctionForCall(context.sourceCode, node.callee);
+        
+        				if (owner === null) {return;}
+        
+        				const parameterIndex = typePredicateSubjectIndex(context.sourceCode, owner);
+        
+        				if (parameterIndex === null) {return;}
+        
+        				const parameter = owner.params[parameterIndex];
+        				const argument = node.arguments[parameterIndex];
+        
+        				if (parameter === undefined || argument === undefined || argument.type === nodeTypes.SpreadElement) {
+        					return;
+        				}
+        
+        				const parameterAnnotation = functionParameterTypeAnnotation(parameter);
+        
+        				if (parameterAnnotation === null ||
+        					parameterAnnotation === undefined ||
+        					!hasUnknownType(parameterAnnotation.typeAnnotation) || !hasKnownCallArgumentEvidence(
+        						context.sourceCode,
+        						argument,
+        						environment,
+        					)) {
+        					return;
+        				}
+        
+        				context.report({
+                data: {
+                						subject: `argument for parameter \`${functionParameterBindingName(parameter, context.sourceCode)}\` of \`${functionName(context.sourceCode, owner)}\``,
+                						target: "unknown",
+                					},
+                messageId: "widening",
+                node: argument,
+              });
+        			},
+        			Program(node) {
+        				environment = createTypeEnvironment(
+        					node,
+        					context.sourceCode.visitorKeys,
+        				);
+        			},
+        			PropertyDefinition(node) {
+        				if (node.value === null) {return;}
+        
+        				reportFlow(
+        					node.value,
+        					targetFromAnnotation(node.typeAnnotation),
+        					`property \`${sourceKeyName(context.sourceCode, node.key)}\``,
+        				);
+        			},
+        			ReturnStatement(node) {
+        				if (node.argument === null) {return;}
+        
+        				const owner = enclosingFunction(node);
+        				reportFlow(
+        					node.argument,
+        					targetFromAnnotation(owner?.returnType),
+        					`return value of \`${functionName(context.sourceCode, owner)}\``,
+        				);
+        			},
+        			TSAsExpression(node) {
+        				if (environment === null || hasParentAssertion(node)) {return;}
+        
+        				reportFlow(
+        					node.expression,
+        					classifyWideningTarget(node.typeAnnotation, environment),
+        					"assertion",
+        				);
+        			},
+        			TSTypeAssertion(node) {
+        				if (environment === null || hasParentAssertion(node)) {return;}
+        
+        				reportFlow(
+        					node.expression,
+        					classifyWideningTarget(node.typeAnnotation, environment),
+        					"assertion",
+        				);
+        			},
+        			VariableDeclarator(node) {
+        				if (node.init === null || node.id.type !== nodeTypes.Identifier) {return;}
+        
+        				reportFlow(
+        					node.init,
+        					targetFromAnnotation(node.id.typeAnnotation),
+        					`binding \`${node.id.name}\``,
+        				);
+        			},
+        		};
+  },
+  meta: {
+      docs: {
+      			description:
+      				"Disallow syntactically established values from flowing into explicitly broad or anonymous target types that discard useful evidence.",
+      		},
+      messages: {
+      			widening:
+      				"The explicit {{target}} type on {{subject}} discards known type evidence. Keep inference, validate with `satisfies`, or use a named owner contract.",
+      		},
+      schema: [],
+      type: "problem",
+    },
 };
 

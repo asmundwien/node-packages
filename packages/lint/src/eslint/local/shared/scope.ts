@@ -3,7 +3,7 @@ import type { ESTree, SourceCode, Variable } from "../types.ts";
 /**
 Resolve an identifier to its binding by walking lexical scopes upward.
 */
-export function resolveVariable(
+function resolveVariable(
 	sourceCode: SourceCode,
 	identifier: ESTree.Identifier,
 ): Variable | null {
@@ -11,7 +11,7 @@ export function resolveVariable(
 
 	let scope: Scope | null = sourceCode.getScope(identifier);
 
-	while (scope != null) {
+	while (scope !== null) {
 		const variable = scope.set.get(identifier.name);
 
 		if (variable !== undefined) {return variable;}
@@ -21,3 +21,5 @@ export function resolveVariable(
 
 	return null;
 }
+
+export { resolveVariable };

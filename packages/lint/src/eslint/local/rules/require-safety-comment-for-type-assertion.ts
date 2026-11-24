@@ -1,6 +1,8 @@
 /** Require every non-const type assertion to state the invariant TypeScript cannot express.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/require-safety-comment-for-type-assertion.ts
 */
+import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+
 import type { CreateRule, ESTree, SourceCode } from "../types.ts";
 
 type TypeAssertion = ESTree.TSAsExpression | ESTree.TSTypeAssertion;
@@ -21,8 +23,8 @@ const commentOwnerKinds = new Set([
 
 function isConstAssertion(node: TypeAssertion): boolean {
   return (
-    node.typeAnnotation.type === "TSTypeReference" &&
-    node.typeAnnotation.typeName.type === "Identifier" &&
+    node.typeAnnotation.type === nodeTypes.TSTypeReference &&
+    node.typeAnnotation.typeName.type === nodeTypes.Identifier &&
     node.typeAnnotation.typeName.name === "const"
   );
 }
@@ -74,14 +76,14 @@ function hasSafetyComment(
 ): boolean {
   let current: ESTree.Node = node;
 
-  while (current.type !== "Program") {
+  while (current.type !== nodeTypes.Program) {
     if (hasSafetyJustificationBefore(sourceCode, current, node, pattern)) {return true;}
 
     if (commentOwnerKinds.has(current.type)) {
       const exportDeclaration = current.parent;
 
       return (
-        exportDeclaration.type === "ExportNamedDeclaration" &&
+        exportDeclaration.type === nodeTypes.ExportNamedDeclaration &&
         exportDeclaration.declaration === current &&
         hasSafetyJustificationBefore(sourceCode, exportDeclaration, node, pattern)
       );
@@ -94,9 +96,27 @@ function hasSafetyComment(
 }
 
 export const requireSafetyCommentForTypeAssertionRule: CreateRule<[SafetyCommentOptions]> = {
+  create(context) {
+    const markers = configuredSafetyMarkers(context.options[0]);
+    const pattern = markerPattern(markers);
+
+    function checkAssertion(node: TypeAssertion) {
+      if (isConstAssertion(node) || hasSafetyComment(context.sourceCode, node, pattern)) {return;}
+
+      context.report({
+        data: { marker: markers[0] ?? DEFAULT_SAFETY_MARKERS[0] },
+        messageId: "missingSafetyComment",
+        node,
+      });
+    }
+
+    return {
+      TSAsExpression: checkAssertion,
+      TSTypeAssertion: checkAssertion,
+    };
+  },
   meta: {
     defaultOptions: [{ markers: ["SAFETY"] }],
-    type: "problem",
     docs: {
       description:
         "Require a nearby SAFETY comment for every TypeScript type assertion except const assertions.",
@@ -107,43 +127,19 @@ export const requireSafetyCommentForTypeAssertionRule: CreateRule<[SafetyComment
     },
     schema: [
       {
-        type: "object",
+        additionalProperties: false,
         properties: {
           markers: {
-            type: "array",
-            items: { type: "string", minLength: 1 },
+            items: { minLength: 1, type: "string" },
             minItems: 1,
+            type: "array",
             uniqueItems: true,
           },
         },
-        additionalProperties: false,
+        type: "object",
       },
     ],
-  },
-  create(context) {
-    const patterns = new Map<string, RegExp>();
-
-    const checkAssertion = (node: TypeAssertion) => {
-      if (isConstAssertion(node)) {return;}
-
-      const markers = configuredSafetyMarkers(context.options[0]);
-      const patternKey = markers.join("\0");
-      const pattern = patterns.get(patternKey) ?? markerPattern(markers);
-      patterns.set(patternKey, pattern);
-
-      if (hasSafetyComment(context.sourceCode, node, pattern)) {return;}
-
-      context.report({
-        node,
-        messageId: "missingSafetyComment",
-        data: { marker: markers[0] ?? DEFAULT_SAFETY_MARKERS[0] },
-      });
-    };
-
-    return {
-      TSAsExpression: checkAssertion,
-      TSTypeAssertion: checkAssertion,
-    };
+    type: "problem",
   },
 };
 

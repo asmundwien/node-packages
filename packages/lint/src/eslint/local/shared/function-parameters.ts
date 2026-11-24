@@ -1,60 +1,74 @@
+import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+
 import type { ESTree, SourceCode } from "../types.ts";
 
-export type FunctionParameter = ESTree.Parameter | ESTree.MemberExpression;
+type FunctionParameter = ESTree.Parameter | ESTree.MemberExpression;
 
 /**
 Return whether a type is or contains TypeScript's absorbing unknown top type.
 */
-export function containsUnknownType(type: ESTree.TypeNode): boolean {
-	return type.type === "TSUnknownKeyword" ? true : type.type === "TSUnionType" && type.types.some(containsUnknownType);
+function hasUnknownType(type: ESTree.TypeNode): boolean {
+	return type.type === nodeTypes.TSUnknownKeyword || type.type === nodeTypes.TSUnionType && type.types.some(hasUnknownType);
 }
 
 /**
 Return the TypeScript annotation attached to a function parameter or its wrapped binding.
 */
-export function functionParameterTypeAnnotation(
+function functionParameterTypeAnnotation(
 	parameter: FunctionParameter,
 ): ESTree.TSTypeAnnotation | null | undefined {
-	if (parameter.type === "TSParameterProperty") {
-		return functionParameterTypeAnnotation(parameter.parameter);
-	}
+	let current: FunctionParameter | ESTree.RestElement["argument"] = parameter;
 
-	if (parameter.type === "RestElement") {
-		return parameter.typeAnnotation ?? functionParameterTypeAnnotation(parameter.argument);
-	}
+	for (;;) {
+		if (current.type === nodeTypes.TSParameterProperty) {
+			current = current.parameter;
+			continue;
+		}
 
-	if (parameter.type === "AssignmentPattern") {
-		return parameter.typeAnnotation ?? functionParameterTypeAnnotation(parameter.left);
-	}
+		if (current.type !== nodeTypes.RestElement && current.type !== nodeTypes.AssignmentPattern) {
+			const annotation = "typeAnnotation" in current ? current.typeAnnotation : undefined;
 
-	return "typeAnnotation" in parameter ? parameter.typeAnnotation : undefined;
+			return annotation?.type === nodeTypes.TSTypeAnnotation ? annotation : undefined;
+		}
+
+		const annotation = current.typeAnnotation ?? undefined;
+
+		if (annotation !== undefined) {return annotation;}
+
+		current = current.type === nodeTypes.RestElement ? current.argument : current.left;
+	}
 }
 
 /**
 Return only a function parameter's local binding, excluding its annotation and default value.
 */
-export function functionParameterBindingName(
+function functionParameterBindingName(
 	parameter: FunctionParameter,
 	sourceCode: SourceCode,
 ): string {
-	if (parameter.type === "TSParameterProperty") {
-		return functionParameterBindingName(parameter.parameter, sourceCode);
+	let current: FunctionParameter | ESTree.RestElement["argument"] = parameter;
+
+	while (current.type === nodeTypes.TSParameterProperty || current.type === nodeTypes.AssignmentPattern || current.type === nodeTypes.RestElement) {
+		if (current.type === nodeTypes.TSParameterProperty) {
+			current = current.parameter;
+		} else {
+			current = current.type === nodeTypes.AssignmentPattern ? current.left : current.argument;
+		}
 	}
 
-	if (parameter.type === "AssignmentPattern") {
-		return functionParameterBindingName(parameter.left, sourceCode);
-	}
+	if (current.type === nodeTypes.Identifier) {return current.name;}
 
-	if (parameter.type === "RestElement") {
-		return functionParameterBindingName(parameter.argument, sourceCode);
-	}
-
-	if (parameter.type === "Identifier") {return parameter.name;}
-
-	const sourceText = sourceCode.getText(parameter);
-	const annotationStart = "typeAnnotation" in parameter ? parameter.typeAnnotation?.range[0] : undefined;
+	const sourceText = sourceCode.getText(current);
+	const annotationStart = "typeAnnotation" in current ? current.typeAnnotation?.range[0] : undefined;
 
 	return annotationStart === undefined
 		? sourceText
-		: sourceText.slice(0, annotationStart - parameter.range[0]).trimEnd();
+		: sourceText.slice(0, annotationStart - current.range[0]).trimEnd();
 }
+
+export {
+	type FunctionParameter,
+	functionParameterBindingName,
+	functionParameterTypeAnnotation,
+	hasUnknownType,
+};
