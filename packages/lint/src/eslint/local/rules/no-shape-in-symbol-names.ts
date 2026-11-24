@@ -1,13 +1,13 @@
-/** Ban the case-insensitive substring "shape" in every JavaScript and TypeScript symbol name.
+/** Ban the case-insensitive substring "shape" in symbol names except noncomputed member access.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-shape-in-symbol-names.ts
-*/
-/**
-Return whether an identifier names a statically accessed member owned by another value.
 */
 import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
 
 import type { CreateRule, ESTree } from "../types.ts";
 
+/**
+Return whether an identifier names a noncomputed member access, whose property name is exempt.
+*/
 function isBorrowedMemberName(node: ESTree.Node): boolean {
   if (node.type === nodeTypes.Program) {return false;}
 
@@ -43,7 +43,7 @@ export const noForbiddenTermInSymbolNamesRule: CreateRule = {
   meta: {
       docs: {
         description:
-          'Disallow the case-insensitive substring "shape" in JavaScript, TypeScript, private, and JSX symbol names.',
+          'Disallow the case-insensitive substring "shape" in JavaScript, TypeScript, private, and JSX symbol names, except property names in noncomputed member access.',
       },
       messages: {
         forbiddenSymbolName:

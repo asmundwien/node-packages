@@ -1,4 +1,4 @@
-/** Ban function contracts that return unknown instead of a parsed domain type.
+/** Ban explicit unknown return types, including local aliases and Promise or PromiseLike wrappers.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unknown-returns.ts
 */
 import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
@@ -79,7 +79,7 @@ export const noUnknownReturnsRule: CreateRule = {
   meta: {
       docs: {
         description:
-          "Disallow functions whose explicit return contract is unknown or Promise<unknown>.",
+          "Disallow explicit unknown return types, including unions, local aliases, and Promise or PromiseLike wrappers.",
       },
       messages: {
         unknownReturn:

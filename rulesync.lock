@@ -100,6 +100,29 @@
         "*"
       ],
       "skillsPath": "version-control/skills"
+    },
+    "asmundwien/agentic:documentation/skills": {
+      "requestedRef": "main",
+      "resolvedRef": "bf06f40e69465502a2e145cdf1c12fbdd63c6240",
+      "resolvedAt": "2026-11-24T21:56:45.345Z",
+      "skills": {
+        "crafting-effective-readmes": {
+          "integrity": "sha256-0ec39c8e70180ce833b830bccf3f241826c3944a261c8ad4b438685cd46d2f74"
+        },
+        "organizing-documentation": {
+          "integrity": "sha256-dc889d2c8d85056d365ff51ddb7095cd0ef14cdb77c3db6ebf1f5e1b7e380679"
+        },
+        "technical-writing": {
+          "integrity": "sha256-d67110528acd1213f9fa40f35a24e3dbd2f9726f83fe8dae30ddd40b36739d54"
+        },
+        "writing-documentation": {
+          "integrity": "sha256-4ff9867ac368b7620d16dae3de3083006f8dda67d543fbbc76dc070345a61153"
+        }
+      },
+      "skillSelection": [
+        "*"
+      ],
+      "skillsPath": "documentation/skills"
     }
   }
 }

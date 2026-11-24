@@ -1,6 +1,6 @@
 # @asmundwien/tsconfig
 
-Preventive compiler policy for agent-generated TypeScript, intended to reduce human review burden. See the [runtime baseline](../../docs/adr/0001-runtime-and-language-baseline.md) for developer and consumer requirements.
+Shared strict TypeScript compiler presets for Node.js and runtime-neutral projects. See the [runtime baseline](../../docs/adr/0001-runtime-and-language-baseline.md) for developer and consumer requirements.
 
 ## Setup
 
@@ -15,14 +15,14 @@ For a Node.js project, create `tsconfig.json`:
 
 ```json
 {
-  "extends": "@asmundwien/tsconfig/node.json",
-  "compilerOptions": {
-    "noEmit": true
-  },
-  "include": ["src/**/*"]
+	"extends": "@asmundwien/tsconfig/node.json",
+	"compilerOptions": {
+		"noEmit": true
+	},
+	"include": ["src/**/*"]
 }
 ```
 
-Run `tsc` in CI. Set file selection and build options locally; the example checks `src` without emitting files.
+Run `pnpm exec tsc --project tsconfig.json` in CI. Set file selection and build options in your project's configuration. The example checks `src` without emitting files.
 
 See [contributing](./docs/contributing.md) for policy changes and exceptions.

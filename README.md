@@ -1,21 +1,17 @@
 # @asmundwien/node-packages
 
-Public source for `@asmundwien`s shared node modules:
+Shared ESLint and TypeScript configurations for `@asmundwien` projects. Use each package's setup guide to install and configure it:
 
-- TBI `@asmundwien/design`: framework-independent design tokens, CSS and JSON.
-- TBI `@asmundwien/ui`: React components and scoped themes.
-- TBI `@asmundwien/tailwind`: Tailwind 4 plugin and CSS integration.
-- [@asmundwien/lint](packages/lint/README.md): composable ESLint configurations.
-- [@asmundwien/tsconfig](packages/tsconfig/README.md): strict compiler configurations.
+- [@asmundwien/lint](packages/lint/README.md) provides composable ESLint configurations.
+- [@asmundwien/tsconfig](packages/tsconfig/README.md) provides strict compiler presets.
 
-## Contents
+## Repository guides
 
-See the links below to find further documentation.
-
-| Document                             | Description                                           |
-| ------------------------------------ | ----------------------------------------------------- |
-| [Contributing](docs/contributing.md) | Guidance for contributing changes to this repository. |
-| [Process](docs/process.md)           | How changes are validated and delivered.              |
+| Document | Purpose |
+| --- | --- |
+| [Contributing](docs/contributing.md) | Set up the workspace and run checks. |
+| [Process](docs/process.md) | Review changes and update GitHub Actions. |
+| [Configuration policy](docs/configuration-policy.md) | Document configuration decisions and approve exceptions. |
 
 ## License
 

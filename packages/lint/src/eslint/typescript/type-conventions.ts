@@ -36,9 +36,7 @@ const typeConventions: Linter.RulesRecord = {
   '@typescript-eslint/max-params': 'error',
   // [standardization] Group members by the typed role and accessibility order so reviewers can locate generated class contracts and implementations predictably.
   '@typescript-eslint/member-ordering': 'error',
-  // [standardization] Choose camelCase values and PascalCase types so generated names identify their intended role.
-  // PascalCase imports, variables and functions support component bindings; UPPER_CASE variables support constants.
-  // Boundary underscores support intentional naming conventions but imply neither privacy nor exemption from unused checks.
+  // [standardization] Use camelCase values and PascalCase types, allow PascalCase imports, variables and functions for components and UPPER_CASE variables for constants, and permit boundary underscores without implying privacy or exemption from unused checks.
   '@typescript-eslint/naming-convention': ['error', {
     format: ['camelCase'],
     leadingUnderscore: 'allow',
@@ -75,9 +73,7 @@ const typeConventions: Linter.RulesRecord = {
   '@typescript-eslint/no-inferrable-types': 'error',
   // [standardization] Reserve void for supported return and generic positions so generated contracts do not alternate it with value-level undefined types.
   '@typescript-eslint/no-invalid-void-type': 'error',
-  // [standardization] Name domain numbers so their meaning is reviewable; accept -1/0/1 as structural conventions and indexes or type indexes as positions.
-  // Defaults and field initializers already locate the declaration; enums, literal types and readonly properties already state a named contract.
-  // Object values remain inline to avoid naming every data field. These exceptions do not prove domain meaning; remaining numeric bindings must use const.
+  // [standardization] Name domain numbers with const for reviewable meaning, but allow -1, 0, 1, indexes, type indexes, defaults, fields, enums, literal types, readonly properties and object values where syntax supplies context without proving domain meaning.
   '@typescript-eslint/no-magic-numbers': ['error', {
     detectObjects: false,
     enforceConst: true,
@@ -162,8 +158,7 @@ const typeConventions: Linter.RulesRecord = {
   '@typescript-eslint/promise-function-async': 'error',
   // [architectural-prevention] Reject async wrappers with no awaits or promise-valued returns because they add an asynchronous caller contract without asynchronous work.
   '@typescript-eslint/require-await': 'error',
-  // [standardization] Require explicit formatting for any, booleans, nullish values, numbers and regexes so generated interpolation does not silently choose a conversion convention.
-  // Never-typed expressions have no exemption because an unreachable type is not an output-format contract.
+  // [standardization] Require explicit formatting for any, booleans, nullish values, numbers, regexes and never-typed expressions because their types do not define an output-format contract.
   '@typescript-eslint/restrict-template-expressions': ['error', {
     allowAny: false,
     allowBoolean: false,

@@ -319,7 +319,7 @@ const config = defineConfig(
       "@typescript-eslint/prefer-readonly-parameter-types": "off",
       // [correctness] Off (compatibility): Listed root and absent-field guards intentionally equate null with undefined; all other equality comparisons remain strict.
       "eqeqeq": ["error", "always", { null: "ignore" }],
-      // [architectural-prevention] Off (scope): A 550-line module and 175-line visitor factory retain shared evidence state while bounding review size.
+      // [architectural-prevention] Off (scope): A 550-line ceiling retains the related evidence classifiers and shared state in one module while bounding review size.
       "max-lines": ["error", knownValueFileLineLimit],
       // [architectural-prevention] Off (scope): A 175-line ceiling retains the related evidence visitors in one factory while bounding review size.
       "max-lines-per-function": ["error", visitorLineLimit],

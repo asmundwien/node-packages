@@ -23,7 +23,7 @@ interface SetupOptions {
   */
   readonly tsconfigRootDir: string;
   /**
-  Enables Effect service, tagged-value construction and matching conventions.
+  Enables Effect service, tagged-value construction and matching conventions. Defaults to false.
   */
   readonly effect?: boolean;
 }
@@ -33,7 +33,7 @@ Creates an ordered ESLint flat configuration for a TypeScript ESM project.
 
 Shared rules and type-aware TypeScript checks always apply. Runtime settings follow the shared policy, and Vitest rules apply within their test-file scopes. See the [project-selection contract](../../README.md#setup) for compiler project discovery.
 
-@param options - Runtime selection and compiler-project location.
+@param options - Runtime selection, import-resolver project root and optional Effect conventions.
 @returns Flat configuration ready to export or compose with file-scoped overrides.
 
 @example

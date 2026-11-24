@@ -1,13 +1,13 @@
-/** Disallow runtime typeof checks that narrow unparsed values instead of decoding them.
+/** Disallow runtime typeof checks except undefined comparisons and explicitly enabled type-predicate bodies.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-runtime-typeof.ts
-*/
-/**
-Return whether typeof safely probes for the existence of a possibly absent binding.
 */
 import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
 
 import type { CreateRule, ESTree } from "../types.ts";
 
+/**
+Return whether a typeof result is compared with the literal string "undefined".
+*/
 function isExistenceProbe(node: ESTree.UnaryExpression): boolean {
 	const parent = node.parent;
 

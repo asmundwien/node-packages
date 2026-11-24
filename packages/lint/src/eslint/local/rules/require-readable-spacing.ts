@@ -48,8 +48,7 @@ const paddingRule = createPaddingLineRule(
     { blankLine: "always", next: ["return", "if", "switch", "try", "for", "while", "do"], prev: "*" },
     { blankLine: "always", next: "*", prev: "block-like" },
     { blankLine: "any", next: "import", prev: "import" },
-    // Consecutive single-line bindings form one group at any scope, including
-    // Module scope. A binding with its own leading comment starts a new group.
+    // Consecutive single-line bindings form one group at any scope, including module scope. A binding with its own leading comment starts a new group.
     { blankLine: "any", next: "undocumented-singleline-binding", prev: "singleline-binding" },
     { blankLine: "any", next: {
       selector:

@@ -1,4 +1,4 @@
-/** Ban test framework module mocking in favor of real dependency seams.
+/** Ban recognized Vitest and Jest module-mocking calls so tests pass doubles through explicit dependencies.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-module-mocking.ts
 */
 import { AST_NODE_TYPES as nodeTypes, TSESLint as tsEslint } from "@typescript-eslint/utils";

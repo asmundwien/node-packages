@@ -7,7 +7,7 @@ import type { Linter } from 'eslint';
 
 const resolverPolicies = {
   generic: {
-    // [correctness] Keep runtime-neutral ESM conditions and the existing bundler entry priorities.
+    // [correctness] Use runtime-neutral ESM export conditions and bundler entry priorities so shared code resolves without Node-specific or browser-specific condition selection.
     javascript: { conditionNames: ['import', 'default'], mainFields: ['module', 'main'] },
     typescript: { conditionNames: ['types', 'import', 'default'], mainFields: defaultMainFields },
   },

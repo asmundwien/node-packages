@@ -1,4 +1,4 @@
-/** Require every non-const type assertion to state the invariant TypeScript cannot express.
+/** Require a nearby nonempty safety-marker comment for every non-const type assertion, without validating its justification.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/require-safety-comment-for-type-assertion.ts
 */
 import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";

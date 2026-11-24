@@ -1,4 +1,4 @@
-/** Disallow unknown inputs except explicitly named error-cause enrichment.
+/** Disallow explicit unknown inputs except parameters named cause and type-predicate subjects.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unknown-parameters.ts
 */
 import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
