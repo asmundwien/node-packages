@@ -1,5 +1,5 @@
-import { noManualEffectErrorTagRule } from "../no-manual-effect-error-tag.ts";
 import { RuleTester } from "../../../test/rule-tester.ts";
+import { noManualEffectErrorTagRule } from "../no-manual-effect-error-tag.ts";
 
 
 const tester = new RuleTester();

@@ -50,9 +50,9 @@ export function lexicalTypeParameterNames(
 ): ReadonlySet<string> {
 	const names = new Set<string>();
 	let descendant: ESTree.Node = node;
-	let current: ESTree.Node | null | undefined = node;
+	let current = node;
 
-	while (current != null && current.type !== "Program") {
+	while (current.type !== "Program") {
 		if ("typeParameters" in current && current.typeParameters !== undefined) {
 			for (const parameter of current.typeParameters.params) {
 				names.add(parameter.name.name);

@@ -1,5 +1,5 @@
-import { requireSafetyCommentForTypeAssertionRule } from "../require-safety-comment-for-type-assertion.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { requireSafetyCommentForTypeAssertionRule } from "../require-safety-comment-for-type-assertion.ts";
 
 
 const tester = new RuleTester();

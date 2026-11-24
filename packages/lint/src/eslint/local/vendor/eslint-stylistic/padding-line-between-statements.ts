@@ -154,8 +154,8 @@ function isCJSRequire(node: ASTNode): boolean {
   if (node.type === 'VariableDeclaration') {
     const declaration = node.declarations[0]
 
-    if (declaration?.init) {
-      let call = declaration?.init
+    if (declaration.init) {
+      let call = declaration.init
 
       while (call.type === 'MemberExpression')
         {call = call.object}
@@ -335,14 +335,14 @@ function getActualLastToken(
   const nextToken = sourceCode.getTokenAfter(semiToken)
 
   const isSemicolonLessStyle
-    = previousToken
-      && nextToken
+    = previousToken !== null
+      && nextToken !== null
       && previousToken.range[0] >= node.range[0]
       && isSemicolonToken(semiToken)
       && !isTokenOnSameLine(previousToken, semiToken)
       && isTokenOnSameLine(semiToken, nextToken)
 
-  return isSemicolonLessStyle && previousToken !== null ? previousToken : semiToken
+  return isSemicolonLessStyle ? previousToken : semiToken
 }
 
 /**
@@ -606,7 +606,7 @@ const StatementTypes = new Map<string, NodeTestObject>(Object.entries({
     test: (node, sourceCode) => {
       return node.type === 'VariableDeclaration'
         && node.declarations.length > 0
-        && node.declarations[0]?.init != null
+        && node.declarations[0].init != null
         && CJS_IMPORT.test(sourceCode.getText(node.declarations[0].init));
     },
   },
@@ -789,7 +789,7 @@ return {
       if (isSelectorOption(type)) {
         const matchedNodes = selectorMatchedNodes.get(type.selector)
 
-        if (!matchedNodes?.has(innerStatementNode))
+        if (matchedNodes === undefined || !matchedNodes.has(innerStatementNode))
           {return false}
 
         const lineMode = type.lineMode

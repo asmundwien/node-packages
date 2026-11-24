@@ -1,5 +1,5 @@
-import { noArrayFilterMapRule } from "../no-array-filter-map.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { noArrayFilterMapRule } from "../no-array-filter-map.ts";
 
 
 const tester = new RuleTester();

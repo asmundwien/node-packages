@@ -43,11 +43,12 @@ function isNode(value: unknown): value is ESTree.Node {
 }
 
 function enclosingTypeScope(node: ESTree.Node): TypeScope {
-	let current: ESTree.Node | null | undefined = node.parent;
+	if (node.type === "Program") {return node;}
 
-	while (current != null) {
+	let current = node.parent;
+
+	while (current.type !== "Program") {
 		if (
-			current.type === "Program" ||
 			current.type === "BlockStatement" ||
 			current.type === "TSModuleBlock" ||
 			current.type === "StaticBlock" ||
@@ -59,7 +60,7 @@ function enclosingTypeScope(node: ESTree.Node): TypeScope {
 		current = current.parent;
 	}
 
-	return node;
+	return current;
 }
 
 function declaredTypeBinding(node: ESTree.Node): {
@@ -152,17 +153,17 @@ export function createTypeAliasEnvironment(
 }
 
 function ancestorDistance(ancestor: ESTree.Node, node: ESTree.Node): number | null {
-	let current: ESTree.Node | null | undefined = node;
+	let current = node;
 	let distance = 0;
 
-	while (current != null) {
-		if (current === ancestor) {return distance;}
+	while (current !== ancestor) {
+		if (current.type === "Program") {return null;}
 
 		current = current.parent;
 		distance += 1;
 	}
 
-	return null;
+	return distance;
 }
 
 function nearestTypeBindings(
@@ -237,12 +238,12 @@ function aliasSubstitutions(
 		const explicitArgument = arguments_[index];
 		const argument = explicitArgument ?? parameter.default;
 
-		if (argument === null || argument === undefined) {return null;}
+		if (argument === undefined) {return null;}
 
-		const argumentSubstitutions = explicitArgument === undefined ? next : base;
+		const argumentSubstitutions = explicitArgument === undefined ? new Map(next) : base;
 		next.set(parameter.name.name, {
 			type: argument,
-			substitutions: new Map(argumentSubstitutions),
+			substitutions: argumentSubstitutions,
 		});
 	}
 

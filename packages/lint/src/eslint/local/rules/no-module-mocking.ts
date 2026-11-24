@@ -28,7 +28,7 @@ function isTestFrameworkObject(
   }
 
   return variable.defs.some((definition) => {
-    if (definition.type !== "ImportBinding" || definition.parent?.type !== "ImportDeclaration") {
+    if (definition.type !== "ImportBinding" || definition.parent.type !== "ImportDeclaration") {
       return false;
     }
 

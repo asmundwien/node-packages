@@ -60,10 +60,10 @@ function typeReferenceName(type: ESTree.TSTypeReference): string | null {
 	return type.typeName.type === "Identifier" ? type.typeName.name : null;
 }
 
-function isInsideTypeAliasDeclaration(node: ESTree.Node): boolean {
-	let current: ESTree.Node | null | undefined = node.parent;
+function isInsideTypeAliasDeclaration(node: ESTree.TypeNode): boolean {
+	let current = node.parent;
 
-	while (current != null && current.type !== "Program") {
+	while (current.type !== "Program") {
 		if (current.type === "TSTypeAliasDeclaration") {return true;}
 
 		current = current.parent;
@@ -86,10 +86,10 @@ function isPlainAliasConsumerUse(node: ESTree.TypeNode, environment: TypeEnviron
 
 function isInsideTypeParameterConstraint(node: ESTree.TypeNode): boolean {
 	let child: ESTree.Node = node;
-	let parent: ESTree.Node | null | undefined = child.parent;
+	let parent = node.parent;
 
-	while (parent != null && parent.type !== "Program") {
-		if (parent?.type === "TSTypeParameter" && parent.constraint === child) {return true;}
+	while (parent.type !== "Program") {
+		if (parent.type === "TSTypeParameter" && parent.constraint === child) {return true;}
 
 		child = parent;
 		parent = child.parent;
@@ -101,9 +101,9 @@ function isInsideTypeParameterConstraint(node: ESTree.TypeNode): boolean {
 function shouldReportType(node: ESTree.TypeNode, environment: TypeEnvironment): boolean {
 	if (isInsideTypeParameterConstraint(node) || isPlainAliasConsumerUse(node, environment) || (classifyUnsafeDictionary(node, environment) === null)) {return false;}
 
-	let current: ESTree.Node | null | undefined = node.parent;
+	let current = node.parent;
 
-	while (current != null && current.type !== "Program") {
+	while (current.type !== "Program") {
 		if (isTypeNode(current) && classifyUnsafeDictionary(current, environment) !== null)
 			{return false;}
 
@@ -156,8 +156,8 @@ export const noUnsafeDictionaryTypeRule: CreateRule = {
 			TSIndexSignature(node) {
 				if (
 					environment === null ||
-					node.typeAnnotation == null ||
-					node.parent?.type === "TSTypeLiteral"
+					node.typeAnnotation === undefined ||
+					node.parent.type === "TSTypeLiteral"
 				)
 					{return;}
 

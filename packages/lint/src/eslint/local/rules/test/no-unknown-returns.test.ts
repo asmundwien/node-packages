@@ -1,5 +1,5 @@
-import { noUnknownReturnsRule } from "../no-unknown-returns.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { noUnknownReturnsRule } from "../no-unknown-returns.ts";
 
 
 const tester = new RuleTester();

@@ -9,7 +9,7 @@ import type { CreateRule, ESTree } from "../types.ts";
 function isExistenceProbe(node: ESTree.UnaryExpression): boolean {
 	const parent = node.parent;
 
-	if ((parent?.type !== "BinaryExpression") || !["===", "!==", "==", "!="].includes(parent.operator)) {return false;}
+	if ((parent.type !== "BinaryExpression") || !["===", "!==", "==", "!="].includes(parent.operator)) {return false;}
 
 	const other = parent.left === node ? parent.right : parent.left;
 
@@ -28,9 +28,11 @@ function isRuntimeFunction(node: ESTree.Node): node is RuntimeFunction {
 }
 
 function isInsideTypeGuard(node: ESTree.Node): boolean {
-	let current: ESTree.Node | null | undefined = node.parent;
+	if (node.type === "Program") {return false;}
 
-	while (current != null && current.type !== "Program") {
+	let current = node.parent;
+
+	while (current.type !== "Program") {
 		if (isRuntimeFunction(current)) {
 			return current.returnType?.typeAnnotation.type === "TSTypePredicate";
 		}
@@ -66,13 +68,7 @@ export const noRuntimeTypeofRule: CreateRule<[{ allowInTypeGuards?: boolean }]> 
 	create(context) {
 		return {
 			UnaryExpression(node) {
-				const option = context.options?.[0];
-
-				const isAllowInTypeGuards =
-					typeof option === "object" &&
-					option !== null &&
-					!Array.isArray(option) &&
-					option.allowInTypeGuards === true;
+				const isAllowInTypeGuards = context.options[0].allowInTypeGuards === true;
 
 				if (
 					node.operator === "typeof" &&

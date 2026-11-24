@@ -28,3 +28,5 @@ For `Off` and `Omit`, labels describe the relaxed requirement. Choose a reason:
 ## Exceptions
 
 Exceptions require human approval, a narrow scope, a concrete reason, and an accepted code pattern. Expanding the scope or pattern requires renewed approval. Agents must not approve or broaden their own exceptions.
+
+List reviewed implementation files explicitly so new files receive the default checks. Use finite adjusted ceilings for size, complexity and arity. Exceptions for mutable framework input types retain checks against caller-owned property mutation.

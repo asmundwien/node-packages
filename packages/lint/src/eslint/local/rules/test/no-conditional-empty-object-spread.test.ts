@@ -1,5 +1,5 @@
-import { noConditionalEmptyObjectSpreadRule } from "../no-conditional-empty-object-spread.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { noConditionalEmptyObjectSpreadRule } from "../no-conditional-empty-object-spread.ts";
 
 
 const tester = new RuleTester();

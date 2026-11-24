@@ -12,25 +12,27 @@ import type { CreateRule, ESTree, SourceCode, Variable } from "../types.ts";
 
 
 function enclosingReducer(node: ESTree.Node) {
-  let parent: ESTree.Node | undefined = node.parent;
+  if (node.type === "Program") {return null;}
 
-  while (parent != null) {
-    if (parent?.type === "FunctionDeclaration") {return null;}
+  let parent = node.parent;
 
-    if (parent?.type === "ArrowFunctionExpression" || parent.type === "FunctionExpression") {
+  while (parent.type !== "Program") {
+    if (parent.type === "FunctionDeclaration") {return null;}
+
+    if (parent.type === "ArrowFunctionExpression" || parent.type === "FunctionExpression") {
       const callback = parent;
-      let owner: ESTree.Node | undefined = callback.parent;
+      let owner = callback.parent;
 
-      while (owner != null && unwrapArrayExpression(owner) === callback) {owner = owner.parent;}
+      while (owner.type !== "Program" && unwrapArrayExpression(owner) === callback) {owner = owner.parent;}
 
-      if (owner?.type !== "CallExpression") {return null;}
+      if (owner.type !== "CallExpression") {return null;}
 
       const method = arrayMethodTarget(owner.callee);
       const firstArgument = owner.arguments[0];
 
       if (
-        method === null || (method.name !== "reduce" && method.name !== "reduceRight") ||
-        owner.arguments.length > 2 || firstArgument === undefined ||
+        firstArgument === undefined || method === null || owner.arguments.length > 2 ||
+        (method.name !== "reduce" && method.name !== "reduceRight") ||
         unwrapArrayExpression(firstArgument) !== callback
       ) {return null;}
 
@@ -60,13 +62,13 @@ function referencesAccumulator(
 
   visited.add(variable);
 
-  if (variable.references.some(reference => reference.isWrite() && !reference.init)) {return false;}
+  if (variable.references.some(reference => reference.isWrite() && reference.init !== true)) {return false;}
 
   for (const definition of variable.defs) {
     if (
-      definition.type === "Variable" && definition.node.type === "VariableDeclarator" &&
+      definition.type === "Variable" &&
       definition.node.id.type === "Identifier" && definition.node.init !== null &&
-      definition.node.parent?.type === "VariableDeclaration" && definition.node.parent.kind === "const"
+      definition.node.parent.kind === "const"
     ) {
       return referencesAccumulator(sourceCode, definition.node.init, accumulator, visited);
     }
@@ -76,11 +78,11 @@ function referencesAccumulator(
 }
 
 function isGlobalCopyOwner(sourceCode: SourceCode, node: ESTree.Node, name: string): boolean {
-  node = unwrapArrayExpression(node);
+  const expression = unwrapArrayExpression(node);
 
-  if (node.type !== "Identifier" || node.name !== name) {return false;}
+  if (expression.type !== "Identifier" || expression.name !== name) {return false;}
 
-  const variable = resolveArrayBinding(sourceCode, node);
+  const variable = resolveArrayBinding(sourceCode, expression);
 
   return variable === null || variable.defs.length === 0;
 }
@@ -97,7 +99,7 @@ export const noReduceAccumulatorCopyRule: CreateRule = {
   create(context) {
     return {
       SpreadElement(node) {
-        if (node.parent?.type !== "ArrayExpression" && node.parent?.type !== "ObjectExpression") {return;}
+        if (node.parent.type !== "ArrayExpression" && node.parent.type !== "ObjectExpression") {return;}
 
         const reducer = enclosingReducer(node);
 

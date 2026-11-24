@@ -62,7 +62,7 @@ export const noUnknownReturnsRule: CreateRule = {
     const checkReturnType = (node: FunctionWithReturnType) => {
       const annotation = node.returnType;
 
-      if (annotation === null || annotation === undefined || !resolvesToUnknown(annotation.typeAnnotation)) {return;}
+      if (annotation === undefined || !resolvesToUnknown(annotation.typeAnnotation)) {return;}
 
       context.report({ node: annotation.typeAnnotation, messageId: "unknownReturn" });
     };

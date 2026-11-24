@@ -74,23 +74,23 @@ function hasSafetyComment(
 ): boolean {
   let current: ESTree.Node = node;
 
-  while (true) {
+  while (current.type !== "Program") {
     if (hasSafetyJustificationBefore(sourceCode, current, node, pattern)) {return true;}
 
     if (commentOwnerKinds.has(current.type)) {
       const exportDeclaration = current.parent;
 
       return (
-        exportDeclaration?.type === "ExportNamedDeclaration" &&
+        exportDeclaration.type === "ExportNamedDeclaration" &&
         exportDeclaration.declaration === current &&
         hasSafetyJustificationBefore(sourceCode, exportDeclaration, node, pattern)
       );
     }
 
-    if (current.parent == null || current.parent.type === "Program") {return false;}
-
     current = current.parent;
   }
+
+  return false;
 }
 
 export const requireSafetyCommentForTypeAssertionRule: CreateRule<[SafetyCommentOptions]> = {
@@ -126,7 +126,7 @@ export const requireSafetyCommentForTypeAssertionRule: CreateRule<[SafetyComment
     const checkAssertion = (node: TypeAssertion) => {
       if (isConstAssertion(node)) {return;}
 
-      const markers = configuredSafetyMarkers(context.options?.[0]);
+      const markers = configuredSafetyMarkers(context.options[0]);
       const patternKey = markers.join("\0");
       const pattern = patterns.get(patternKey) ?? markerPattern(markers);
       patterns.set(patternKey, pattern);

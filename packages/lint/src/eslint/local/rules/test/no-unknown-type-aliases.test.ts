@@ -1,5 +1,5 @@
-import { noUnknownTypeAliasesRule } from "../no-unknown-type-aliases.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { noUnknownTypeAliasesRule } from "../no-unknown-type-aliases.ts";
 
 
 const tester = new RuleTester();

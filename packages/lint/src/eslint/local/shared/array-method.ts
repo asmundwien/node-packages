@@ -1,36 +1,38 @@
 import type { ESTree, SourceCode, Variable } from "../types.ts";
 
-type Scope = ReturnType<SourceCode["getScope"]>;
-
 /**
 Unwrap syntax-only wrappers when inspecting array methods and accumulator references.
 */
 export function unwrapArrayExpression(node: ESTree.Node): ESTree.Node {
+  let current = node;
+
   while (
-    node.type === "ChainExpression" ||
-    node.type === "TSAsExpression" ||
-    node.type === "TSTypeAssertion" ||
-    node.type === "TSNonNullExpression" ||
-    node.type === "TSSatisfiesExpression"
+    current.type === "ChainExpression" ||
+    current.type === "TSAsExpression" ||
+    current.type === "TSTypeAssertion" ||
+    current.type === "TSNonNullExpression" ||
+    current.type === "TSSatisfiesExpression"
   ) {
-    node = node.expression;
+    current = current.expression;
   }
 
-  return node;
+  return current;
 }
 
 /**
 Resolve a local binding by scope, not by identifier spelling.
 */
 export function resolveArrayBinding(sourceCode: SourceCode, node: ESTree.Node): Variable | null {
-  node = unwrapArrayExpression(node);
+  type Scope = ReturnType<SourceCode["getScope"]>;
 
-  if (node.type !== "Identifier") {return null;}
+  const current = unwrapArrayExpression(node);
 
-  let scope: Scope | null | undefined = sourceCode.getScope(node);
+  if (current.type !== "Identifier") {return null;}
+
+  let scope: Scope | null = sourceCode.getScope(current);
 
   while (scope != null) {
-    const variable = scope.set.get(node.name);
+    const variable = scope.set.get(current.name);
 
     if (variable !== undefined) {return variable;}
 
@@ -46,18 +48,18 @@ Read static method names, including computed string literals, without evaluating
 export function arrayMethodTarget(
   node: ESTree.Node,
 ): { readonly name: string; readonly object: ESTree.Node } | null {
-  node = unwrapArrayExpression(node);
+  const current = unwrapArrayExpression(node);
 
-  if (node.type !== "MemberExpression") {return null;}
+  if (current.type !== "MemberExpression") {return null;}
 
-  const property = node.property;
+  const property = current.property;
 
-  if (!node.computed && property.type === "Identifier") {
-    return { name: property.name, object: node.object };
+  if (!current.computed && property.type === "Identifier") {
+    return { name: property.name, object: current.object };
   }
 
-  if (node.computed && property.type === "Literal" && typeof property.value === "string") {
-    return { name: property.value, object: node.object };
+  if (current.computed && property.type === "Literal" && typeof property.value === "string") {
+    return { name: property.value, object: current.object };
   }
 
   return null;
@@ -84,12 +86,12 @@ export function isKnownArrayExpression(
   node: ESTree.Node,
   visited = new Set<Variable>(),
 ): boolean {
-  node = unwrapArrayExpression(node);
+  const current = unwrapArrayExpression(node);
 
-  if (node.type === "ArrayExpression") {return true;}
+  if (current.type === "ArrayExpression") {return true;}
 
-  if (node.type === "CallExpression") {
-    const method = arrayMethodTarget(node.callee);
+  if (current.type === "CallExpression") {
+    const method = arrayMethodTarget(current.callee);
 
     return (
       method !== null &&
@@ -98,15 +100,15 @@ export function isKnownArrayExpression(
     );
   }
 
-  if (node.type !== "Identifier") {return false;}
+  if (current.type !== "Identifier") {return false;}
 
-  const variable = resolveArrayBinding(sourceCode, node);
+  const variable = resolveArrayBinding(sourceCode, current);
 
   if (variable === null || visited.has(variable)) {return false;}
 
   visited.add(variable);
 
-  if (variable.references.some(reference => reference.isWrite() && !reference.init)) {return false;}
+  if (variable.references.some(reference => reference.isWrite() && reference.init !== true)) {return false;}
 
   for (const identifier of variable.identifiers) {
     const annotation = identifier.typeAnnotation?.typeAnnotation;
@@ -116,9 +118,9 @@ export function isKnownArrayExpression(
 
   for (const definition of variable.defs) {
     if (
-      definition.type === "Variable" && definition.node.type === "VariableDeclarator" &&
+      definition.type === "Variable" &&
       definition.node.id.type === "Identifier" && definition.node.init !== null &&
-      definition.node.parent?.type === "VariableDeclaration" && definition.node.parent.kind === "const"
+      definition.parent.kind === "const"
     ) {
       return isKnownArrayExpression(sourceCode, definition.node.init, visited);
     }

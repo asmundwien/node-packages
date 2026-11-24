@@ -1,5 +1,5 @@
-import { noReflectGetRule } from "../no-reflect-get.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { noReflectGetRule } from "../no-reflect-get.ts";
 
 
 const tester = new RuleTester();

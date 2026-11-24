@@ -1,5 +1,5 @@
-import { noUnsafeDictionaryTypeRule } from "../no-unsafe-dictionary-type.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { noUnsafeDictionaryTypeRule } from "../no-unsafe-dictionary-type.ts";
 
 
 const tester = new RuleTester();
@@ -24,6 +24,11 @@ tester.run("local/no-unsafe-dictionary-type", noUnsafeDictionaryTypeRule, {
 		"type Readonly<T> = { value: T }; type A = Record<string, Readonly<unknown>>;",
 		"type NonNullable<T> = { value: T }; type A = Record<string, NonNullable<unknown>>;",
 		"type Value<T> = T; type Index<T = Command, U = Value<T>> = Record<string, U>; type A = Index;",
+		"type Inner<T, U> = Record<string, U>; type Outer<T> = Inner<unknown, T>; type Result = Outer<string>;",
+		"type Inner<T, U> = Record<string, U>; type Outer<T> = Inner<unknown, T>; type Middle<T> = Outer<T>; type Result = Middle<string>;",
+		"type Value<T> = T; type Inner<T, U> = Record<string, U>; type Outer<T> = Inner<unknown, Value<T>>; type Result = Outer<string>;",
+		"type Inner<T, U = T> = Record<string, U>; type Outer<T> = Inner<string>; type Result = Outer<unknown>;",
+		"type Value<T> = T; type Inner<T, U = Value<T>> = Record<string, U>; type Outer<T> = Inner<string>; type Result = Outer<unknown>;",
 		"interface Owner { readonly id: string } type A = Record<string, unknown & Owner>;",
 		"interface Owner { readonly id: string } interface Child extends Owner {} type A = Record<string, Child>;",
 		"interface Owner { readonly id: string } interface Child extends Owner { readonly __brand?: never } type A = Record<string, Child>;",
@@ -95,6 +100,30 @@ tester.run("local/no-unsafe-dictionary-type", noUnsafeDictionaryTypeRule, {
 			errors: 1,
 		},
 		{ code: "type Index<T, U = T> = Record<string, U>; type A = Index<unknown>;", errors: 1 },
+		{
+			code: "type Inner<T, U> = Record<string, U>; type Outer<T> = Inner<string, T>; type Result = Outer<unknown>;",
+			errors: 1,
+		},
+		{
+			code: "type Inner<T, U> = Record<string, U>; type Outer<T> = Inner<string, T>; type Middle<T> = Outer<T>; type Result = Middle<unknown>;",
+			errors: 1,
+		},
+		{
+			code: "type Value<T> = T; type Inner<T, U> = Record<string, U>; type Outer<T> = Inner<string, Value<T>>; type Result = Outer<unknown>;",
+			errors: 1,
+		},
+		{
+			code: "type Inner<T, U> = Record<string, U>; type Outer<T> = Inner<string, Readonly<T | number>>; type Result = Outer<unknown>;",
+			errors: 1,
+		},
+		{
+			code: "type Inner<T, U = T> = Record<string, U>; type Outer<T> = Inner<unknown>; type Result = Outer<string>;",
+			errors: 2,
+		},
+		{
+			code: "type Value<T> = T; type Inner<T, U = Value<T>> = Record<string, U>; type Outer<T> = Inner<unknown>; type Result = Outer<string>;",
+			errors: 2,
+		},
 		{
 			code: "type Value<T> = T; type Index<T, U = Value<T>> = Record<string, U>; type A = Index<unknown>;",
 			errors: 1,

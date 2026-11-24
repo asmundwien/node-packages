@@ -1,5 +1,5 @@
-import { noRuntimeTypeofRule } from "../no-runtime-typeof.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { noRuntimeTypeofRule } from "../no-runtime-typeof.ts";
 
 
 const tester = new RuleTester();

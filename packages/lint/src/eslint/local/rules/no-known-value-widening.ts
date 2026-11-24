@@ -42,14 +42,13 @@ function variableDeclarator(variable: Variable): ESTree.VariableDeclarator | nul
 
 	const [definition] = variable.defs;
 
-	return definition?.type === "Variable" && definition.node.type === "VariableDeclarator"
+	return definition?.type === "Variable"
 		? definition.node
 		: null;
 }
 
 function isStableConstVariable(variable: Variable, declarator: ESTree.VariableDeclarator): boolean {
 	return (
-		declarator.parent?.type === "VariableDeclaration" &&
 		declarator.parent.kind === "const" &&
 		variable.references.every((reference) => reference.init === true || !reference.isWrite())
 	);
@@ -117,7 +116,7 @@ function localFunctionForCall(
 		return definition.node;
 	}
 
-	if (definition.type !== "Variable" || definition.node.type !== "VariableDeclarator") {
+	if (definition.type !== "Variable") {
 		return null;
 	}
 
@@ -142,7 +141,6 @@ function variableTypeAnnotation(
 
 	if (
 		definition.type === "Variable" &&
-		definition.node.type === "VariableDeclarator" &&
 		definition.node.id.type === "Identifier"
 	) {
 		return definition.node.id.typeAnnotation ?? null;
@@ -264,9 +262,11 @@ function annotationTarget(
 }
 
 function enclosingFunction(node: ESTree.Node): FunctionExpression | null {
-	let current: ESTree.Node | null | undefined = node.parent;
+	if (node.type === "Program") {return null;}
 
-	while (current != null && current.type !== "Program") {
+	let current = node.parent;
+
+	while (current.type !== "Program") {
 		if (
 			current.type === "ArrowFunctionExpression" ||
 			current.type === "FunctionDeclaration" ||
@@ -296,10 +296,10 @@ function functionName(sourceCode: SourceCode, owner: FunctionExpression | null):
 
 	const parent = owner.parent;
 
-	if (parent?.type === "VariableDeclarator" && parent.id.type === "Identifier")
+	if (parent.type === "VariableDeclarator" && parent.id.type === "Identifier")
 		{return parent.id.name;}
 
-	if (parent?.type === "MethodDefinition") {return sourceKeyName(sourceCode, parent.key);}
+	if (parent.type === "MethodDefinition") {return sourceKeyName(sourceCode, parent.key);}
 
 	return "anonymous function";
 }
@@ -314,8 +314,8 @@ function isDictionaryAccumulatorTarget(destination: WideningTarget): boolean {
 	return destination.kind === "open dictionary" || destination.kind === "generic container";
 }
 
-function hasParentAssertion(node: ESTree.Node): boolean {
-	return node.parent?.type === "TSAsExpression" || node.parent?.type === "TSTypeAssertion";
+function hasParentAssertion(node: ESTree.TSAsExpression | ESTree.TSTypeAssertion): boolean {
+	return node.parent.type === "TSAsExpression" || node.parent.type === "TSTypeAssertion";
 }
 
 export const noKnownValueWideningRule: CreateRule = {

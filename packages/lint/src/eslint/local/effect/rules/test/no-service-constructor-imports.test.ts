@@ -1,5 +1,5 @@
-import { noServiceConstructorImportsRule } from "../no-service-constructor-imports.ts";
 import { RuleTester } from "../../../test/rule-tester.ts";
+import { noServiceConstructorImportsRule } from "../no-service-constructor-imports.ts";
 
 
 const tester = new RuleTester();

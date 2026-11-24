@@ -6,6 +6,58 @@ const pairSize = 2;
 
 const fixtureStatementLimit = 12;
 
+const classifierComplexityLimit = 30;
+const analysisParameterLimit = 4;
+const traversalStatementLimit = 25;
+const dictionaryStatementLimit = 40;
+const visitorLineLimit = 175;
+const classifierLineLimit = 100;
+const compactVisitorLineLimit = 75;
+const knownValueFileLineLimit = 550;
+const dictionaryFileLineLimit = 700;
+const wideningFileLineLimit = 450;
+const aliasFileLineLimit = 350;
+const grammarFileLineLimit = 1100;
+const grammarFunctionLineLimit = 350;
+
+const astFiles = [
+  "src/eslint/local/types.ts",
+  "src/eslint/local/shared/array-method.ts",
+  "src/eslint/local/shared/dictionary-types.ts",
+  "src/eslint/local/shared/function-parameters.ts",
+  "src/eslint/local/shared/lexical-type-parameters.ts",
+  "src/eslint/local/shared/reflect-method.ts",
+  "src/eslint/local/shared/scope.ts",
+  "src/eslint/local/shared/type-alias-resolution.ts",
+  "src/eslint/local/rules/no-array-filter-map.ts",
+  "src/eslint/local/rules/no-chained-type-assertions.ts",
+  "src/eslint/local/rules/no-conditional-empty-object-spread.ts",
+  "src/eslint/local/rules/no-known-value-widening.ts",
+  "src/eslint/local/rules/no-module-mocking.ts",
+  "src/eslint/local/rules/no-object-parameters.ts",
+  "src/eslint/local/rules/no-reduce-accumulator-copy.ts",
+  "src/eslint/local/rules/no-reflect-apply.ts",
+  "src/eslint/local/rules/no-reflect-get.ts",
+  "src/eslint/local/rules/no-runtime-typeof.ts",
+  "src/eslint/local/rules/no-shape-in-symbol-names.ts",
+  "src/eslint/local/rules/no-unknown-parameters.ts",
+  "src/eslint/local/rules/no-unknown-returns.ts",
+  "src/eslint/local/rules/no-unknown-type-aliases.ts",
+  "src/eslint/local/rules/no-unsafe-dictionary-type.ts",
+  "src/eslint/local/rules/no-widen-then-assert.ts",
+  "src/eslint/local/rules/require-readable-spacing.ts",
+  "src/eslint/local/rules/require-safety-comment-for-type-assertion.ts",
+  "src/eslint/local/effect/shared/tagged-values.ts",
+  "src/eslint/local/effect/rules/no-manual-effect-error-tag.ts",
+  "src/eslint/local/effect/rules/no-manual-tag-comparison.ts",
+  "src/eslint/local/effect/rules/no-manual-tagged-construction.ts",
+  "src/eslint/local/effect/rules/no-service-constructor-imports.ts",
+  "src/eslint/local/effect/rules/prefer-effect-match.ts",
+  "src/eslint/local/vendor/eslint-stylistic/padding-line-ast.ts",
+  "src/eslint/local/vendor/eslint-stylistic/padding-line-options.d.ts",
+  "src/eslint/local/vendor/eslint-stylistic/padding-line-between-statements.ts",
+];
+
 const config = defineConfig(setup({
   runtime: "node",
   tsconfigRootDir: import.meta.dirname,
@@ -29,87 +81,150 @@ const config = defineConfig(setup({
     "id-length": ["error", { exceptions: ["n"], min: 2 }],
   },
 }, {
-  files: ["src/eslint/local/**/*.ts"],
-  ignores: ["**/test/**"],
+  files: astFiles,
   rules: {
-    // [architectural-prevention] Off (scope): Traversal helpers pass the parser node, visitor keys and lexical resolution state explicitly.
-    "@typescript-eslint/max-params": "off",
-    // [standardization] Off (compatibility): Parser selectors, grammar table names, unused regex parameters and schema properties retain their specified casing.
-    "@typescript-eslint/naming-convention": ["error", { format: ["camelCase"], selector: "default" }, { format: ["PascalCase"], selector: "typeLike" }, { format: ["PascalCase"], selector: "typeParameter" }, { format: ["camelCase", "PascalCase"], selector: "import" }, { format: ["camelCase", "PascalCase", "UPPER_CASE"], selector: "variable", trailingUnderscore: "allow" }, { filter: "^_$", format: [], selector: "parameter" }, { format: [], selector: "objectLiteralMethod" }, { format: [], selector: "objectLiteralProperty" }],
-    // [standardization] Off (scope): A pair denotes reducer arity and adjacent line or token boundaries in the parser grammar.
-    "@typescript-eslint/no-magic-numbers": ["error", { ignore: [-1, 0, 1, pairSize] }],
-    // [correctness] Off (compatibility): Shared visitors guard optional parser fields and root parents across the JavaScript and TypeScript AST contracts.
-    "@typescript-eslint/no-unnecessary-condition": "off",
-    // [correctness] Off (compatibility): ESTree specifies literal node-kind strings while the parser types encode those same strings as an enum.
+    // [standardization] Off (compatibility): Listed parser adapters use PascalCase visitor keys and uppercase grammar constants; quoted external keys retain their required spelling while ordinary identifiers still follow naming checks.
+    "@typescript-eslint/naming-convention": ["error", { format: ["camelCase"], selector: "default" }, { format: ["PascalCase"], selector: "typeLike" }, { format: ["camelCase", "PascalCase"], selector: "import" }, { format: ["camelCase", "PascalCase", "UPPER_CASE"], selector: "variable" }, { format: ["camelCase", "PascalCase"], selector: "objectLiteralMethod" }, { format: ["camelCase", "PascalCase"], selector: "objectLiteralProperty" }, { format: [], modifiers: ["requiresQuotes"], selector: "objectLiteralProperty" }],
+    // [correctness] Off (compatibility): Listed adapters compare ESTree's specified node-kind strings with the parser's enum declarations; other enum comparisons in these files require review.
     "@typescript-eslint/no-unsafe-enum-comparison": "off",
-    // [correctness] Off (compatibility): Mutually recursive type classifiers use hoisted function declarations; runtime variable ordering remains checked.
-    "@typescript-eslint/no-use-before-define": ["error", { functions: false, typedefs: false }],
-    // [standardization] Off (scope): Direct parser-field reads keep discriminant narrowing beside the dependent field access.
+    // [standardization] Off (scope): Listed visitors read parser fields directly to retain discriminant narrowing beside dependent accesses; extraction style remains a review decision.
     "@typescript-eslint/prefer-destructuring": "off",
-    // [standardization] Off (scope): Explicit parser guards preserve false and null results while narrowing dependent AST fields.
+    // [standardization] Off (scope): Listed visitors keep explicit short-circuit parser guards; equivalent optional-chain spelling remains a review decision.
     "@typescript-eslint/prefer-optional-chain": "off",
-    // [architectural-prevention] Off (compatibility): Parser-owned nodes, scopes and contexts have mutable library types; rule traversal reads them without claiming deep runtime immutability.
+    // [architectural-prevention] Off (compatibility): Listed adapters accept mutable parser-owned nodes, scopes and contexts without claiming deep immutability; parameter-property mutation remains checked.
     "@typescript-eslint/prefer-readonly-parameter-types": "off",
-    // [standardization] Off (scope): Named grammar matchers define accepted source spelling beside other lexical patterns.
-    "@typescript-eslint/prefer-string-starts-ends-with": "off",
-    // [correctness] Off (compatibility): Parser option strings, optional children and nullable match results use their specified truthiness; unchecked values remain errors.
-    "@typescript-eslint/strict-boolean-expressions": ["error", { allowAny: false, allowNullableBoolean: true, allowNullableObject: true, allowNullableString: true, allowNumber: false, allowString: true }],
-    // [correctness] Off (compatibility): Node classifiers deliberately reject unrecognized syntax through explicit default branches.
-    "@typescript-eslint/switch-exhaustiveness-check": ["error", { considerDefaultExhaustiveForUnions: true, requireDefaultForNonUnion: true }],
-    // [architectural-prevention] Off (scope): Node-kind dispatch and lexical alias resolution remain cohesive algorithms; behavioral suites cover their branches instead of a branch-count ceiling.
-    "complexity": "off",
-    // [correctness] Off (compatibility): Nullish parser fields include both null and undefined; other values still require strict equality.
-    "eqeqeq": ["error", "always", { null: "ignore" }],
-    // [standardization] Off (scope): Regular-expression callbacks retain the conventional unused full-match parameter name.
-    "id-length": ["error", { exceptions: ["_"], min: 2 }],
-    // [standardization] Off (scope): Rule and parser-helper exports remain adjacent to their typed declarations.
-    "import-x/exports-last": "off",
-    // [standardization] Off (scope): Rule and parser-helper exports remain adjacent to their typed declarations.
-    "import-x/group-exports": "off",
-    // [architectural-prevention] Off (compatibility): Parser and rule-option adapters inspect literal primitives before using the decoded AST or schema-validated options.
-    "local/no-runtime-typeof": "off",
-    // [architectural-prevention] Off (scope): Visitor factories and grammar tables remain in their owning rule modules rather than splitting them at a line ceiling.
-    "max-lines": "off",
-    // [architectural-prevention] Off (scope): Related visitors share one rule context and analysis state rather than separate factories chosen by line count.
-    "max-lines-per-function": "off",
-    // [architectural-prevention] Off (scope): Rule factories keep related visitors and report state together; statement counts do not split that lifecycle.
-    "max-statements": "off",
-    // [correctness] Off (compatibility): Nullish parser fields intentionally treat null and undefined as absent.
-    "no-eq-null": "off",
-    // [architectural-prevention] Off (scope): Traversal cursors rebind function-local parameters without changing parser-owned nodes.
-    "no-param-reassign": "off",
-    // [standardization] Off (compatibility): Generic argument collections use arguments_ to avoid the reserved arguments binding.
-    "no-underscore-dangle": ["error", { allow: ["arguments_"] }],
-    // [standardization] Off (compatibility): Visitor selector, grammar matcher and schema property order follows the rule lifecycle rather than alphabetical key order.
+    // [standardization] Off (compatibility): Listed rule schemas and visitor descriptors group lifecycle fields rather than alphabetizing them; ordinary object layout in these files remains a review decision.
     "sort-keys": "off",
-    // [standardization] Off (scope): Grammar predicates retain syntax-operation names; their typed boolean returns state their result contract.
+    // [standardization] Off (scope): Listed syntax predicates retain grammar-operation names with typed boolean returns; boolean naming remains a review decision.
     "unicorn/consistent-boolean-name": "off",
-    // [architectural-prevention] Off (scope): Visitor helpers remain beside the per-rule context and callbacks that use them.
-    "unicorn/consistent-function-scoping": "off",
-    // [standardization] Off (scope): Named visitor closures and ordinary helper declarations retain their lexical-state ownership.
+    // [standardization] Off (scope): Listed visitors use named closures for per-rule lexical state; declaration versus expression style remains a review decision.
     "unicorn/consistent-function-style": "off",
-    // [standardization] Off (scope): Grammar algorithms retain locally defined previous-node and next-node terminology.
-    "unicorn/name-replacements": "off",
-    // [correctness] Off (compatibility): Typed unary grammar predicates ignore collection callback indexes and collection arguments.
-    "unicorn/no-array-callback-reference": "off",
-    // [standardization] Off (scope): Matcher factories use new-prefixed names to identify creation of fresh grammar testers.
-    "unicorn/no-keyword-prefix": "off",
-    // [standardization] Off (compatibility): ESTree and scope lookups use null as their absent-node sentinel, including helper return contracts.
+    // [standardization] Off (compatibility): ESTree and lexical scope APIs use null for absent nodes; additional sentinel choices in listed adapters require review.
     "unicorn/no-null": "off",
-    // [architectural-prevention] Off (scope): Traversal reads the child list directly from the parser visitor-key table.
-    "unicorn/no-unreadable-for-of-expression": "off",
-    // [correctness] Off (compatibility): Recursive aliases and nested AST contracts require recursion through generic binding substitutions.
+    // [correctness] Off (compatibility): Listed type classifiers recurse through nested syntax and alias substitutions; recursion cost remains subject to finite complexity and statement limits.
     "unicorn/no-useless-recursion": "off",
-    // [standardization] Off (scope): Explicit classifier branches retain the chosen boolean or absent-node sentinel.
+    // [standardization] Off (scope): Listed classifiers retain explicit boolean and absent-node ternaries; equivalent logical-operator spelling remains a review decision.
     "unicorn/prefer-logical-operator-over-ternary": "off",
-    // [correctness] Off (compatibility): Parser guard order preserves short-circuit narrowing before dependent property access.
-    "unicorn/prefer-simple-condition-first": "off",
-    // [architectural-prevention] Off (scope): Parser type aliases stay at module scope without adding runtime state or work.
-    "unicorn/prefer-smaller-scope": "off",
+  },
+}, {
+  files: ["src/eslint/local/types.ts", "src/eslint/local/shared/array-method.ts", "src/eslint/local/shared/dictionary-types.ts", "src/eslint/local/shared/function-parameters.ts", "src/eslint/local/shared/lexical-type-parameters.ts", "src/eslint/local/shared/reflect-method.ts", "src/eslint/local/shared/scope.ts", "src/eslint/local/shared/type-alias-resolution.ts", "src/eslint/local/effect/shared/tagged-values.ts", "src/eslint/local/vendor/eslint-stylistic/padding-line-ast.ts", "src/eslint/local/vendor/eslint-stylistic/padding-line-options.d.ts", "src/eslint/local/vendor/eslint-stylistic/padding-line-between-statements.ts"],
+  rules: {
+    // [standardization] Off (scope): Listed parser helpers export declarations beside their contracts; export placement remains a review decision.
+    "import-x/exports-last": "off",
+    // [standardization] Off (scope): Listed parser helpers export declarations beside their contracts; export grouping remains a review decision.
+    "import-x/group-exports": "off",
+  },
+}, {
+  files: ["src/eslint/local/shared/array-method.ts", "src/eslint/local/shared/scope.ts", "src/eslint/local/shared/type-alias-resolution.ts", "src/eslint/local/rules/no-known-value-widening.ts", "src/eslint/local/rules/no-reduce-accumulator-copy.ts", "src/eslint/local/rules/no-runtime-typeof.ts", "src/eslint/local/rules/no-shape-in-symbol-names.ts", "src/eslint/local/rules/no-widen-then-assert.ts", "src/eslint/local/rules/require-safety-comment-for-type-assertion.ts", "src/eslint/local/vendor/eslint-stylistic/padding-line-between-statements.ts"],
+  rules: {
+    // [correctness] Off (compatibility): Listed root and absent-field guards intentionally equate null with undefined; all other equality comparisons remain strict.
+    "eqeqeq": ["error", "always", { null: "ignore" }],
+    // [correctness] Off (compatibility): Listed root and absent-field guards intentionally equate null with undefined; other coercive comparisons remain errors.
+    "no-eq-null": "off",
+  },
+}, {
+  files: ["src/eslint/local/shared/array-method.ts", "src/eslint/local/shared/lexical-type-parameters.ts", "src/eslint/local/shared/type-alias-resolution.ts", "src/eslint/local/effect/shared/tagged-values.ts", "src/eslint/local/vendor/eslint-stylistic/padding-line-between-statements.ts"],
+  rules: {
+    // [architectural-prevention] Off (compatibility): Listed boundary adapters classify parser child nodes, literal property names and schema-validated options before use; arbitrary downstream narrowing remains prohibited elsewhere.
+    "local/no-runtime-typeof": "off",
+  },
+}, {
+  files: ["src/eslint/local/rules/no-object-parameters.ts", "src/eslint/local/rules/no-reduce-accumulator-copy.ts", "src/eslint/local/rules/no-unknown-returns.ts", "src/eslint/local/rules/no-unknown-type-aliases.ts", "src/eslint/local/rules/no-widen-then-assert.ts", "src/eslint/local/shared/dictionary-types.ts", "src/eslint/local/shared/function-parameters.ts"],
+  rules: {
+    // [correctness] Off (compatibility): Listed unary syntax predicates ignore collection callback indexes and collection arguments; receiver binding remains checked.
+    "unicorn/no-array-callback-reference": "off",
+  },
+}, {
+  files: ["src/eslint/local/rules/no-reduce-accumulator-copy.ts", "src/eslint/local/rules/no-widen-then-assert.ts", "src/eslint/local/vendor/eslint-stylistic/padding-line-between-statements.ts"],
+  rules: {
+    // [standardization] Off (scope): Two denotes reducer arity or adjacent token boundaries in these reviewed algorithms; other numeric fixtures still require names.
+    "@typescript-eslint/no-magic-numbers": ["error", { ignore: [-1, 0, 1, pairSize] }],
+  },
+}, {
+  files: ["src/eslint/local/shared/dictionary-types.ts", "src/eslint/local/shared/type-alias-resolution.ts"],
+  rules: {
+    // [standardization] Off (compatibility): Listed generic argument adapters use arguments_ to avoid the reserved arguments binding; other variable spelling remains checked.
+    "@typescript-eslint/naming-convention": ["error", { format: ["camelCase"], selector: "default" }, { format: ["PascalCase"], selector: "typeLike" }, { format: ["camelCase", "PascalCase", "UPPER_CASE"], selector: "variable", trailingUnderscore: "allow" }, { format: [], modifiers: ["requiresQuotes"], selector: "objectLiteralProperty" }],
+    // [correctness] Off (compatibility): Listed alias classifiers use hoisted mutually recursive function declarations; variable ordering remains checked.
+    "@typescript-eslint/no-use-before-define": ["error", { functions: false, typedefs: false }],
+    // [standardization] Off (compatibility): Listed generic argument adapters use arguments_ to avoid the reserved arguments binding; other dangling underscores remain errors.
+    "no-underscore-dangle": ["error", { allow: ["arguments_"] }],
+  },
+}, {
+  files: ["src/eslint/local/rules/no-widen-then-assert.ts"],
+  rules: {
+    // [correctness] Off (compatibility): The reviewed object-type classifier deliberately returns false for every unsupported AST kind; other union switches retain exhaustive checking.
+    "@typescript-eslint/switch-exhaustiveness-check": ["error", { considerDefaultExhaustiveForUnions: true, requireDefaultForNonUnion: true }],
+    // [architectural-prevention] Off (scope): A 450-line ceiling retains the widening analysis lifecycle in this module while bounding growth.
+    "max-lines": ["error", wideningFileLineLimit],
+  },
+}, {
+  files: ["src/eslint/local/rules/no-known-value-widening.ts"],
+  rules: {
+    // [architectural-prevention] Off (scope): A 550-line module and 175-line visitor factory retain shared evidence state while bounding review size.
+    "max-lines": ["error", knownValueFileLineLimit],
+    // [architectural-prevention] Off (scope): A 175-line ceiling retains the related evidence visitors in one factory while bounding review size.
+    "max-lines-per-function": ["error", visitorLineLimit],
+  },
+}, {
+  files: ["src/eslint/local/shared/dictionary-types.ts"],
+  rules: {
+    // [architectural-prevention] Off (scope): A 700-line ceiling retains the dictionary and widening classifiers together while bounding module growth.
+    "max-lines": ["error", dictionaryFileLineLimit],
+    // [architectural-prevention] Off (scope): A 100-line ceiling retains cohesive alias classifiers while bounding individual review units.
+    "max-lines-per-function": ["error", classifierLineLimit],
+    // [architectural-prevention] Off (scope): Forty statements retain complete syntax-classification branches while bounding combined responsibilities.
+    "max-statements": ["error", dictionaryStatementLimit],
+  },
+}, {
+  files: ["src/eslint/local/shared/type-alias-resolution.ts"],
+  rules: {
+    // [architectural-prevention] Off (scope): A 350-line ceiling retains lexical bindings and alias environments together while bounding module growth.
+    "max-lines": ["error", aliasFileLineLimit],
+  },
+}, {
+  files: ["src/eslint/local/rules/no-object-parameters.ts", "src/eslint/local/rules/no-reduce-accumulator-copy.ts", "src/eslint/local/rules/no-unknown-returns.ts", "src/eslint/local/rules/no-widen-then-assert.ts"],
+  rules: {
+    // [architectural-prevention] Off (scope): A 75-line ceiling retains each listed visitor factory or evidence classifier while bounding review size.
+    "max-lines-per-function": ["error", compactVisitorLineLimit],
+  },
+}, {
+  files: ["src/eslint/local/rules/no-reduce-accumulator-copy.ts", "src/eslint/local/rules/no-widen-then-assert.ts", "src/eslint/local/shared/array-method.ts", "src/eslint/local/shared/dictionary-types.ts"],
+  rules: {
+    // [architectural-prevention] Off (scope): Complexity 30 permits these reviewed syntax-dispatch algorithms while retaining a branching ceiling.
+    "complexity": ["error", classifierComplexityLimit],
+  },
+}, {
+  files: ["src/eslint/local/rules/no-known-value-widening.ts", "src/eslint/local/rules/no-reduce-accumulator-copy.ts", "src/eslint/local/rules/no-widen-then-assert.ts", "src/eslint/local/rules/require-safety-comment-for-type-assertion.ts", "src/eslint/local/shared/dictionary-types.ts", "src/eslint/local/shared/type-alias-resolution.ts", "src/eslint/local/vendor/eslint-stylistic/padding-line-between-statements.ts"],
+  rules: {
+    // [architectural-prevention] Off (scope): Four parameters keep parser nodes and lexical analysis state explicit in these reviewed helpers while retaining an arity ceiling.
+    "@typescript-eslint/max-params": ["error", { max: analysisParameterLimit }],
+  },
+}, {
+  files: ["src/eslint/local/rules/no-known-value-widening.ts", "src/eslint/local/rules/no-reduce-accumulator-copy.ts", "src/eslint/local/rules/no-widen-then-assert.ts", "src/eslint/local/shared/array-method.ts", "src/eslint/local/shared/function-parameters.ts", "src/eslint/local/shared/lexical-type-parameters.ts", "src/eslint/local/shared/type-alias-resolution.ts", "src/eslint/local/effect/rules/prefer-effect-match.ts", "src/eslint/local/vendor/eslint-stylistic/padding-line-between-statements.ts"],
+  rules: {
+    // [architectural-prevention] Off (scope): Twenty-five statements retain the listed traversal algorithms while bounding combined responsibilities.
+    "max-statements": ["error", traversalStatementLimit],
   },
 }, {
   files: ["src/eslint/local/vendor/eslint-stylistic/padding-line-between-statements.ts"],
   rules: {
+    // [standardization] Off (compatibility): The upstream regex callback retains its unused _ parameter, selector methods retain quoted keys and JSON Schema retains $defs and $ref; other names remain checked.
+    "@typescript-eslint/naming-convention": ["error", { format: ["camelCase"], selector: "default" }, { format: ["PascalCase"], selector: "typeLike" }, { format: ["camelCase", "PascalCase", "UPPER_CASE"], selector: "variable" }, { format: ["camelCase", "PascalCase"], selector: "objectLiteralMethod" }, { format: [], modifiers: ["requiresQuotes"], selector: "objectLiteralMethod" }, { format: ["camelCase", "PascalCase"], selector: "objectLiteralProperty" }, { format: [], modifiers: ["requiresQuotes"], selector: "objectLiteralProperty" }, { filter: String.raw`^\$(defs|ref)$`, format: [], selector: "objectLiteralProperty" }, { filter: "^_$", format: [], selector: "parameter" }],
+    // [standardization] Off (scope): This reviewed engine retains named grammar regular expressions beside its other lexical patterns; boundary-test spelling remains a review decision here.
+    "@typescript-eslint/prefer-string-starts-ends-with": "off",
+    // [correctness] Off (compatibility): Upstream token guards use nullable-object absence as false; unchecked values, numeric and string truthiness remain errors in this vendored engine.
+    "@typescript-eslint/strict-boolean-expressions": ["error", { allowAny: false, allowNullableBoolean: false, allowNullableEnum: false, allowNullableNumber: false, allowNullableObject: true, allowNullableString: false, allowNumber: false, allowString: false }],
+    // [standardization] Off (compatibility): The upstream regex callback retains its unused _ parameter; other identifier lengths remain checked.
+    "id-length": ["error", { exceptions: ["_"], min: 2 }],
+    // [architectural-prevention] Off (scope): An 1100-line ceiling preserves the reviewed upstream grammar table while bounding this vendored module.
+    "max-lines": ["error", grammarFileLineLimit],
+    // [architectural-prevention] Off (scope): A 350-line ceiling preserves the reviewed matcher and visitor lifecycle while bounding each function.
+    "max-lines-per-function": ["error", grammarFunctionLineLimit],
+    // [standardization] Off (compatibility): The upstream engine retains prevNode and nextNode grammar names for patch comparison; other implementation files retain the naming convention.
+    "unicorn/name-replacements": "off",
+    // [standardization] Off (compatibility): The upstream engine retains new-prefixed matcher factory names for patch comparison; other implementation files retain prefix checking.
+    "unicorn/no-keyword-prefix": "off",
     // [correctness] Off (covered): The typed replacement function returns only captured whitespace; it is not an interpolated replacement string.
     "unicorn/no-unsafe-string-replacement": "off",
     // [standardization] Off (scope): Array.from materializes the grammar kind iterable once during matcher construction.
@@ -118,8 +233,8 @@ const config = defineConfig(setup({
 }, {
   files: ["src/eslint/local/index.ts"],
   rules: {
-    // [architectural-prevention] Off (scope): The plugin registry imports each maintained rule explicitly so registration remains reviewable.
-    "import-x/max-dependencies": "off",
+    // [architectural-prevention] Off (scope): The reviewed registry imports eighteen rules and their two type providers explicitly; twenty dependencies bound further registration growth.
+    "import-x/max-dependencies": ["error", { max: 20 }],
   },
 }, {
   files: ["src/eslint/local/rules/test/**/*.test.ts", "src/eslint/local/effect/rules/test/**/*.test.ts", "src/eslint/local/test/rule-tester.ts"],
@@ -134,8 +249,16 @@ const config = defineConfig(setup({
     "vitest/require-hook": "off",
   },
 }, {
+  files: ["src/eslint/local/test/rule-tester.ts", "src/eslint/test/consumer.test.ts"],
+  rules: {
+    // [correctness] Off (scope): These native test entry points import the dev-only Vitest runner; installed copies require development dependencies and other unpublished imports remain checked.
+    "n/no-unpublished-import": ["error", { allowModules: ["vitest"] }],
+  },
+}, {
   files: ["src/eslint/test/consumer.test.ts"],
   rules: {
+    // [architectural-prevention] Off (scope): Seventy-five lines bound the reviewed consumer suite while retaining its related policy cases together.
+    "max-lines-per-function": ["error", compactVisitorLineLimit],
     // [architectural-prevention] Off (scope): Twelve statements keep temporary files, compiler setup, diagnostics and cleanup under one fixture lifetime.
     "max-statements": ["error", fixtureStatementLimit],
   },

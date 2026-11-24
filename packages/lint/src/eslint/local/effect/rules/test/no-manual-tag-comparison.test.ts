@@ -1,5 +1,5 @@
-import { noManualTagComparisonRule } from "../no-manual-tag-comparison.ts";
 import { RuleTester } from "../../../test/rule-tester.ts";
+import { noManualTagComparisonRule } from "../no-manual-tag-comparison.ts";
 
 
 const tester = new RuleTester();

@@ -9,6 +9,12 @@ function isTypeAssertionExpression(node: ESTree.Node): node is TypeAssertionExpr
   return node.type === "TSAsExpression" || node.type === "TSTypeAssertion";
 }
 
+function isTransparentExpression(
+  node: ESTree.Node,
+): node is ESTree.TSSatisfiesExpression | ESTree.TSNonNullExpression {
+  return node.type === "TSSatisfiesExpression" || node.type === "TSNonNullExpression";
+}
+
 function isConstAssertion(node: TypeAssertionExpression): boolean {
   const { typeAnnotation } = node;
 
@@ -20,9 +26,15 @@ function isConstAssertion(node: TypeAssertionExpression): boolean {
 }
 
 function isOutermostAssertionInChain(node: TypeAssertionExpression): boolean {
-  const parent = node.parent;
+  let current: ESTree.Node = node;
+  let parent = current.parent;
 
-  return parent === undefined || !isTypeAssertionExpression(parent) || parent.expression !== node;
+  while (isTransparentExpression(parent) && parent.expression === current) {
+    current = parent;
+    parent = current.parent;
+  }
+
+  return !isTypeAssertionExpression(parent) || parent.expression !== current;
 }
 
 function isForbiddenAssertionChain(node: TypeAssertionExpression): boolean {
@@ -30,9 +42,12 @@ function isForbiddenAssertionChain(node: TypeAssertionExpression): boolean {
   let hasNonConstAssertion = false;
   let current: ESTree.Expression = node;
 
-  while (isTypeAssertionExpression(current)) {
-    assertionCount += 1;
-    hasNonConstAssertion ||= !isConstAssertion(current);
+  while (isTypeAssertionExpression(current) || isTransparentExpression(current)) {
+    if (isTypeAssertionExpression(current)) {
+      assertionCount += 1;
+      hasNonConstAssertion ||= !isConstAssertion(current);
+    }
+
     current = current.expression;
   }
 
@@ -45,7 +60,7 @@ export const noChainedTypeAssertionsRule: CreateRule = {
     type: "problem",
     docs: {
       description:
-        "Disallow chained TypeScript as and angle-bracket assertions, including parenthesized chains.",
+        "Disallow chained TypeScript as and angle-bracket assertions through parentheses, satisfies and non-null expressions.",
     },
     messages: {
       chained:

@@ -1,5 +1,5 @@
-import { preferEffectMatchRule } from "../prefer-effect-match.ts";
 import { RuleTester } from "../../../test/rule-tester.ts";
+import { preferEffectMatchRule } from "../prefer-effect-match.ts";
 
 
 const tester = new RuleTester();

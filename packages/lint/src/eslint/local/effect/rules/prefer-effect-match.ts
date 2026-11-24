@@ -5,6 +5,11 @@ import type { CreateRule, ESTree } from "../../types.ts";
 
 const equalityOperators = new Set(["==", "===", "!=", "!=="]);
 
+function isLiteral(node: ESTree.Node): boolean {
+  return node.type === "Literal" ||
+    (node.type === "TemplateLiteral" && node.expressions.length === 0);
+}
+
 export const preferEffectMatchRule: CreateRule = {
 	meta: {
 		type: "problem",
@@ -19,11 +24,6 @@ export const preferEffectMatchRule: CreateRule = {
 		},
 	},
 	create(context) {
-		const isLiteral = (node: ESTree.Node): boolean => {
-			return node.type === "Literal" ||
-			(node.type === "TemplateLiteral" && node.expressions.length === 0);
-		};
-
 		const comparedValue = (node: ESTree.Expression): string | undefined => {
 			if (
 				node.type !== "BinaryExpression" ||
@@ -41,7 +41,7 @@ export const preferEffectMatchRule: CreateRule = {
 
 		return {
 			ConditionalExpression(node) {
-				if (node.parent?.type === "ConditionalExpression") {return;}
+				if (node.parent.type === "ConditionalExpression") {return;}
 
 				const value = comparedValue(node.test);
 

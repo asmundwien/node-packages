@@ -1,5 +1,5 @@
-import { noModuleMockingRule } from "../no-module-mocking.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { noModuleMockingRule } from "../no-module-mocking.ts";
 
 
 const tester = new RuleTester();

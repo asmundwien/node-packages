@@ -37,7 +37,7 @@ Run `eslint . --max-warnings=0` in CI so attempted inline configuration also fai
 
 The `local/` rules restrict ad hoc runtime narrowing, broad input and return contracts, erased type evidence, reflective calls and property access, module mocking, collection copies and statement spacing. Each implementation in [`src/eslint/local/rules`](./src/eslint/local/rules) starts with its behavior and source attribution.
 
-Non-const assertions require a nearby `SAFETY:` comment that states the invariant. Chained assertions remain errors. Fresh, locally owned reducer accumulators may be mutated; copying accumulated values on each iteration is an error.
+Non-const assertions require a nearby `SAFETY:` comment that states the invariant. The [TypeScript safety policy](./src/eslint/typescript/type-safety.ts) records the assertion review tradeoff. Chained assertions remain errors, including through syntax-only wrappers. Fresh, locally owned reducer accumulators may be mutated; copying accumulated values on each iteration is an error.
 
 Run ESLint with `--fix` to insert required blank lines. Spacing fixes only add whitespace.
 

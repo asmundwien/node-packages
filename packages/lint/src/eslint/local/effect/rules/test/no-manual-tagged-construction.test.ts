@@ -1,5 +1,5 @@
-import { noManualTaggedConstructionRule } from "../no-manual-tagged-construction.ts";
 import { RuleTester } from "../../../test/rule-tester.ts";
+import { noManualTaggedConstructionRule } from "../no-manual-tagged-construction.ts";
 
 
 const tester = new RuleTester();

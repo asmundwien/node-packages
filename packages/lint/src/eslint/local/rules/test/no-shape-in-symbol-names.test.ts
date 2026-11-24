@@ -1,5 +1,5 @@
-import { noForbiddenTermInSymbolNamesRule } from "../no-shape-in-symbol-names.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { noForbiddenTermInSymbolNamesRule } from "../no-shape-in-symbol-names.ts";
 
 
 const tester = new RuleTester();

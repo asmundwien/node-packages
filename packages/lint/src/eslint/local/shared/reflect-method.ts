@@ -18,7 +18,7 @@ export function isGlobalReflectMethodCall(
   callee: ESTree.Expression,
   methodName: string,
 ): boolean {
-  if (!("property" in callee) || !("object" in callee) || !("computed" in callee) || !isGlobalReflect(sourceCode, callee.object)) {return false;}
+  if (callee.type !== "MemberExpression" || !isGlobalReflect(sourceCode, callee.object)) {return false;}
 
   const property = callee.property;
 

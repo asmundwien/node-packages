@@ -1,5 +1,5 @@
-import { noKnownValueWideningRule } from "../no-known-value-widening.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { noKnownValueWideningRule } from "../no-known-value-widening.ts";
 
 
 const tester = new RuleTester();

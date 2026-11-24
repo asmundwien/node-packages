@@ -1,6 +1,6 @@
-import { requireReadableSpacingRule } from "../require-readable-spacing.ts";
-import { createPaddingLineRule } from "../../vendor/eslint-stylistic/padding-line-between-statements.ts";
 import { RuleTester } from "../../test/rule-tester.ts";
+import { createPaddingLineRule } from "../../vendor/eslint-stylistic/padding-line-between-statements.ts";
+import { requireReadableSpacingRule } from "../require-readable-spacing.ts";
 
 const tester = new RuleTester();
 const error = { messageId: "expectedBlankLine" };

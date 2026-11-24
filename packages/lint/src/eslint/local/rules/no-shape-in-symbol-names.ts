@@ -7,9 +7,11 @@ Return whether an identifier names a statically accessed member owned by another
 import type { CreateRule, ESTree } from "../types.ts";
 
 function isBorrowedMemberName(node: ESTree.Node): boolean {
+  if (node.type === "Program") {return false;}
+
   const parent = node.parent;
 
-  return parent == null || parent.type !== "MemberExpression" ? false : parent.property === node && !parent.computed;
+  return parent.type === "MemberExpression" && parent.property === node && !parent.computed;
 }
 
 const FORBIDDEN_SYMBOL_NAME = "shape";

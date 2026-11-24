@@ -64,6 +64,27 @@ test('consumer policy requires a safety invariant for single assertions', async 
   assert.ok(accepted.every(message => message.ruleId !== 'local/require-safety-comment-for-type-assertion' && message.ruleId !== '@typescript-eslint/no-unsafe-type-assertion'));
 });
 
+test('consumer policy rejects direct and transparently wrapped assertion chains once', async () => {
+  const expressions = [
+    '(value as string) as "selected"',
+    '((value as string) satisfies string) as "selected"',
+    '(value as string)! as "selected"',
+  ];
+
+  for (const expression of expressions) {
+    const messages = await lintConsumer(`declare const value: "selected" | "other";\n// SAFETY: The caller selected this value before narrowing it.\nexport const selected = ${expression};\n`);
+    const chainErrors = messages.filter(message => message.ruleId === 'local/no-chained-type-assertions');
+
+    assert.equal(chainErrors.length, 1, JSON.stringify(messages));
+  }
+});
+
+test('consumer policy accepts a justified assertion through transparent wrappers', async () => {
+  const messages = await lintConsumer('declare const value: "selected" | "other";\n// SAFETY: The caller selected this value before narrowing it.\nexport const selected = (value satisfies "selected" | "other") as "selected";\n');
+
+  assert.ok(messages.every(message => message.ruleId !== 'local/no-chained-type-assertions' && message.ruleId !== 'local/require-safety-comment-for-type-assertion' && message.ruleId !== '@typescript-eslint/no-unsafe-type-assertion'), JSON.stringify(messages));
+});
+
 test('consumer policy reports local boundary and collection violations', async () => {
   const messages = await lintConsumer('export function parse(value: unknown): string { return typeof value === "string" ? value : ""; }\nexport const selected = [1, 2].filter(value => value > 0).map(value => value + 1);');
 

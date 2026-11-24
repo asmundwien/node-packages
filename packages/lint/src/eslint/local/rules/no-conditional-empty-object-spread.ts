@@ -33,7 +33,7 @@ export const noConditionalEmptyObjectSpreadRule: CreateRule = {
   create(context) {
     return {
       SpreadElement(node) {
-        if (node.parent?.type !== "ObjectExpression") {return;}
+        if (node.parent.type !== "ObjectExpression") {return;}
 
         if (isConditionalEmptyObjectSpread(node.argument)) {
           context.report({ node, messageId: "avoid" });

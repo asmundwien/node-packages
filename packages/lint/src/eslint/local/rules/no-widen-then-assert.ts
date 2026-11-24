@@ -181,9 +181,11 @@ function isDefinitelyNarrowerRecordType(type: ESTree.TypeNode): boolean {
 }
 
 function functionBoundary(node: ESTree.Node): ESTree.Node | null {
-  let current: ESTree.Node | undefined = node.parent;
+  if (node.type === "Program") {return null;}
 
-  while (current != null && current.type !== "Program") {
+  let current = node.parent;
+
+  while (current.type !== "Program") {
     if (functionBoundaryTypes.has(current.type)) {return current;}
 
     current = current.parent;
@@ -217,7 +219,7 @@ function resolvedVariableForIdentifier(
 
 function variableDeclarator(variable: Variable): ESTree.VariableDeclarator | null {
   for (const definition of variable.defs) {
-    if (definition.type === "Variable" && definition.node.type === "VariableDeclarator") {
+    if (definition.type === "Variable") {
       return definition.node;
     }
   }
@@ -253,22 +255,21 @@ function knownValueEvidence(
   if (variable === null || visitedVariables.has(variable)) {return null;}
 
   const annotatedIdentifier = variable.identifiers.find(
-    (identifier) => identifier.typeAnnotation !== null && identifier.typeAnnotation !== undefined,
+    (identifier) => identifier.typeAnnotation !== undefined,
   );
 
-  const annotation = annotatedIdentifier?.typeAnnotation?.typeAnnotation;
+  if (annotatedIdentifier?.typeAnnotation !== undefined) {
+    const annotation = annotatedIdentifier.typeAnnotation.typeAnnotation;
 
-  if (annotation !== undefined && annotatedIdentifier !== undefined) {
     return functionBoundary(annotatedIdentifier) === boundary && broadTypeKind(annotation) === null ? { type: annotation } : null;
   }
 
   const declarator = variableDeclarator(variable);
 
   return declarator === null ||
-    declarator.parent?.type !== "VariableDeclaration" ||
     declarator.parent.kind !== "const" ||
     declarator.init === null ||
-    variable.references.some((reference) => reference.isWrite() && !reference.init) ||
+    variable.references.some((reference) => reference.isWrite() && reference.init !== true) ||
     functionBoundary(declarator) !== boundary ? null : knownValueEvidence(
     declarator.init,
     scopes,
@@ -290,11 +291,10 @@ function widenedBinding(
 
   if (
     declarator === null ||
-    declarator.parent?.type !== "VariableDeclaration" ||
     declarator.parent.kind !== "const" ||
     declarator.id.type !== "Identifier" ||
     declarator.init === null ||
-    variable.references.some((reference) => reference.isWrite() && !reference.init)
+    variable.references.some((reference) => reference.isWrite() && reference.init !== true)
   ) {
     return null;
   }
