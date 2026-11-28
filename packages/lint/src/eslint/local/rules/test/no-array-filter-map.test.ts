@@ -1,0 +1,63 @@
+import { RuleTester } from "../../test/rule-tester.ts";
+import { noArrayFilterMapRule } from "../no-array-filter-map.ts";
+
+
+const tester = new RuleTester();
+const error = { messageId: "arrayFilterMap" };
+
+tester.run("local/no-array-filter-map", noArrayFilterMapRule, {
+  invalid: [
+    { code: "[].filter(active).map(email);", errors: [error] },
+    { code: "[].map(user => user.active ? user.email : undefined).filter(email => email !== undefined);", errors: [error] },
+    { code: "const users = []; users.map(email).filter(Boolean);", errors: [error] },
+    { code: "const users = []; const alias = users; alias.filter(active).map(email);", errors: [error] },
+    { code: "function collect(users: User[]) { return users.filter(active).map(email); }", errors: [error] },
+    { code: "function collect(users: readonly User[]) { return users.map(email).filter(present); }", errors: [error] },
+    { code: "function collect(users: ReadonlyArray<User>) { return users.filter(active).map(email); }", errors: [error] },
+    { code: "function collect(users: Array<User>) { return users.filter(active).map(email); }", errors: [error] },
+    { code: "const users = [] as const; users['filter'](active)['map'](email);", errors: [error] },
+    { code: "const users = []; (users.filter(active)!).map(email);", errors: [error] },
+    { code: "const users = []; users?.filter(active)?.map(email);", errors: [error] },
+    { code: "const users = []; users.slice().filter(active).map(email);", errors: [error] },
+    { code: "const users = []; users.filter(active).map(email).filter(Boolean);", errors: [error, error] },
+    { code: "const users = []; users.with(0, user).filter(active).map(email);", errors: [error] },
+    { code: "const users = []; const updated = users['with'](0, user); updated.map(email).filter(present);", errors: [error] },
+    { code: "const users = []; users.with(0, user).slice().with(1, user).filter(active).map(email);", errors: [error] },
+    { code: "const Array = custom; function collect(users: Array<User>) { return users.filter(active).map(email); }", errors: [error] },
+    { code: "function other() { type Array<T> = IteratorObject<T>; } function collect(users: Array<User>) { return users.filter(active).map(email); }", errors: [error] },
+    { code: "function collect(users: Array<User>) { return users.filter(active).map(email); } function other< Array >() {}", errors: [error] },
+    { code: "const users = []; function collect() { type users = {}; return users.filter(active).map(email); }", errors: [error] },
+    { code: "type Array<T> = IteratorObject<T>; function collect(users: User[]) { return users.filter(active).map(email); }", errors: [error] },
+    { code: "type ReadonlyArray<T> = IteratorObject<T>; function collect(users: readonly [User]) { return users.map(email).filter(present); }", errors: [error] },
+  ],
+  valid: [
+    "const users = []; users.values().filter(active).map(email).toArray();",
+    "const users = []; users.values().map(email).filter(Boolean).toArray();",
+    "Iterator.from(users).filter(active).map(email).toArray();",
+    "function collect(users: IteratorObject<User>) { return users.filter(active).map(email).toArray(); }",
+    "const users = []; users.flatMap(user => user.active ? [user.email] : []);",
+    "const users = []; users.map(email); users.filter(active);",
+    "const users = []; users.map(email).map(normalize);",
+    "const users = []; users.filter(active).filter(verified);",
+    "const custom = { filter() { return this; }, map() {} }; custom.filter(active).map(email);",
+    "function collect(unknownReceiver) { return unknownReceiver.filter(active).map(email); }",
+    "const users = fetchUsers(); users.filter(active).map(email);",
+    "const users = []; function collect(users) { return users.filter(active).map(email); }",
+    "let users = []; users = iterator; users.filter(active).map(email);",
+    "const users = []; users[method](active).map(email);",
+    "const first = second; const second = first; first.filter(active).map(email);",
+    "type Array<T> = IteratorObject<T>; function collect(users: Array<User>) { return users.filter(active).map(email).toArray(); }",
+    "type ReadonlyArray<T> = IteratorObject<T>; function collect(users: ReadonlyArray<User>) { return users.map(email).filter(present).toArray(); }",
+    "import type { Array } from './collections'; function collect(users: Array<User>) { return users.filter(active).map(email); }",
+    "interface ReadonlyArray<T> { filter(callback): ReadonlyArray<T>; map(callback): ReadonlyArray<T>; } function collect(users: ReadonlyArray<User>) { return users.filter(active).map(email); }",
+    "function collect<Array>(users: Array<User>) { return users.filter(active).map(email); }",
+    "function collect<ReadonlyArray>(users: ReadonlyArray<User>) { return users.map(email).filter(present); }",
+    "function collect(users: Array<User>) { return users.filter(active).map(email); } type Array<T> = IteratorObject<T>;",
+    "function outer() { type ReadonlyArray<T> = IteratorObject<T>; function collect(users: ReadonlyArray<User>) { return users.filter(active).map(email).toArray(); } }",
+    "const custom = { with() { return this; }, filter() { return this; }, map() {} }; custom.with(0, user).filter(active).map(email);",
+    "function collect(users) { return users.with(0, user).filter(active).map(email); }",
+    "const users = []; function collect(users) { return users.with(0, user).filter(active).map(email); }",
+    "const first = second.with(0, user); const second = first.with(0, user); first.filter(active).map(email);",
+    "type Array<T> = Array<T>; function collect(users: Array<User>) { return users.filter(active).map(email); }",
+  ],
+});

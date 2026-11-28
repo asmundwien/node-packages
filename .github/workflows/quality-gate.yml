@@ -44,6 +44,9 @@ jobs:
       - name: 🔍 Check types
         run: pnpm typecheck
 
+      - name: Run unit tests
+        run: pnpm test
+
       - name: 🔍 Check code usage
         run: pnpm knip:check
 

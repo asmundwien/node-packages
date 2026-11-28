@@ -7,7 +7,7 @@ import type { Linter } from 'eslint';
 
 const resolverPolicies = {
   generic: {
-    // [correctness] Keep runtime-neutral ESM conditions and the existing bundler entry priorities.
+    // [correctness] Use runtime-neutral ESM export conditions and bundler entry priorities so shared code resolves without Node-specific or browser-specific condition selection.
     javascript: { conditionNames: ['import', 'default'], mainFields: ['module', 'main'] },
     typescript: { conditionNames: ['types', 'import', 'default'], mainFields: defaultMainFields },
   },
@@ -48,7 +48,7 @@ function importResolution({ runtime, tsconfigRootDir }: {
       languageOptions: { parserOptions: { tsconfigRootDir } },
       name: '@asmundwien/lint/import-resolution/typescript',
       settings: {
-        // [correctness] Resolve aliases from the parser's compiler project while applying the runtime's TypeScript entry policy.
+        // [correctness] Resolve aliases from the root tsconfig while applying the runtime's TypeScript entry policy.
         'import-x/resolver-next': [createTypeScriptImportResolver({
           ...policy.typescript,
           project: path.join(tsconfigRootDir, 'tsconfig.json'),
@@ -59,4 +59,5 @@ function importResolution({ runtime, tsconfigRootDir }: {
 }
 
 export { importResolution };
+
 export type { Runtime };

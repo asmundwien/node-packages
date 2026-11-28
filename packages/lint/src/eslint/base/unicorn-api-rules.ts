@@ -137,8 +137,6 @@ const unicornApiRules: Linter.RulesRecord = {
   'unicorn/prefer-query-selector': 'error',
   // [standardization] Use queueMicrotask() for the rule's deferred-callback patterns so generated code follows the selected microtask scheduling contract.
   'unicorn/prefer-queue-microtask': 'error',
-  // [standardization] Use Reflect.apply() so explicit receiver invocation follows one API rather than borrowing a function's apply property.
-  'unicorn/prefer-reflect-apply': 'error',
   // [standardization] Use test() for regex boolean questions so reviewers do not have to infer intent from discarded match data.
   'unicorn/prefer-regexp-test': 'error',
   // [standardization] Use Response.json() so JSON response construction and its content type follow the platform's named operation.

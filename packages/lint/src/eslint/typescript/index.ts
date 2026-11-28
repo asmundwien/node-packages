@@ -13,8 +13,8 @@ const typescript: Linter.Config[] = defineConfig({
   files: ['**/*.{ts,tsx,mts,cts}'],
   languageOptions: {
     parser,
-    // Use the consumer's compiler project for type-aware checks across its selected files.
-    parserOptions: { project: ['tsconfig.json'] },
+    // [correctness] Use Project Service to select each file's nearest tsconfig for type-aware rules, matching editor project discovery.
+    parserOptions: { projectService: true },
     sourceType: 'module',
   },
   name: '@asmundwien/lint/typescript',

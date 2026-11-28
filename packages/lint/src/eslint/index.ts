@@ -1,5 +1,7 @@
 import { base } from './base/index.ts';
 import { importResolution } from './import-resolution.ts';
+import { effect as effectPolicy } from './local/effect/index.ts';
+import { local } from './local/index.ts';
 import { node } from './node/index.ts';
 import { react } from './react/index.ts';
 import { typescript } from './typescript/index.ts';
@@ -17,17 +19,21 @@ interface SetupOptions {
   */
   readonly runtime: Runtime;
   /**
-  Absolute directory containing the project's `tsconfig.json`.
+  Absolute project root containing the import resolver's `tsconfig.json`.
   */
   readonly tsconfigRootDir: string;
+  /**
+  Enables Effect service, tagged-value construction and matching conventions. Defaults to false.
+  */
+  readonly effect?: boolean;
 }
 
 /**
 Creates an ordered ESLint flat configuration for a TypeScript ESM project.
 
-Shared rules and type-aware TypeScript checks always apply. Runtime settings follow the shared policy, and Vitest rules apply within their test-file scopes. TypeScript files must belong to the compiler project in `tsconfigRootDir`.
+Shared rules and type-aware TypeScript checks always apply. Runtime settings follow the shared policy, and Vitest rules apply within their test-file scopes. See the [project-selection contract](../../README.md#setup) for compiler project discovery.
 
-@param options - Runtime selection and compiler-project location.
+@param options - Runtime selection, import-resolver project root and optional Effect conventions.
 @returns Flat configuration ready to export or compose with file-scoped overrides.
 
 @example
@@ -38,7 +44,7 @@ export default setup({
 });
 ```
 */
-function setup({ runtime, tsconfigRootDir }: SetupOptions): Linter.Config[] {
+function setup({ runtime, tsconfigRootDir, effect = false }: SetupOptions): Linter.Config[] {
   const runtimeConfigs = { generic: [], node, react };
 
   return [
@@ -47,8 +53,11 @@ function setup({ runtime, tsconfigRootDir }: SetupOptions): Linter.Config[] {
     ...runtimeConfigs[runtime],
     ...importResolution({ runtime, tsconfigRootDir }),
     ...vitest,
+    local,
+    ...(effect ? [effectPolicy] : []),
   ];
 }
 
 export { setup };
+
 export type { SetupOptions };

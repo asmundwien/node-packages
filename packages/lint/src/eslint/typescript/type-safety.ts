@@ -72,8 +72,7 @@ const typeSafety: Linter.RulesRecord = {
   '@typescript-eslint/no-unsafe-member-access': 'error',
   // [correctness] Reject any-valued returns that would let an unchecked result escape under a caller's trusted return type.
   '@typescript-eslint/no-unsafe-return': 'error',
-  // [correctness] Require runtime narrowing instead of narrowing assertions so generated code cannot claim a more specific value shape without checking it.
-  '@typescript-eslint/no-unsafe-type-assertion': 'error',
+  // [correctness] Omit (scope): @typescript-eslint/no-unsafe-type-assertion; single narrowing assertions require local/require-safety-comment-for-type-assertion and human review of the stated invariant, but comment presence does not prove validation or type safety.
   // [correctness] Reject unary minus on unsupported types because implicit numeric coercion can produce NaN or throw instead of the intended negation.
   '@typescript-eslint/no-unsafe-unary-minus': 'error',
   // [correctness] Reject effect-free expressions that may be missing an assignment or call, including expressions hidden inside TypeScript assertions.

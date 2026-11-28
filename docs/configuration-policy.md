@@ -4,7 +4,7 @@ The lint and compiler packages constrain agent-generated code to reduce human re
 
 ## Decision rationale
 
-Give each rule exactly one single-line rationale comment immediately before its configuration. Combine requirements and exceptions in that line; do not wrap it or add separate rationale comments.
+Give each rule exactly one single-line rationale comment immediately before its configuration. Combine requirements and exceptions in that line. Do not wrap it or add separate rationale comments.
 
 Keep rationale beside each configuration decision, including overrides. Explain the chosen value and material tradeoffs. Label it with applicable purposes in this order:
 
@@ -28,3 +28,5 @@ For `Off` and `Omit`, labels describe the relaxed requirement. Choose a reason:
 ## Exceptions
 
 Exceptions require human approval, a narrow scope, a concrete reason, and an accepted code pattern. Expanding the scope or pattern requires renewed approval. Agents must not approve or broaden their own exceptions.
+
+List reviewed implementation files explicitly so new files receive the default checks. Use finite adjusted ceilings for size, complexity, and arity. Exceptions for mutable framework input types retain checks against caller-owned property mutation.

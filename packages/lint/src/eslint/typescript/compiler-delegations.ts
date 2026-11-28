@@ -1,7 +1,7 @@
 import type { Linter } from 'eslint';
 
 // Compiler delegations require a consumer tsc check with noCheck disabled.
-// Supplying parserOptions.project gives lint types but does not run compiler diagnostics.
+// Project Service supplies lint types but does not run compiler diagnostics.
 const compilerDelegations: Linter.RulesRecord = {
   // [correctness] Off (covered): Consumer tsc reports missing named exports with TS2305 for resolved module declarations; accurate dependency declarations are required for type/value export checking.
   'import-x/named': 'off',
