@@ -1,7 +1,7 @@
 /** Keep local Effect service constructor imports out of runtime modules.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/effect/rules/no-service-constructor-imports.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import type { CreateRule, ESTree } from "../../types.ts";
 
@@ -13,7 +13,7 @@ function isProjectLocalImport(source: string): boolean {
 }
 
 function getImportedName(specifier: ESTree.ImportSpecifier): string {
-	return specifier.imported.type === nodeTypes.Identifier ? specifier.imported.name : specifier.imported.value;
+	return specifier.imported.type === AST_NODE_TYPES.Identifier ? specifier.imported.name : specifier.imported.value;
 }
 
 /**
@@ -28,7 +28,7 @@ const noServiceConstructorImportsRule: CreateRule = {
 				if (isTestFile || !isProjectLocalImport(node.source.value)) {return;}
 
 				for (const specifier of node.specifiers) {
-					if (specifier.type !== nodeTypes.ImportSpecifier) {continue;}
+					if (specifier.type !== AST_NODE_TYPES.ImportSpecifier) {continue;}
 
 					const importedName = getImportedName(specifier);
 

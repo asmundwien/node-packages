@@ -1,7 +1,7 @@
 /** Reject eager array filter/map pipelines; lazy iterator helpers remain allowed.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-array-filter-map.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import { arrayMethodTarget, isKnownArrayExpression, unwrapArrayExpression } from "../shared/array-method.ts";
 
@@ -18,7 +18,7 @@ export const noArrayFilterMapRule: CreateRule = {
 
         const innerCall = unwrapArrayExpression(outer.object);
 
-        if (innerCall.type !== nodeTypes.CallExpression) {return;}
+        if (innerCall.type !== AST_NODE_TYPES.CallExpression) {return;}
 
         const inner = arrayMethodTarget(innerCall.callee);
 

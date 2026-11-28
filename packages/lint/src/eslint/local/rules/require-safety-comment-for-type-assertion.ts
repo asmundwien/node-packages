@@ -1,7 +1,7 @@
 /** Require a nearby nonempty safety-marker comment for every non-const type assertion, without validating its justification.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/require-safety-comment-for-type-assertion.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import type { CreateRule, ESTree, SourceCode } from "../types.ts";
 
@@ -23,8 +23,8 @@ const commentOwnerKinds = new Set([
 
 function isConstAssertion(node: TypeAssertion): boolean {
   return (
-    node.typeAnnotation.type === nodeTypes.TSTypeReference &&
-    node.typeAnnotation.typeName.type === nodeTypes.Identifier &&
+    node.typeAnnotation.type === AST_NODE_TYPES.TSTypeReference &&
+    node.typeAnnotation.typeName.type === AST_NODE_TYPES.Identifier &&
     node.typeAnnotation.typeName.name === "const"
   );
 }
@@ -76,14 +76,14 @@ function hasSafetyComment(
 ): boolean {
   let current: ESTree.Node = node;
 
-  while (current.type !== nodeTypes.Program) {
+  while (current.type !== AST_NODE_TYPES.Program) {
     if (hasSafetyJustificationBefore(sourceCode, current, node, pattern)) {return true;}
 
     if (commentOwnerKinds.has(current.type)) {
       const exportDeclaration = current.parent;
 
       return (
-        exportDeclaration.type === nodeTypes.ExportNamedDeclaration &&
+        exportDeclaration.type === AST_NODE_TYPES.ExportNamedDeclaration &&
         exportDeclaration.declaration === current &&
         hasSafetyJustificationBefore(sourceCode, exportDeclaration, node, pattern)
       );

@@ -2,7 +2,7 @@
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unsafe-dictionary-type.ts
 */
 
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import {
 	type TypeEnvironment,
@@ -59,14 +59,14 @@ function isTypeNode(node: ESTree.Node): node is ESTree.TypeNode {
 }
 
 function typeReferenceName(type: ESTree.TSTypeReference): string | null {
-	return type.typeName.type === nodeTypes.Identifier ? type.typeName.name : null;
+	return type.typeName.type === AST_NODE_TYPES.Identifier ? type.typeName.name : null;
 }
 
 function isInsideTypeAliasDeclaration(node: ESTree.TypeNode): boolean {
 	let current = node.parent;
 
-	while (current.type !== nodeTypes.Program) {
-		if (current.type === nodeTypes.TSTypeAliasDeclaration) {return true;}
+	while (current.type !== AST_NODE_TYPES.Program) {
+		if (current.type === AST_NODE_TYPES.TSTypeAliasDeclaration) {return true;}
 
 		current = current.parent;
 	}
@@ -75,23 +75,24 @@ function isInsideTypeAliasDeclaration(node: ESTree.TypeNode): boolean {
 }
 
 function isPlainAliasConsumerUse(node: ESTree.TypeNode, environment: TypeEnvironment): boolean {
-	if (node.type !== nodeTypes.TSTypeReference || (node.typeArguments?.params.length ?? 0) > 0) {return false;}
+	if (node.type !== AST_NODE_TYPES.TSTypeReference || (node.typeArguments?.params.length ?? 0) > 0) {return false;}
 
 	const name = typeReferenceName(node);
 
-	return (
-		name !== null &&
-		visibleTypeAlias(name, node, environment.typeAliases) !== null &&
-		!isInsideTypeAliasDeclaration(node)
-	);
+	const alias = name === null ? null : visibleTypeAlias(name, node, environment.typeAliases);
+
+	return alias !== null &&
+		!isInsideTypeAliasDeclaration(node) &&
+		((alias.typeParameters?.params.length ?? 0) === 0 ||
+			classifyUnsafeDictionary(alias.typeAnnotation, environment) !== null);
 }
 
 function isInsideTypeParameterConstraint(node: ESTree.TypeNode): boolean {
 	let child: ESTree.Node = node;
 	let parent = node.parent;
 
-	while (parent.type !== nodeTypes.Program) {
-		if (parent.type === nodeTypes.TSTypeParameter && parent.constraint === child) {return true;}
+	while (parent.type !== AST_NODE_TYPES.Program) {
+		if (parent.type === AST_NODE_TYPES.TSTypeParameter && parent.constraint === child) {return true;}
 
 		child = parent;
 		parent = child.parent;
@@ -105,7 +106,7 @@ function shouldReportType(node: ESTree.TypeNode, environment: TypeEnvironment): 
 
 	let current = node.parent;
 
-	while (current.type !== nodeTypes.Program) {
+	while (current.type !== AST_NODE_TYPES.Program) {
 		if (isTypeNode(current) && classifyUnsafeDictionary(current, environment) !== null)
 			{return false;}
 
@@ -140,7 +141,7 @@ export const noUnsafeDictionaryTypeRule: CreateRule = {
         				if (
         					environment === null ||
         					node.typeAnnotation === undefined ||
-        					node.parent.type === nodeTypes.TSTypeLiteral
+        					node.parent.type === AST_NODE_TYPES.TSTypeLiteral
         				)
         					{return;}
         
@@ -153,6 +154,7 @@ export const noUnsafeDictionaryTypeRule: CreateRule = {
         					context.report({ data: { value: unsafe.unsafeValue }, messageId: "unsafeDictionary", node });
         				}
         			},
+        			TSIntersectionType: reportIfUnsafe,
         			TSMappedType: reportIfUnsafe,
         			TSTypeLiteral: reportIfUnsafe,
         			TSTypeReference: reportIfUnsafe,

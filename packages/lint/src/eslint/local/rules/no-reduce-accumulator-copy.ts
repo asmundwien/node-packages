@@ -1,7 +1,7 @@
 /** Reject copies of growing reducer accumulators, including array and object spreads.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-reduce-accumulator-copy.ts
 */
-import { AST_NODE_TYPES as nodeTypes, TSESLint as tsEslint } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, TSESLint } from "@typescript-eslint/utils";
 
 import {
   arrayMethodTarget,
@@ -14,20 +14,20 @@ import type { CreateRule, ESTree, SourceCode, Variable } from "../types.ts";
 
 
 function enclosingReducer(sourceCode: SourceCode, node: ESTree.Node) {
-  if (node.type === nodeTypes.Program) {return null;}
+  if (node.type === AST_NODE_TYPES.Program) {return null;}
 
   let parent = node.parent;
 
-  while (parent.type !== nodeTypes.Program) {
-    if (parent.type === nodeTypes.FunctionDeclaration) {return null;}
+  while (parent.type !== AST_NODE_TYPES.Program) {
+    if (parent.type === AST_NODE_TYPES.FunctionDeclaration) {return null;}
 
-    if (parent.type === nodeTypes.ArrowFunctionExpression || parent.type === nodeTypes.FunctionExpression) {
+    if (parent.type === AST_NODE_TYPES.ArrowFunctionExpression || parent.type === AST_NODE_TYPES.FunctionExpression) {
       const callback = parent;
       let owner = callback.parent;
 
-      while (owner.type !== nodeTypes.Program && unwrapArrayExpression(owner) === callback) {owner = owner.parent;}
+      while (owner.type !== AST_NODE_TYPES.Program && unwrapArrayExpression(owner) === callback) {owner = owner.parent;}
 
-      if (owner.type !== nodeTypes.CallExpression) {return null;}
+      if (owner.type !== AST_NODE_TYPES.CallExpression) {return null;}
 
       const method = arrayMethodTarget(owner.callee);
       const firstArgument = owner.arguments[0];
@@ -39,9 +39,9 @@ function enclosingReducer(sourceCode: SourceCode, node: ESTree.Node) {
       ) {return null;}
 
       const firstParameter = callback.params[0];
-      const accumulatorParameter = firstParameter?.type === nodeTypes.AssignmentPattern ? firstParameter.left : firstParameter;
+      const accumulatorParameter = firstParameter?.type === AST_NODE_TYPES.AssignmentPattern ? firstParameter.left : firstParameter;
 
-      if (accumulatorParameter?.type !== nodeTypes.Identifier) {return null;}
+      if (accumulatorParameter?.type !== AST_NODE_TYPES.Identifier) {return null;}
 
       const accumulator = sourceCode.getDeclaredVariables(callback).find(variable =>
         variable.identifiers.some(identifier => identifier.range[0] === accumulatorParameter.range[0]),
@@ -59,8 +59,8 @@ function enclosingReducer(sourceCode: SourceCode, node: ESTree.Node) {
 function constInitializer(variable: Variable): ESTree.Node | null {
   for (const definition of variable.defs) {
     if (
-      definition.type === tsEslint.Scope.DefinitionType.Variable &&
-      definition.node.id.type === nodeTypes.Identifier && definition.node.init !== null &&
+      definition.type === TSESLint.Scope.DefinitionType.Variable &&
+      definition.node.id.type === AST_NODE_TYPES.Identifier && definition.node.init !== null &&
       definition.node.parent.kind === "const"
     ) {
       return definition.node.init;
@@ -100,7 +100,7 @@ function isAccumulatorReference(
 function isGlobalCopyOwner(sourceCode: SourceCode, node: ESTree.Node, name: string): boolean {
   const expression = unwrapArrayExpression(node);
 
-  if (expression.type !== nodeTypes.Identifier || expression.name !== name) {return false;}
+  if (expression.type !== AST_NODE_TYPES.Identifier || expression.name !== name) {return false;}
 
   const variable = resolveArrayBinding(sourceCode, expression);
 
@@ -125,7 +125,7 @@ export const noReduceAccumulatorCopyRule: CreateRule = {
             if (method.name === "assign" && isGlobalCopyOwner(context.sourceCode, method.object, "Object")) {
               const target = node.arguments[0];
     
-              if (target !== undefined && unwrapArrayExpression(target).type === nodeTypes.ObjectExpression) {
+              if (target !== undefined && unwrapArrayExpression(target).type === AST_NODE_TYPES.ObjectExpression) {
                 for (let index = 1; index < node.arguments.length; index += 1) {
                   const argument = node.arguments[index];
     
@@ -150,7 +150,7 @@ export const noReduceAccumulatorCopyRule: CreateRule = {
             if (isAccumulatorCopy) {context.report({ messageId: "accumulatorCopy", node });}
           },
           SpreadElement(node) {
-            if (node.parent.type !== nodeTypes.ArrayExpression && node.parent.type !== nodeTypes.ObjectExpression) {return;}
+            if (node.parent.type !== AST_NODE_TYPES.ArrayExpression && node.parent.type !== AST_NODE_TYPES.ObjectExpression) {return;}
     
             const reducer = enclosingReducer(context.sourceCode, node);
     

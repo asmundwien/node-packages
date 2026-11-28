@@ -1,7 +1,7 @@
 /** Ban the broad object type on function inputs, including local aliases to object.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-object-parameters.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import {
 	functionParameterBindingName,
@@ -33,8 +33,8 @@ export const noObjectParametersRule: CreateRule = {
     		function isResolvedObjectType(type: ESTree.TypeNode): boolean {
     			return environment !== null &&
     			doesResolvedTypeMatch(type, environment, (resolved, isMatchingType) => {
-    				return resolved.type === nodeTypes.TSObjectKeyword || (
-    					resolved.type === nodeTypes.TSUnionType && resolved.types.some(isMatchingType)
+    				return resolved.type === AST_NODE_TYPES.TSObjectKeyword || (
+    					resolved.type === AST_NODE_TYPES.TSUnionType && resolved.types.some(isMatchingType)
     				);
     			});
     		}

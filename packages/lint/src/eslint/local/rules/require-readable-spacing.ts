@@ -1,7 +1,7 @@
 /** Require blank lines between logical statement groups while keeping bindings and overloads grouped.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/require-readable-spacing.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import { createPaddingLineRule } from "../vendor/eslint-stylistic/padding-line-between-statements.ts";
 
@@ -12,9 +12,9 @@ import type { NodeTestObject } from "../vendor/eslint-stylistic/padding-line-bet
 A `const`/`let`/`var`/`using` declaration, optionally exported, written on one line.
 */
 function isSinglelineBinding(node: ESTree.Node): boolean {
-  const declaration = node.type === nodeTypes.ExportNamedDeclaration ? node.declaration : node;
+  const declaration = node.type === AST_NODE_TYPES.ExportNamedDeclaration ? node.declaration : node;
 
-  return declaration?.type === nodeTypes.VariableDeclaration && node.loc.start.line === node.loc.end.line;
+  return declaration?.type === AST_NODE_TYPES.VariableDeclaration && node.loc.start.line === node.loc.end.line;
 }
 
 /**

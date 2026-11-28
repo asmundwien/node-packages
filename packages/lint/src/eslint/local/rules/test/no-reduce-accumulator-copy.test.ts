@@ -34,6 +34,11 @@ tester.run("local/no-reduce-accumulator-copy", noReduceAccumulatorCopyRule, {
     { code: "items.reduce((acc, item) => acc.toSorted(), []);", errors: [error] },
     { code: "items.reduce((acc, item) => acc.toReversed(), []);", errors: [error] },
     { code: "items.reduce((acc, item) => acc.with(0, item), []);", errors: [error] },
+    { code: "items.reduce((acc, item) => acc.concat(item), [].with(0, first));", errors: [error] },
+    { code: "const initial = []; const updated = initial['with'](0, first); items.reduceRight((acc, item) => acc.slice(), updated);", errors: [error] },
+    { code: "function collect(initial: ReadonlyArray<Item>) { return items.reduce((acc, item) => acc.concat(item), initial.with(0, first)); }", errors: [error] },
+    { code: "const initial = []; items.reduce((acc, item) => acc.concat(item), initial.with(0, first).slice().with(1, second));", errors: [error] },
+    { code: "const initial = []; function collect() { type initial = {}; return items.reduce((acc, item) => acc.concat(item), initial); }", errors: [error] },
   ],
   valid: [
     "items.reduce((acc, item) => { acc.push(item); return acc; }, []);",
@@ -62,5 +67,10 @@ tester.run("local/no-reduce-accumulator-copy", noReduceAccumulatorCopyRule, {
     "items.reduce((acc, item) => { let alias = acc; alias = item; return { ...alias }; }, {});",
     "function copy(acc) { return [...acc]; }",
     "items.map((acc, item) => ({ ...acc }));",
+    "const initial = custom.with(0, first); items.reduce((acc, item) => acc.concat(item), initial);",
+    "const initial = []; function collect(initial) { return items.reduce((acc, item) => acc.concat(item), initial.with(0, first)); }",
+    "const first = second.with(0, item); const second = first.with(0, item); items.reduce((acc, item) => acc.concat(item), first);",
+    "type Array<T> = IteratorObject<T>; function collect(initial: Array<Item>) { return items.reduce((acc, item) => acc.concat(item), initial); }",
+    "type ReadonlyArray<T> = IteratorObject<T>; function collect(initial: ReadonlyArray<Item>) { return items.reduce((acc, item) => acc.slice(), initial); }",
   ],
 });

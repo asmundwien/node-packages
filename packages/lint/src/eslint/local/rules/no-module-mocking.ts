@@ -1,7 +1,7 @@
 /** Ban recognized Vitest and Jest module-mocking calls so tests pass doubles through explicit dependencies.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-module-mocking.ts
 */
-import { AST_NODE_TYPES as nodeTypes, TSESLint as tsEslint } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, TSESLint } from "@typescript-eslint/utils";
 
 import { resolveVariable } from "../shared/scope.ts";
 
@@ -11,33 +11,44 @@ import type { CreateRule, ESTree, SourceCode } from "../types.ts";
 
 const moduleMockMethods = new Set(["doMock", "mock", "unstable_mockModule"]);
 
-function importedName(node: ESTree.Node): string | null {
-  if (node.type !== nodeTypes.ImportSpecifier) {return null;}
+const testFrameworkNames = {
+  jest: true,
+  vi: true,
+  vitest: true,
+} satisfies Record<string, true>;
 
-  return node.imported.type === nodeTypes.Identifier ? node.imported.name : node.imported.value;
+function importedName(node: ESTree.Node): string | null {
+  if (node.type !== AST_NODE_TYPES.ImportSpecifier) {return null;}
+
+  return node.imported.type === AST_NODE_TYPES.Identifier ? node.imported.name : node.imported.value;
 }
 
 function isTestFrameworkObject(
   sourceCode: SourceCode,
   expression: ESTree.Expression,
 ): expression is ESTree.Identifier {
-  if (expression.type !== nodeTypes.Identifier) {return false;}
+  if (expression.type !== AST_NODE_TYPES.Identifier) {return false;}
 
   const variable = resolveVariable(sourceCode, expression);
 
   if (variable === null || variable.defs.length === 0) {
-    return expression.name === "vi" || expression.name === "jest";
+    return Object.hasOwn(testFrameworkNames, expression.name);
   }
 
   return variable.defs.some((definition) => {
-    if (definition.type !== tsEslint.Scope.DefinitionType.ImportBinding || definition.parent.type !== nodeTypes.ImportDeclaration) {
+    if (
+      definition.type !== TSESLint.Scope.DefinitionType.ImportBinding ||
+      definition.parent.type !== AST_NODE_TYPES.ImportDeclaration ||
+      definition.parent.importKind === "type" ||
+      (definition.node.type === AST_NODE_TYPES.ImportSpecifier && definition.node.importKind === "type")
+    ) {
       return false;
     }
 
     const source = definition.parent.source.value;
     const name = importedName(definition.node);
 
-    return (source === "vitest" && name === "vi") || (source === "@jest/globals" && name === "jest");
+    return (source === "vitest" && (name === "vi" || name === "vitest")) || (source === "@jest/globals" && name === "jest");
   });
 }
 
@@ -47,13 +58,13 @@ function moduleMockCall(sourceCode: SourceCode, callee: ESTree.Expression): bool
   const property = callee.property;
 
   const method = callee.computed
-    ? (property.type === nodeTypes.Literal &&
+    ? (property.type === AST_NODE_TYPES.Literal &&
       (property.value === "doMock" ||
         property.value === "mock" ||
         property.value === "unstable_mockModule")
       ? property.value
       : null)
-    : (property.type === nodeTypes.Identifier
+    : (property.type === AST_NODE_TYPES.Identifier
       ? property.name
       : null);
 
@@ -64,7 +75,7 @@ export const noModuleMockingRule: CreateRule = {
   create(context) {
     return {
       CallExpression(node) {
-        if (node.callee.type === nodeTypes.Super) {return;}
+        if (node.callee.type === AST_NODE_TYPES.Super) {return;}
 
         if (moduleMockCall(context.sourceCode, node.callee)) {
           context.report({ messageId: "moduleMock", node });

@@ -1,28 +1,28 @@
 /** Disallow nested TypeScript type assertions, while permitting chains made only of const assertions.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-chained-type-assertions.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import type { CreateRule, ESTree } from "../types.ts";
 
 type TypeAssertionExpression = ESTree.TSAsExpression | ESTree.TSTypeAssertion;
 
 function isTypeAssertionExpression(node: ESTree.Node): node is TypeAssertionExpression {
-  return node.type === nodeTypes.TSAsExpression || node.type === nodeTypes.TSTypeAssertion;
+  return node.type === AST_NODE_TYPES.TSAsExpression || node.type === AST_NODE_TYPES.TSTypeAssertion;
 }
 
 function isTransparentExpression(
   node: ESTree.Node,
 ): node is ESTree.TSSatisfiesExpression | ESTree.TSNonNullExpression {
-  return node.type === nodeTypes.TSSatisfiesExpression || node.type === nodeTypes.TSNonNullExpression;
+  return node.type === AST_NODE_TYPES.TSSatisfiesExpression || node.type === AST_NODE_TYPES.TSNonNullExpression;
 }
 
 function isConstAssertion(node: TypeAssertionExpression): boolean {
   const { typeAnnotation } = node;
 
   return (
-    typeAnnotation.type === nodeTypes.TSTypeReference &&
-    typeAnnotation.typeName.type === nodeTypes.Identifier &&
+    typeAnnotation.type === AST_NODE_TYPES.TSTypeReference &&
+    typeAnnotation.typeName.type === AST_NODE_TYPES.Identifier &&
     typeAnnotation.typeName.name === "const"
   );
 }

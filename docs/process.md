@@ -4,9 +4,7 @@ Use this guide to prepare pull requests and update GitHub Actions dependencies. 
 
 ## Pull requests
 
-Use pull requests to review changes before they reach `main`. Resolve review feedback and require the PR quality gate to pass before merging.
-
-The [PR quality gate workflow](../.github/workflows/quality-gate.yml) runs for pull requests targeting `main` and defines the required automated checks. Run the corresponding [development commands](./contributing.md#development) locally before requesting review.
+Use pull requests to review changes before they reach `main`.
 
 ## Action updates
 
@@ -22,4 +20,3 @@ gh actions-lock --verify
 pnpm github-actions:check
 ```
 
-Include any workflow changes and the generated [action lockfile](../.github/workflows/actions.lock) in the pull request. Do not edit the lockfile by hand. The verification command checks the lockfile against GitHub without changing workflows or the lockfile.

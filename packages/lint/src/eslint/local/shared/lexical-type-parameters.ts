@@ -1,4 +1,4 @@
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import type { ESTree } from "../types.ts";
 
@@ -34,54 +34,64 @@ function forEachChild(
 	}
 }
 
-function collectInferTypeParameterNames(
+function hasInferTypeParameter(
 	node: ESTree.Node,
+	name: string,
 	visitorKeys: VisitorKeys,
-	names: Set<string>,
-): void {
-	function collect(current: ESTree.Node) {
-		if (current.type === nodeTypes.TSInferType) {names.add(current.typeParameter.name.name);}
+): boolean {
+	if (node.type === AST_NODE_TYPES.TSConditionalType) {return false;}
 
-		forEachChild(current, visitorKeys, collect);
-	}
+	if (node.type === AST_NODE_TYPES.TSInferType) {return node.typeParameter.name.name === name;}
 
-	collect(node);
+	let hasMatchingParameter = false;
+
+	forEachChild(node, visitorKeys, (child) => {
+		if (!hasMatchingParameter) {hasMatchingParameter = hasInferTypeParameter(child, name, visitorKeys);}
+	});
+
+	return hasMatchingParameter;
 }
 
 /**
-Collect type binders that are in scope at a node and can shadow module aliases.
+Find the nearest lexical scope that binds this type parameter name.
 */
-function lexicalTypeParameterNames(
+function lexicalTypeParameterScope(
+	name: string,
 	node: ESTree.Node,
 	visitorKeys: VisitorKeys,
-): ReadonlySet<string> {
-	const names = new Set<string>();
+): ESTree.Node | undefined {
 	let descendant: ESTree.Node = node;
 	let current = node;
 
-	while (current.type !== nodeTypes.Program) {
-		if ("typeParameters" in current && current.typeParameters !== undefined) {
-			for (const parameter of current.typeParameters.params) {
-				names.add(parameter.name.name);
-			}
+	while (current.type !== AST_NODE_TYPES.Program) {
+		if (
+			"typeParameters" in current &&
+			current.typeParameters?.params.some((parameter) => parameter.name.name === name) === true
+		) {
+			return current;
 		}
 
 		if (
-			current.type === nodeTypes.TSMappedType &&
+			current.type === AST_NODE_TYPES.TSMappedType &&
+			current.key.name === name &&
 			(descendant === current.nameType || descendant === current.typeAnnotation)
 		) {
-			names.add(current.key.name);
+			return current;
 		}
 
-		if (current.type === nodeTypes.TSConditionalType && descendant === current.trueType) {
-			collectInferTypeParameterNames(current.extendsType, visitorKeys, names);
+		if (
+			current.type === AST_NODE_TYPES.TSConditionalType &&
+			descendant === current.trueType &&
+			hasInferTypeParameter(current.extendsType, name, visitorKeys)
+		) {
+			return current;
 		}
 
 		descendant = current;
 		current = current.parent;
 	}
 
-	return names;
+	return undefined;
 }
 
-export { forEachChild, lexicalTypeParameterNames };
+export { forEachChild, lexicalTypeParameterScope };

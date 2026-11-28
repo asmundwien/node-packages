@@ -7,6 +7,8 @@ const error = { messageId: "widenThenAssert" };
 
 tester.run("local/no-widen-then-assert", noWidenThenAssertRule, {
   invalid: [
+    { code: "type Known<T> = T; declare const source: Known<string>; const widened: unknown = source; const parsed = widened as string;", errors: [error] },
+    { code: "type Input = unknown; function parse() { type Input = string; declare const source: Input; const widened: unknown = source; return widened as string; }", errors: [error] },
   		{
   			code: "function parse(source: string) { const alias = source; const widened: unknown = alias; return widened as string; }",
   			errors: [error],
@@ -45,6 +47,16 @@ tester.run("local/no-widen-then-assert", noWidenThenAssertRule, {
   		},
   	],
   valid: [
+    "declare const input: unknown; const { value } = { value: input }; const widened: unknown = value; const parsed = widened as string;",
+    "declare const input: unknown; const [value] = [input]; const widened: unknown = value; const parsed = widened as string;",
+    "type Input = unknown; declare const source: Input; const widened: unknown = source; const parsed = widened as string;",
+    "type Input<T> = T; declare const source: Input<object>; const widened: unknown = source; const parsed = widened as { id: string };",
+    "type Input = Record<string, unknown>; declare const source: Input; const widened: unknown = source; const parsed = widened as { id: string };",
+    "type Input = { [key: string]: unknown }; declare const source: Input; const widened: unknown = source; const parsed = widened as { id: string };",
+    "type Input = Other; type Other = Input; declare const source: Input; const widened: unknown = source; const parsed = widened as string;",
+    "type Input = string; function parse() { type Input = unknown; declare const source: Input; const widened: unknown = source; return widened as string; }",
+    "declare const input: unknown; type Input = unknown; const source = input as Input; const widened: unknown = source; const parsed = widened as string;",
+    "const source = 'known'; source = readInput(); const alias = source; const widened: unknown = alias; const parsed = widened as string;",
   		"const source = { id: 'first' }; const widened: unknown = source;",
   		"declare const input: unknown; const parsed = input as { readonly id: string };",
   		"const source = { id: 'outer' }; function parse() { const widened: unknown = source; return widened as { readonly id: string }; }",

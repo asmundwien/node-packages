@@ -1,12 +1,13 @@
 /** Ban explicit unknown return types, including local aliases and Promise or PromiseLike wrappers.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unknown-returns.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import {
   type TypeAliasEnvironment,
   createTypeAliasEnvironment,
   doesResolvedTypeMatch,
+  hasVisibleTypeBinding,
 } from "../shared/type-alias-resolution.ts";
 
 import type { CreateRule, ESTree } from "../types.ts";
@@ -30,16 +31,20 @@ export const noUnknownReturnsRule: CreateRule = {
     function isResolvedUnknownType(type: ESTree.TypeNode): boolean {
       return environment !== null &&
       doesResolvedTypeMatch(type, environment, (resolved, isMatchingType) => {
-        if (resolved.type === nodeTypes.TSUnknownKeyword) {return true;}
+        if (resolved.type === AST_NODE_TYPES.TSUnknownKeyword) {return true;}
 
-        if (resolved.type === nodeTypes.TSUnionType) {return resolved.types.some(isMatchingType);}
+        if (resolved.type === AST_NODE_TYPES.TSUnionType) {return resolved.types.some(isMatchingType);}
 
         if (
-          resolved.type !== nodeTypes.TSTypeReference ||
-          resolved.typeName.type !== nodeTypes.Identifier ||
+          resolved.type !== AST_NODE_TYPES.TSTypeReference ||
+          resolved.typeName.type !== AST_NODE_TYPES.Identifier ||
           (resolved.typeName.name !== "Promise" &&
             resolved.typeName.name !== "PromiseLike")
         ) {
+          return false;
+        }
+
+        if (environment === null || hasVisibleTypeBinding(resolved.typeName.name, resolved, environment)) {
           return false;
         }
 

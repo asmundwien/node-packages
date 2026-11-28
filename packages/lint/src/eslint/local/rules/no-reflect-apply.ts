@@ -1,7 +1,7 @@
 /** Ban Reflect.apply, which bypasses ordinary typed function calls.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-reflect-apply.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import { isGlobalReflectMethodCall } from "../shared/reflect-method.ts";
 
@@ -12,7 +12,7 @@ export const noReflectApplyRule: CreateRule = {
   create(context) {
     return {
       CallExpression(node) {
-        if (node.callee.type === nodeTypes.Super) {return;}
+        if (node.callee.type === AST_NODE_TYPES.Super) {return;}
 
         if (isGlobalReflectMethodCall(context.sourceCode, node.callee, "apply")) {
           context.report({ messageId: "reflectApply", node });

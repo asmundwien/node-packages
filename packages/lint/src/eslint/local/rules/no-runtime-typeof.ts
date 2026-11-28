@@ -1,7 +1,7 @@
 /** Disallow runtime typeof checks except undefined comparisons and explicitly enabled type-predicate bodies.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-runtime-typeof.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import type { CreateRule, ESTree } from "../types.ts";
 
@@ -11,11 +11,11 @@ Return whether a typeof result is compared with the literal string "undefined".
 function isExistenceProbe(node: ESTree.UnaryExpression): boolean {
 	const parent = node.parent;
 
-	if ((parent.type !== nodeTypes.BinaryExpression) || !["===", "!==", "==", "!="].includes(parent.operator)) {return false;}
+	if ((parent.type !== AST_NODE_TYPES.BinaryExpression) || !["===", "!==", "==", "!="].includes(parent.operator)) {return false;}
 
 	const other = parent.left === node ? parent.right : parent.left;
 
-	return other.type === nodeTypes.Literal && other.value === "undefined";
+	return other.type === AST_NODE_TYPES.Literal && other.value === "undefined";
 }
 
 
@@ -23,20 +23,20 @@ type RuntimeFunction = ESTree.ArrowFunctionExpression | ESTree.FunctionLike;
 
 function isRuntimeFunction(node: ESTree.Node): node is RuntimeFunction {
 	return (
-		node.type === nodeTypes.ArrowFunctionExpression ||
-		node.type === nodeTypes.FunctionDeclaration ||
-		node.type === nodeTypes.FunctionExpression
+		node.type === AST_NODE_TYPES.ArrowFunctionExpression ||
+		node.type === AST_NODE_TYPES.FunctionDeclaration ||
+		node.type === AST_NODE_TYPES.FunctionExpression
 	);
 }
 
 function isInsideTypeGuard(node: ESTree.Node): boolean {
-	if (node.type === nodeTypes.Program) {return false;}
+	if (node.type === AST_NODE_TYPES.Program) {return false;}
 
 	let current = node.parent;
 
-	while (current.type !== nodeTypes.Program) {
+	while (current.type !== AST_NODE_TYPES.Program) {
 		if (isRuntimeFunction(current)) {
-			return current.returnType?.typeAnnotation.type === nodeTypes.TSTypePredicate;
+			return current.returnType?.typeAnnotation.type === AST_NODE_TYPES.TSTypePredicate;
 		}
 
 		current = current.parent;

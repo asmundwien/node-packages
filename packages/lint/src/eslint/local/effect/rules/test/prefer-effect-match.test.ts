@@ -37,6 +37,14 @@ tester.run("local-effect/prefer-effect-match", preferEffectMatchRule, {
 			code: 'kind === "a" ? first : kind === "b" ? second : kind === "c" ? third : fallback;',
 			errors: [{ messageId: "preferMatch" }],
 		},
+		{
+			code: 'kind === "a" ? first : kind === "b" ? second : condition ? third : fourth;',
+			errors: [{ messageId: "preferMatch" }],
+		},
+		{
+			code: 'kind === "a" ? first : kind === "b" ? second : other === "c" ? third : other === "d" ? fourth : fallback;',
+			errors: [{ messageId: "preferMatch" }, { messageId: "preferMatch" }],
+		},
 	],
 	valid: [
 		'kind === "a" ? first : fallback;',

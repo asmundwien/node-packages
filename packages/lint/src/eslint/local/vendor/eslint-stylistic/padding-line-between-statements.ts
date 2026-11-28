@@ -2,7 +2,7 @@
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/vendor/eslint-stylistic/padding-line-between-statements.ts
 */
 // Vendored from ESLint Stylistic; see LICENSE in this directory.
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import {
   isClosingBraceToken,
@@ -113,16 +113,16 @@ Checks the given node is an expression statement of IIFE.
 @private
 */
 function isIIFEStatement(node: ASTNode): boolean {
-  if (node.type === nodeTypes.ExpressionStatement) {
+  if (node.type === AST_NODE_TYPES.ExpressionStatement) {
     let expression = skipChainExpression(node.expression)
 
-    if (expression.type === nodeTypes.UnaryExpression)
+    if (expression.type === AST_NODE_TYPES.UnaryExpression)
       {expression = skipChainExpression(expression.argument)}
 
-    if (expression.type === nodeTypes.CallExpression) {
+    if (expression.type === AST_NODE_TYPES.CallExpression) {
       let callee: ASTNode = expression.callee
 
-      while (callee.type === nodeTypes.SequenceExpression) {
+      while (callee.type === AST_NODE_TYPES.SequenceExpression) {
         const lastExpression = callee.expressions.at(-1)
 
         if (lastExpression === undefined)
@@ -145,18 +145,18 @@ Checks the given node is a CommonJS require statement
 @private
 */
 function isCJSRequire(node: ASTNode): boolean {
-  if (node.type === nodeTypes.VariableDeclaration) {
+  if (node.type === AST_NODE_TYPES.VariableDeclaration) {
     const declaration = node.declarations[0]
 
     if (declaration.init !== null) {
       let call = declaration.init
 
-      while (call.type === nodeTypes.MemberExpression)
+      while (call.type === AST_NODE_TYPES.MemberExpression)
         {call = call.object}
 
       if (
-        call.type === nodeTypes.CallExpression
-        && call.callee.type === nodeTypes.Identifier
+        call.type === AST_NODE_TYPES.CallExpression
+        && call.callee.type === AST_NODE_TYPES.Identifier
       ) {
         return call.callee.name === 'require'
       }
@@ -180,8 +180,8 @@ function isBlockLikeStatement(
 ): boolean {
   // Do-while with a block is a block-like statement.
   if (
-    node.type === nodeTypes.DoWhileStatement
-    && node.body.type === nodeTypes.BlockStatement
+    node.type === AST_NODE_TYPES.DoWhileStatement
+    && node.body.type === AST_NODE_TYPES.BlockStatement
   ) {
     return true
   }
@@ -201,8 +201,8 @@ function isBlockLikeStatement(
 
   return (
     belongingNode !== null
-    && (belongingNode.type === nodeTypes.BlockStatement
-      || belongingNode.type === nodeTypes.SwitchStatement)
+    && (belongingNode.type === AST_NODE_TYPES.BlockStatement
+      || belongingNode.type === AST_NODE_TYPES.SwitchStatement)
   )
 }
 
@@ -218,7 +218,7 @@ function isDirective(
 ): boolean {
   return (
     isTopLevelExpressionStatement(node)
-    && node.expression.type === nodeTypes.Literal
+    && node.expression.type === AST_NODE_TYPES.Literal
     && typeof node.expression.value === 'string'
     && !isParenthesized(node.expression, sourceCode)
   )
@@ -261,21 +261,21 @@ Checks the given node is a CommonJS export statement
 @private
 */
 function isCJSExport(node: ASTNode): boolean {
-  if (node.type === nodeTypes.ExpressionStatement) {
+  if (node.type === AST_NODE_TYPES.ExpressionStatement) {
     const expression = node.expression
 
-    if (expression.type === nodeTypes.AssignmentExpression) {
+    if (expression.type === AST_NODE_TYPES.AssignmentExpression) {
       let left = expression.left
 
-      if (left.type === nodeTypes.MemberExpression) {
-        while (left.object.type === nodeTypes.MemberExpression)
+      if (left.type === AST_NODE_TYPES.MemberExpression) {
+        while (left.object.type === AST_NODE_TYPES.MemberExpression)
           {left = left.object}
 
         return (
-          left.object.type === nodeTypes.Identifier
+          left.object.type === AST_NODE_TYPES.Identifier
           && (left.object.name === 'exports'
             || (left.object.name === 'module'
-              && left.property.type === nodeTypes.Identifier
+              && left.property.type === AST_NODE_TYPES.Identifier
               && left.property.name === 'exports'))
         )
       }
@@ -296,7 +296,7 @@ function isExpression(
   sourceCode: SourceCode,
 ): boolean {
   return (
-    node.type === nodeTypes.ExpressionStatement
+    node.type === AST_NODE_TYPES.ExpressionStatement
     && !isDirectivePrologue(node, sourceCode)
   )
 }
@@ -521,25 +521,25 @@ const PaddingTypes = {
 const MaybeMultilineStatementType = {
   'block-like': { test: isBlockLikeStatement },
   'expression': { test: isExpression },
-  'return': createKeywordTester(nodeTypes.ReturnStatement, 'return'),
+  'return': createKeywordTester(AST_NODE_TYPES.ReturnStatement, 'return'),
   'export': createKeywordTester(
     [
-      nodeTypes.ExportAllDeclaration,
-      nodeTypes.ExportDefaultDeclaration,
-      nodeTypes.ExportNamedDeclaration,
+      AST_NODE_TYPES.ExportAllDeclaration,
+      AST_NODE_TYPES.ExportDefaultDeclaration,
+      AST_NODE_TYPES.ExportNamedDeclaration,
     ],
     'export',
   ),
-  'var': createKeywordTester(nodeTypes.VariableDeclaration, 'var'),
-  'let': createKeywordTester(nodeTypes.VariableDeclaration, 'let'),
-  'const': createKeywordTester(nodeTypes.VariableDeclaration, 'const'),
+  'var': createKeywordTester(AST_NODE_TYPES.VariableDeclaration, 'var'),
+  'let': createKeywordTester(AST_NODE_TYPES.VariableDeclaration, 'let'),
+  'const': createKeywordTester(AST_NODE_TYPES.VariableDeclaration, 'const'),
   'using': {
     test(node) {
-      return node.type === nodeTypes.VariableDeclaration
+      return node.type === AST_NODE_TYPES.VariableDeclaration
         && (node.kind === 'using' || node.kind === 'await using');
     },
   },
-  'type': createKeywordTester(nodeTypes.TSTypeAliasDeclaration, 'type'),
+  'type': createKeywordTester(AST_NODE_TYPES.TSTypeAliasDeclaration, 'type'),
 } satisfies Record<string, NodeTestObject>
 
 /**
@@ -554,50 +554,50 @@ const StatementTypes = new Map<string, NodeTestObject>(Object.entries({
   'directive': { test: isDirectivePrologue },
   'iife': { test: isIIFEStatement },
 
-  'block': createNodeTypeTester(nodeTypes.BlockStatement),
-  'empty': createNodeTypeTester(nodeTypes.EmptyStatement),
-  'function': createNodeTypeTester(nodeTypes.FunctionDeclaration),
-  'ts-method': createNodeTypeTester(nodeTypes.TSMethodSignature),
+  'block': createNodeTypeTester(AST_NODE_TYPES.BlockStatement),
+  'empty': createNodeTypeTester(AST_NODE_TYPES.EmptyStatement),
+  'function': createNodeTypeTester(AST_NODE_TYPES.FunctionDeclaration),
+  'ts-method': createNodeTypeTester(AST_NODE_TYPES.TSMethodSignature),
 
-  'break': createKeywordTester(nodeTypes.BreakStatement, 'break'),
-  'case': createKeywordTester(nodeTypes.SwitchCase, 'case'),
-  'class': createKeywordTester(nodeTypes.ClassDeclaration, 'class'),
-  'continue': createKeywordTester(nodeTypes.ContinueStatement, 'continue'),
-  'debugger': createKeywordTester(nodeTypes.DebuggerStatement, 'debugger'),
+  'break': createKeywordTester(AST_NODE_TYPES.BreakStatement, 'break'),
+  'case': createKeywordTester(AST_NODE_TYPES.SwitchCase, 'case'),
+  'class': createKeywordTester(AST_NODE_TYPES.ClassDeclaration, 'class'),
+  'continue': createKeywordTester(AST_NODE_TYPES.ContinueStatement, 'continue'),
+  'debugger': createKeywordTester(AST_NODE_TYPES.DebuggerStatement, 'debugger'),
   'default': createKeywordTester(
-    [nodeTypes.SwitchCase, nodeTypes.ExportDefaultDeclaration],
+    [AST_NODE_TYPES.SwitchCase, AST_NODE_TYPES.ExportDefaultDeclaration],
     'default',
   ),
-  'do': createKeywordTester(nodeTypes.DoWhileStatement, 'do'),
+  'do': createKeywordTester(AST_NODE_TYPES.DoWhileStatement, 'do'),
   'for': createKeywordTester(
     [
-      nodeTypes.ForStatement,
-      nodeTypes.ForInStatement,
-      nodeTypes.ForOfStatement,
+      AST_NODE_TYPES.ForStatement,
+      AST_NODE_TYPES.ForInStatement,
+      AST_NODE_TYPES.ForOfStatement,
     ],
     'for',
   ),
-  'if': createKeywordTester(nodeTypes.IfStatement, 'if'),
-  'import': createKeywordTester(nodeTypes.ImportDeclaration, 'import'),
-  'switch': createKeywordTester(nodeTypes.SwitchStatement, 'switch'),
-  'throw': createKeywordTester(nodeTypes.ThrowStatement, 'throw'),
-  'try': createKeywordTester(nodeTypes.TryStatement, 'try'),
+  'if': createKeywordTester(AST_NODE_TYPES.IfStatement, 'if'),
+  'import': createKeywordTester(AST_NODE_TYPES.ImportDeclaration, 'import'),
+  'switch': createKeywordTester(AST_NODE_TYPES.SwitchStatement, 'switch'),
+  'throw': createKeywordTester(AST_NODE_TYPES.ThrowStatement, 'throw'),
+  'try': createKeywordTester(AST_NODE_TYPES.TryStatement, 'try'),
   'while': createKeywordTester(
-    [nodeTypes.WhileStatement, nodeTypes.DoWhileStatement],
+    [AST_NODE_TYPES.WhileStatement, AST_NODE_TYPES.DoWhileStatement],
     'while',
   ),
-  'with': createKeywordTester(nodeTypes.WithStatement, 'with'),
+  'with': createKeywordTester(AST_NODE_TYPES.WithStatement, 'with'),
 
   'cjs-export': {
     test(node, sourceCode) {
-      return node.type === nodeTypes.ExpressionStatement
-        && node.expression.type === nodeTypes.AssignmentExpression
+      return node.type === AST_NODE_TYPES.ExpressionStatement
+        && node.expression.type === AST_NODE_TYPES.AssignmentExpression
         && CJS_EXPORT.test(sourceCode.getText(node.expression.left));
     },
   },
   'cjs-import': {
     test(node, sourceCode) {
-      return node.type === nodeTypes.VariableDeclaration
+      return node.type === AST_NODE_TYPES.VariableDeclaration
         && node.declarations.length > 0
         && node.declarations[0].init !== null
         && CJS_IMPORT.test(sourceCode.getText(node.declarations[0].init));
@@ -605,14 +605,14 @@ const StatementTypes = new Map<string, NodeTestObject>(Object.entries({
   },
 
   'enum': createKeywordTester(
-    nodeTypes.TSEnumDeclaration,
+    AST_NODE_TYPES.TSEnumDeclaration,
     'enum',
   ),
   'interface': createKeywordTester(
-    nodeTypes.TSInterfaceDeclaration,
+    AST_NODE_TYPES.TSInterfaceDeclaration,
     'interface',
   ),
-  'function-overload': createNodeTypeTester(nodeTypes.TSDeclareFunction),
+  'function-overload': createNodeTypeTester(AST_NODE_TYPES.TSDeclareFunction),
 } satisfies Record<string, NodeTestObject>))
 
 for (const [name, matcher] of Object.entries(MaybeMultilineStatementType)) {
@@ -773,7 +773,7 @@ return {
     function match(node: ASTNode, type: PolicyStatementOption<Extra>): boolean {
       let innerStatementNode = node
 
-      while (innerStatementNode.type === nodeTypes.LabeledStatement)
+      while (innerStatementNode.type === AST_NODE_TYPES.LabeledStatement)
         {innerStatementNode = innerStatementNode.body}
 
       if (Array.isArray(type)) {
@@ -883,14 +883,14 @@ return {
       if (
         node.parent === undefined ||
         ![
-          nodeTypes.BlockStatement,
-          nodeTypes.Program,
-          nodeTypes.StaticBlock,
-          nodeTypes.SwitchCase,
-          nodeTypes.SwitchStatement,
-          nodeTypes.TSInterfaceBody,
-          nodeTypes.TSModuleBlock,
-          nodeTypes.TSTypeLiteral,
+          AST_NODE_TYPES.BlockStatement,
+          AST_NODE_TYPES.Program,
+          AST_NODE_TYPES.StaticBlock,
+          AST_NODE_TYPES.SwitchCase,
+          AST_NODE_TYPES.SwitchStatement,
+          AST_NODE_TYPES.TSInterfaceBody,
+          AST_NODE_TYPES.TSModuleBlock,
+          AST_NODE_TYPES.TSTypeLiteral,
         ].includes(node.parent.type)
       ) {
         return
@@ -979,4 +979,4 @@ return {
 
 export { createPaddingLineRule };
 
-export type { NodeTestObject, PolicyOptions, PolicyStatementOption };
+export type { NodeTestObject };

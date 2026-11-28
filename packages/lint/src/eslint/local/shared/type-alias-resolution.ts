@@ -1,6 +1,6 @@
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
-import { forEachChild, lexicalTypeParameterNames } from "./lexical-type-parameters.ts";
+import { forEachChild, lexicalTypeParameterScope } from "./lexical-type-parameters.ts";
 
 import type { ESTree } from "../types.ts";
 
@@ -10,12 +10,15 @@ type VisitorKeys = Readonly<Record<string, readonly string[]>>;
 type TypeScope = ESTree.Node;
 
 interface TypeBinding {
-	readonly alias: ESTree.TSTypeAliasDeclaration | null;
+	readonly declaration: ESTree.TSTypeAliasDeclaration | ESTree.TSInterfaceDeclaration | null;
 	readonly name: string;
 	readonly scope: TypeScope;
 }
 
+type ResolutionPath = ReadonlySet<ESTree.TSTypeAliasDeclaration | ESTree.TSTypeParameter>;
+
 interface Substitution {
+	readonly resolvingAliases: ResolutionPath;
 	readonly substitutions: Substitutions;
 	readonly type: ESTree.TypeNode;
 }
@@ -37,16 +40,16 @@ const environmentsByProgram = new WeakMap<ESTree.Program, TypeAliasEnvironment>(
 
 
 function enclosingTypeScope(node: ESTree.Node): TypeScope {
-	if (node.type === nodeTypes.Program) {return node;}
+	if (node.type === AST_NODE_TYPES.Program) {return node;}
 
 	let current = node.parent;
 
-	while (current.type !== nodeTypes.Program) {
+	while (current.type !== AST_NODE_TYPES.Program) {
 		if (
-			current.type === nodeTypes.BlockStatement ||
-			current.type === nodeTypes.TSModuleBlock ||
-			current.type === nodeTypes.StaticBlock ||
-			current.type === nodeTypes.SwitchStatement
+			current.type === AST_NODE_TYPES.BlockStatement ||
+			current.type === AST_NODE_TYPES.TSModuleBlock ||
+			current.type === AST_NODE_TYPES.StaticBlock ||
+			current.type === AST_NODE_TYPES.SwitchStatement
 		) {
 			return current;
 		}
@@ -58,28 +61,30 @@ function enclosingTypeScope(node: ESTree.Node): TypeScope {
 }
 
 function declaredTypeBinding(node: ESTree.Node): {
-	readonly alias: ESTree.TSTypeAliasDeclaration | null;
+	readonly declaration: ESTree.TSTypeAliasDeclaration | ESTree.TSInterfaceDeclaration | null;
 	readonly name: string;
 } | null {
-	if (node.type === nodeTypes.TSTypeAliasDeclaration) {
-		return { alias: node, name: node.id.name };
+	if (
+		node.type === AST_NODE_TYPES.TSTypeAliasDeclaration ||
+		node.type === AST_NODE_TYPES.TSInterfaceDeclaration
+	) {
+		return { declaration: node, name: node.id.name };
 	}
 
 	if (
-		node.type === nodeTypes.TSInterfaceDeclaration ||
-		node.type === nodeTypes.TSEnumDeclaration ||
-		node.type === nodeTypes.ClassDeclaration ||
-		node.type === nodeTypes.ClassExpression
+		node.type === AST_NODE_TYPES.TSEnumDeclaration ||
+		node.type === AST_NODE_TYPES.ClassDeclaration ||
+		node.type === AST_NODE_TYPES.ClassExpression
 	) {
-		return node.id === null ? null : { alias: null, name: node.id.name };
+		return node.id === null ? null : { declaration: null, name: node.id.name };
 	}
 
 	if (
-		node.type === nodeTypes.ImportSpecifier ||
-		node.type === nodeTypes.ImportDefaultSpecifier ||
-		node.type === nodeTypes.ImportNamespaceSpecifier
+		node.type === AST_NODE_TYPES.ImportSpecifier ||
+		node.type === AST_NODE_TYPES.ImportDefaultSpecifier ||
+		node.type === AST_NODE_TYPES.ImportNamespaceSpecifier
 	) {
-		return { alias: null, name: node.local.name };
+		return { declaration: null, name: node.local.name };
 	}
 
 	return null;
@@ -105,10 +110,15 @@ function createTypeAliasEnvironment(
 
 		if (declared !== null) {
 			const bindings = bindingsByName.get(declared.name) ?? [];
-			bindings.push({ ...declared, scope: enclosingTypeScope(node) });
+			bindings.push({
+				...declared,
+				scope: node.type === AST_NODE_TYPES.ClassExpression ? node : enclosingTypeScope(node),
+			});
 			bindingsByName.set(declared.name, bindings);
 
-			if (declared.alias !== null) {aliases.push(declared.alias);}
+			if (declared.declaration?.type === AST_NODE_TYPES.TSTypeAliasDeclaration) {
+				aliases.push(declared.declaration);
+			}
 		}
 
 		forEachChild(node, visitorKeys, collectTypeBindings);
@@ -126,7 +136,7 @@ function ancestorDistance(ancestor: ESTree.Node, node: ESTree.Node): number | nu
 	let distance = 0;
 
 	while (current !== ancestor) {
-		if (current.type === nodeTypes.Program) {return null;}
+		if (current.type === AST_NODE_TYPES.Program) {return null;}
 
 		current = current.parent;
 		distance += 1;
@@ -141,13 +151,15 @@ function nearestTypeBindings(
 	environment: TypeAliasEnvironment,
 ): readonly TypeBinding[] {
 	const candidates = environment.bindingsByName.get(name) ?? [];
+	const parameterScope = lexicalTypeParameterScope(name, use, environment.visitorKeys);
+	const parameterDistance = parameterScope === undefined ? Infinity : ancestorDistance(parameterScope, use) ?? Infinity;
 	let nearestDistance = Infinity;
 	let nearest: TypeBinding[] = [];
 
 	for (const candidate of candidates) {
 		const distance = ancestorDistance(candidate.scope, use);
 
-		if (distance === null || distance > nearestDistance) {continue;}
+		if (distance === null || distance >= parameterDistance || distance > nearestDistance) {continue;}
 
 		if (distance === nearestDistance) {
 			nearest.push(candidate);
@@ -169,11 +181,27 @@ function visibleTypeAlias(
 	use: ESTree.Node,
 	environment: TypeAliasEnvironment,
 ): ESTree.TSTypeAliasDeclaration | null {
-	if (lexicalTypeParameterNames(use, environment.visitorKeys).has(name)) {return null;}
-
 	const bindings = nearestTypeBindings(name, use, environment);
 
-	return bindings.length === 1 ? (bindings[0]?.alias ?? null) : null;
+	const declaration = bindings.length === 1 ? bindings[0]?.declaration : null;
+
+	return declaration?.type === AST_NODE_TYPES.TSTypeAliasDeclaration ? declaration : null;
+}
+
+function visibleTypeInterfaces(
+	name: string,
+	use: ESTree.Node,
+	environment: TypeAliasEnvironment,
+): readonly ESTree.TSInterfaceDeclaration[] {
+	const declarations: ESTree.TSInterfaceDeclaration[] = [];
+
+	for (const binding of nearestTypeBindings(name, use, environment)) {
+		if (binding.declaration?.type !== AST_NODE_TYPES.TSInterfaceDeclaration) {return [];}
+
+		declarations.push(binding.declaration);
+	}
+
+	return declarations;
 }
 
 /**
@@ -185,32 +213,45 @@ function hasVisibleTypeBinding(
 	environment: TypeAliasEnvironment,
 ): boolean {
 	return (
-		lexicalTypeParameterNames(use, environment.visitorKeys).has(name) ||
+		lexicalTypeParameterScope(name, use, environment.visitorKeys) !== undefined ||
 		nearestTypeBindings(name, use, environment).length > 0
 	);
 }
 
 function typeReferenceName(type: ESTree.TSTypeReference): string | null {
-	return type.typeName.type === nodeTypes.Identifier ? type.typeName.name : null;
+	return type.typeName.type === AST_NODE_TYPES.Identifier ? type.typeName.name : null;
 }
 
 function aliasSubstitutions(
 	alias: ESTree.TSTypeAliasDeclaration,
 	reference: ESTree.TSTypeReference,
 	base: Substitutions,
+	resolvingAliases: ResolutionPath,
 ): Substitutions | null {
 	const parameters = alias.typeParameters?.params ?? [];
 	const typeArguments = reference.typeArguments?.params ?? [];
-	const next = new Map(base);
+	const next = new Map<string, Substitution>();
 
 	for (const [index, parameter] of parameters.entries()) {
 		const explicitArgument = typeArguments[index];
 		const argument = explicitArgument ?? parameter.default;
 
-		if (argument === undefined) {return null;}
+		if (argument === undefined || (explicitArgument === undefined && resolvingAliases.has(parameter))) {return null;}
 
 		const argumentSubstitutions = explicitArgument === undefined ? new Map(next) : base;
-		next.set(parameter.name.name, { substitutions: argumentSubstitutions, type: argument });
+		let argumentResolvingAliases = resolvingAliases;
+
+		if (explicitArgument === undefined) {
+			const defaultResolvingAliases = new Set(resolvingAliases);
+			defaultResolvingAliases.add(parameter);
+			argumentResolvingAliases = defaultResolvingAliases;
+		}
+
+		next.set(parameter.name.name, {
+			resolvingAliases: argumentResolvingAliases,
+			substitutions: argumentSubstitutions,
+			type: argument,
+		});
 	}
 
 	return next;
@@ -227,14 +268,14 @@ function doesResolvedTypeMatch(
 	function doesMatch(
 		typeToMatch: ESTree.TypeNode,
 		initialSubstitutions: Substitutions,
-		initialResolvingAliases: ReadonlySet<ESTree.TSTypeAliasDeclaration>,
+		initialResolvingAliases: ResolutionPath,
 	): boolean {
 		let current = typeToMatch;
 		let substitutions = initialSubstitutions;
 		let resolvingAliases = initialResolvingAliases;
 
 		for (;;) {
-      if (current.type !== nodeTypes.TSTypeReference) { break; }
+      if (current.type !== AST_NODE_TYPES.TSTypeReference) { break; }
 
       const name = typeReferenceName(current);
 
@@ -243,7 +284,7 @@ function doesResolvedTypeMatch(
       const substitution = substitutions.get(name);
 
       if (substitution !== undefined && (current.typeArguments?.params.length ?? 0) === 0) {
-        ({ type: current, substitutions } = substitution);
+        ({ type: current, substitutions, resolvingAliases } = substitution);
         continue;
       }
 
@@ -251,7 +292,7 @@ function doesResolvedTypeMatch(
 
       if (alias === null || resolvingAliases.has(alias)) { break; }
 
-      const nextSubstitutions = aliasSubstitutions(alias, current, substitutions);
+      const nextSubstitutions = aliasSubstitutions(alias, current, substitutions, resolvingAliases);
 
       if (nextSubstitutions === null) { break; }
 
@@ -271,10 +312,10 @@ function doesResolvedTypeMatch(
 }
 
 export {
-	type ResolvedTypeMatcher,
 	type TypeAliasEnvironment,
 	createTypeAliasEnvironment,
 	doesResolvedTypeMatch,
 	hasVisibleTypeBinding,
 	visibleTypeAlias,
+	visibleTypeInterfaces,
 };

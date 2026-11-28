@@ -20,6 +20,6 @@ type Comment = TSESTree.Comment;
 
 type Location = TSESTree.SourceLocation;
 
-export type { Comment, Context, CreateRule, Location, SourceCode, Token, Variable, VisitorObject };
+export type { Comment, Context, CreateRule, Location, SourceCode, Token, Variable };
 
 export type { TSESTree as ESTree } from '@typescript-eslint/utils';

@@ -1,7 +1,7 @@
 /** Ban named aliases that merely conceal TypeScript's unknown top type.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unknown-type-aliases.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import {
 	type TypeAliasEnvironment,
@@ -29,7 +29,7 @@ export const noUnknownTypeAliasesRule: CreateRule = {
     				if (environment === null || !doesResolvedTypeMatch(
     					node.typeAnnotation,
     					environment,
-    					(resolved, isMatchingType) => resolved.type === nodeTypes.TSUnknownKeyword || resolved.type === nodeTypes.TSUnionType && resolved.types.some(isMatchingType),
+    					(resolved, isMatchingType) => resolved.type === AST_NODE_TYPES.TSUnknownKeyword || resolved.type === AST_NODE_TYPES.TSUnionType && resolved.types.some(isMatchingType),
     				)) {return;}
     
     				context.report({

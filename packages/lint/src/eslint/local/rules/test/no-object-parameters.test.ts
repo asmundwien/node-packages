@@ -42,6 +42,30 @@ tester.run("local/no-object-parameters", noObjectParametersRule, {
   			code: "type Identity<T> = T; type Wrapped<T> = Identity<T>; function consume(value: Wrapped<object>) {}",
   			errors: [error],
   		},
+  		{
+  			code: "type Identity<T> = T; function consume(value: Identity<Identity<object>>) {}",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Inner<T, U> = U; type Outer<T> = Inner<string, T>; function consume(value: Outer<object>) {}",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Identity<T> = T; type Select<T, U = Identity<T>> = U; function consume(value: Select<object>) {}",
+  			errors: [error],
+  		},
+  		{
+  			code: "function outer<T>() { { type T = object; function consume(value: T) {} } }",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Value = object; const Owner = class Value { consume(value: Value) {} }; function consume(value: Value) {}",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Item = object; type Nested<Input> = Input extends (Input extends infer Item ? Item : never) ? (value: Item) => void : never;",
+  			errors: [error],
+  		},
   	],
   valid: [
   		"type Alias = object;",
@@ -59,5 +83,13 @@ tester.run("local/no-object-parameters", noObjectParametersRule, {
   		"type Payload = object; function outer() { type Payload = { readonly id: string }; function consume(value: Payload) {} }",
   		"type Identity<T> = T; function consume<Identity>(value: Identity) {}",
   		"function one() { type Payload = object; } function two() { function consume(value: Payload) {} }",
+  		"type Value = string; type Hidden = Value; type Box<Value> = Hidden; function consume(value: Box<object>) {}",
+  		"type Value = string; type Select<T, U = Value> = U; type Outer<Value> = Select<boolean>; function consume(value: Outer<object>) {}",
+  		"type Identity<T> = T; function consume(value: Identity<Identity<string>>) {}",
+  		"type Loop<T> = Loop<T>; function consume(value: Loop<object>) {}",
+  		"type Left<T> = Right<T>; type Right<T> = Left<T>; function consume(value: Left<object>) {}",
+  		"function outer<T>() { { type T = object; function consume<T>(value: T) {} } }",
+  		"type Item = object; type Nested<Input> = Input extends [infer Item, (Input extends infer Other ? Other : never)] ? (value: Item) => void : never;",
+  		"type Item = object; type Nested<Input> = Input extends (Input extends infer Item ? (value: Item) => void : never) ? string : never;",
   	],
 });

@@ -89,6 +89,39 @@ async function lintRepeatedConsumer(): Promise<string> {
   }
 }
 
+const matchingSource = 'declare const kind: string;\ndeclare const condition: boolean;\n\nexport const chosen = kind === "a" ? 1 : kind === "b" ? 2 : condition ? 3 : 4;\n';
+
+const consumerRuleCases = [
+  {
+    code: 'type Identity<Value> = Value;\n\nexport declare function load(): Identity<Identity<unknown>>;\n',
+    hasEffect: false,
+    ruleId: 'local/no-unknown-returns',
+    shouldReport: true,
+    title: 'consumer policy detects unknown returns through repeated generic aliases',
+  },
+  {
+    code: 'declare const input: unknown;\n\nconst { value } = { value: input };\n\nexport const widened: unknown = value;\n',
+    hasEffect: false,
+    ruleId: 'local/no-known-value-widening',
+    shouldReport: false,
+    title: 'consumer policy does not treat destructuring containers as extracted type evidence',
+  },
+  {
+    code: matchingSource,
+    hasEffect: false,
+    ruleId: 'local-effect/prefer-effect-match',
+    shouldReport: false,
+    title: 'effect matching policy stays disabled without opt-in',
+  },
+  {
+    code: matchingSource,
+    hasEffect: true,
+    ruleId: 'local-effect/prefer-effect-match',
+    shouldReport: true,
+    title: 'effect matching policy reports a literal prefix before an unrelated fallback',
+  },
+];
+
 describe(setup, () => {
 test('consumer policy rejects reflective calls and accepts typed calls', async () => {
   const rejected = await lintConsumer('const invoke = () => 1; Reflect.apply(invoke, undefined, []);');
@@ -155,5 +188,11 @@ test('effect construction policy applies only to opted-in consumers', async () =
 test('consumer policy preserves imported types across single-run reparses', async () => {
   assert.equal(await lintRepeatedConsumer(), '[]\n[]\n');
 });
+
+  test.each(consumerRuleCases)('$title', async ({ code, hasEffect, ruleId, shouldReport }) => {
+    const messages = await lintConsumer(code, hasEffect);
+
+    assert.equal(messages.some(message => message.ruleId === ruleId), shouldReport);
+  });
 });
 

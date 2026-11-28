@@ -4,7 +4,7 @@ Use this guide to set up the workspace and run shared development commands. See 
 
 ## Development
 
-Install Node.js compatible with `engines.node` and the pnpm version declared in `packageManager` in the [root package manifest](../package.json).
+Use the pnpm version declared in `packageManager` in the [root package manifest](../package.json).
 From the repository root, run `pnpm install --frozen-lockfile`. pnpm also provisions the Node.js version declared in `devEngines.runtime`.
 
 Run the following commands from the repository root. Workspace tasks run through [Turborepo](../turbo.json) in packages that define the corresponding script.
@@ -27,7 +27,5 @@ Run the following commands from the repository root. Workspace tasks run through
 ## Source and workspace execution
 
 Implement package source, scripts, and tests in TypeScript ESM. Keep JavaScript limited to small tool configuration entry points or explicit interoperability requirements.
-
-Use Node.js native type stripping to execute TypeScript source. Use `pnpm exec node` for direct execution with the provisioned runtime. Keep runtime syntax erasable, use explicit `.ts` extensions for relative TypeScript imports, and mark type-only imports with `import type`.
 
 Workspace package exports must resolve to source files so installation, checks, and workspace consumers do not require a build first. Keep type checking separate from execution and include it in CI. See the [compiler configuration reference](../packages/tsconfig/README.md) for the shared compiler settings.

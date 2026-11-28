@@ -1,4 +1,4 @@
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import type { ESTree, SourceCode } from "../types.ts";
 
@@ -8,7 +8,7 @@ type FunctionParameter = ESTree.Parameter | ESTree.MemberExpression;
 Return whether a type is or contains TypeScript's absorbing unknown top type.
 */
 function hasUnknownType(type: ESTree.TypeNode): boolean {
-	return type.type === nodeTypes.TSUnknownKeyword || type.type === nodeTypes.TSUnionType && type.types.some(hasUnknownType);
+	return type.type === AST_NODE_TYPES.TSUnknownKeyword || type.type === AST_NODE_TYPES.TSUnionType && type.types.some(hasUnknownType);
 }
 
 /**
@@ -20,22 +20,22 @@ function functionParameterTypeAnnotation(
 	let current: FunctionParameter | ESTree.RestElement["argument"] = parameter;
 
 	for (;;) {
-		if (current.type === nodeTypes.TSParameterProperty) {
+		if (current.type === AST_NODE_TYPES.TSParameterProperty) {
 			current = current.parameter;
 			continue;
 		}
 
-		if (current.type !== nodeTypes.RestElement && current.type !== nodeTypes.AssignmentPattern) {
+		if (current.type !== AST_NODE_TYPES.RestElement && current.type !== AST_NODE_TYPES.AssignmentPattern) {
 			const annotation = "typeAnnotation" in current ? current.typeAnnotation : undefined;
 
-			return annotation?.type === nodeTypes.TSTypeAnnotation ? annotation : undefined;
+			return annotation?.type === AST_NODE_TYPES.TSTypeAnnotation ? annotation : undefined;
 		}
 
 		const annotation = current.typeAnnotation ?? undefined;
 
 		if (annotation !== undefined) {return annotation;}
 
-		current = current.type === nodeTypes.RestElement ? current.argument : current.left;
+		current = current.type === AST_NODE_TYPES.RestElement ? current.argument : current.left;
 	}
 }
 
@@ -48,15 +48,15 @@ function functionParameterBindingName(
 ): string {
 	let current: FunctionParameter | ESTree.RestElement["argument"] = parameter;
 
-	while (current.type === nodeTypes.TSParameterProperty || current.type === nodeTypes.AssignmentPattern || current.type === nodeTypes.RestElement) {
-		if (current.type === nodeTypes.TSParameterProperty) {
+	while (current.type === AST_NODE_TYPES.TSParameterProperty || current.type === AST_NODE_TYPES.AssignmentPattern || current.type === AST_NODE_TYPES.RestElement) {
+		if (current.type === AST_NODE_TYPES.TSParameterProperty) {
 			current = current.parameter;
 		} else {
-			current = current.type === nodeTypes.AssignmentPattern ? current.left : current.argument;
+			current = current.type === AST_NODE_TYPES.AssignmentPattern ? current.left : current.argument;
 		}
 	}
 
-	if (current.type === nodeTypes.Identifier) {return current.name;}
+	if (current.type === AST_NODE_TYPES.Identifier) {return current.name;}
 
 	const sourceText = sourceCode.getText(current);
 	const annotationStart = "typeAnnotation" in current ? current.typeAnnotation?.range[0] : undefined;
@@ -67,7 +67,6 @@ function functionParameterBindingName(
 }
 
 export {
-	type FunctionParameter,
 	functionParameterBindingName,
 	functionParameterTypeAnnotation,
 	hasUnknownType,

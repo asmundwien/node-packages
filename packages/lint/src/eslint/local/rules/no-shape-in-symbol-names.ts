@@ -1,7 +1,7 @@
 /** Ban the case-insensitive substring "shape" in symbol names except noncomputed member access.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-shape-in-symbol-names.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import type { CreateRule, ESTree } from "../types.ts";
 
@@ -9,11 +9,11 @@ import type { CreateRule, ESTree } from "../types.ts";
 Return whether an identifier names a noncomputed member access, whose property name is exempt.
 */
 function isBorrowedMemberName(node: ESTree.Node): boolean {
-  if (node.type === nodeTypes.Program) {return false;}
+  if (node.type === AST_NODE_TYPES.Program) {return false;}
 
   const parent = node.parent;
 
-  return parent.type === nodeTypes.MemberExpression && parent.property === node && !parent.computed;
+  return parent.type === AST_NODE_TYPES.MemberExpression && parent.property === node && !parent.computed;
 }
 
 const FORBIDDEN_SYMBOL_NAME = "shape";

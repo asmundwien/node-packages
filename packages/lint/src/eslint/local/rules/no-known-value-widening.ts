@@ -2,7 +2,7 @@
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-known-value-widening.ts
 */
 
-import { AST_NODE_TYPES as nodeTypes, TSESLint as tsEslint } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES, TSESLint } from "@typescript-eslint/utils";
 
 import {
 	type TypeEnvironment,
@@ -18,6 +18,7 @@ import {
 	hasUnknownType,
 } from "../shared/function-parameters.ts";
 import { resolveVariable } from "../shared/scope.ts";
+import { doesResolvedTypeMatch, visibleTypeAlias } from "../shared/type-alias-resolution.ts";
 
 import type { CreateRule, ESTree, SourceCode, Variable } from "../types.ts";
 
@@ -28,10 +29,10 @@ function unwrapExpression(expression: ESTree.Expression): ESTree.Expression {
 	let current = expression;
 
 	while (
-		current.type === nodeTypes.TSAsExpression ||
-		current.type === nodeTypes.TSSatisfiesExpression ||
-		current.type === nodeTypes.TSTypeAssertion ||
-		current.type === nodeTypes.TSNonNullExpression
+		current.type === AST_NODE_TYPES.TSAsExpression ||
+		current.type === AST_NODE_TYPES.TSSatisfiesExpression ||
+		current.type === AST_NODE_TYPES.TSTypeAssertion ||
+		current.type === AST_NODE_TYPES.TSNonNullExpression
 	) {
 		current = current.expression;
 	}
@@ -44,7 +45,7 @@ function variableDeclarator(variable: Variable): ESTree.VariableDeclarator | nul
 
 	const [definition] = variable.defs;
 
-	return definition?.type === tsEslint.Scope.DefinitionType.Variable
+	return definition?.type === TSESLint.Scope.DefinitionType.Variable
 		? definition.node
 		: null;
 }
@@ -68,7 +69,7 @@ function hasKnownEvidence(
 
 		const unwrapped = unwrapExpression(current);
 
-		if (unwrapped.type !== nodeTypes.Identifier) {return false;}
+		if (unwrapped.type !== AST_NODE_TYPES.Identifier) {return false;}
 
 		const variable = resolveVariable(sourceCode, unwrapped);
 
@@ -78,6 +79,7 @@ function hasKnownEvidence(
 
 		if (
 			declarator === null ||
+			declarator.id.type !== AST_NODE_TYPES.Identifier ||
 			declarator.init === null ||
 			!isStableConstVariable(variable, declarator)
 		) {
@@ -91,11 +93,11 @@ function hasKnownEvidence(
 
 function isFunctionExpression(node: ESTree.Node): node is FunctionExpression {
 	return (
-		node.type === nodeTypes.ArrowFunctionExpression ||
-		node.type === nodeTypes.FunctionDeclaration ||
-		node.type === nodeTypes.FunctionExpression ||
-		node.type === nodeTypes.TSDeclareFunction ||
-		node.type === nodeTypes.TSEmptyBodyFunctionExpression
+		node.type === AST_NODE_TYPES.ArrowFunctionExpression ||
+		node.type === AST_NODE_TYPES.FunctionDeclaration ||
+		node.type === AST_NODE_TYPES.FunctionExpression ||
+		node.type === AST_NODE_TYPES.TSDeclareFunction ||
+		node.type === AST_NODE_TYPES.TSEmptyBodyFunctionExpression
 	);
 }
 
@@ -107,7 +109,7 @@ function localFunctionForCall(
 
 	if (isFunctionExpression(unwrapped)) {return unwrapped;}
 
-	if (unwrapped.type !== nodeTypes.Identifier) {return null;}
+	if (unwrapped.type !== AST_NODE_TYPES.Identifier) {return null;}
 
 	const variable = resolveVariable(sourceCode, unwrapped);
 
@@ -117,11 +119,14 @@ function localFunctionForCall(
 
 	if (definition === undefined) {return null;}
 
-	if (definition.type === tsEslint.Scope.DefinitionType.FunctionName && isFunctionExpression(definition.node)) {
+	if (definition.type === TSESLint.Scope.DefinitionType.FunctionName && isFunctionExpression(definition.node)) {
 		return definition.node;
 	}
 
-	if (definition.type !== tsEslint.Scope.DefinitionType.Variable) {
+	if (
+		definition.type !== TSESLint.Scope.DefinitionType.Variable ||
+		definition.node.id.type !== AST_NODE_TYPES.Identifier || definition.node.id.typeAnnotation !== undefined
+	) {
 		return null;
 	}
 
@@ -145,13 +150,13 @@ function variableTypeAnnotation(
 	if (definition === undefined) {return null;}
 
 	if (
-		definition.type === tsEslint.Scope.DefinitionType.Variable &&
-		definition.node.id.type === nodeTypes.Identifier
+		definition.type === TSESLint.Scope.DefinitionType.Variable &&
+		definition.node.id.type === AST_NODE_TYPES.Identifier
 	) {
 		return definition.node.id.typeAnnotation ?? null;
 	}
 
-	if (definition.type !== tsEslint.Scope.DefinitionType.Parameter || !isFunctionExpression(definition.node)) {
+	if (definition.type !== TSESLint.Scope.DefinitionType.Parameter || !isFunctionExpression(definition.node)) {
 		return null;
 	}
 
@@ -167,7 +172,15 @@ function hasInformativeType(
 	type: ESTree.TypeNode,
 	environment: TypeEnvironment,
 ): boolean {
-	return classifyUnsafeDictionaryValue(type, environment) === null;
+	return doesResolvedTypeMatch(type, environment.typeAliases, (resolved) => {
+		if (resolved.type === AST_NODE_TYPES.TSTypeReference && resolved.typeName.type === AST_NODE_TYPES.Identifier &&
+			visibleTypeAlias(resolved.typeName.name, resolved, environment.typeAliases) !== null) {return false;}
+
+		const target = classifyWideningTarget(resolved, environment);
+
+		return classifyUnsafeDictionaryValue(resolved, environment) === null &&
+			target?.kind !== "open dictionary" && target?.kind !== "generic container";
+	});
 }
 
 function hasKnownCallArgumentEvidence(
@@ -179,23 +192,23 @@ function hasKnownCallArgumentEvidence(
 	let current = expression;
 
 	for (;;) {
-		if (current.type === nodeTypes.TSNonNullExpression || current.type === nodeTypes.TSSatisfiesExpression) {
+		if (current.type === AST_NODE_TYPES.TSNonNullExpression || current.type === AST_NODE_TYPES.TSSatisfiesExpression) {
 			current = current.expression;
 			continue;
 		}
 
-		if (current.type === nodeTypes.TSAsExpression || current.type === nodeTypes.TSTypeAssertion) {
+		if (current.type === AST_NODE_TYPES.TSAsExpression || current.type === AST_NODE_TYPES.TSTypeAssertion) {
 			return hasInformativeType(current.typeAnnotation, environment);
 		}
 
-		if (current.type === nodeTypes.CallExpression) {
+		if (current.type === AST_NODE_TYPES.CallExpression) {
 			const owner = localFunctionForCall(sourceCode, current.callee);
 			const returnType = owner?.returnType?.typeAnnotation;
 
 			return returnType !== undefined && hasInformativeType(returnType, environment);
 		}
 
-		if (current.type !== nodeTypes.Identifier) {return isKnownEvidenceExpression(current);}
+		if (current.type !== AST_NODE_TYPES.Identifier) {return isKnownEvidenceExpression(current);}
 
 		const variable = resolveVariable(sourceCode, current);
 
@@ -211,6 +224,7 @@ function hasKnownCallArgumentEvidence(
 
 		if (
 			declarator === null ||
+			declarator.id.type !== AST_NODE_TYPES.Identifier ||
 			declarator.init === null ||
 			!isStableConstVariable(variable, declarator)
 		) {
@@ -228,7 +242,7 @@ function typePredicateSubjectIndex(
 ): number | null {
 	const predicate = owner.returnType?.typeAnnotation;
 
-	if (predicate?.type !== nodeTypes.TSTypePredicate || predicate.parameterName.type !== nodeTypes.Identifier) {
+	if (predicate?.type !== AST_NODE_TYPES.TSTypePredicate || predicate.parameterName.type !== AST_NODE_TYPES.Identifier) {
 		return null;
 	}
 
@@ -252,15 +266,15 @@ function annotationTarget(
 }
 
 function enclosingFunction(node: ESTree.Node): FunctionExpression | null {
-	if (node.type === nodeTypes.Program) {return null;}
+	if (node.type === AST_NODE_TYPES.Program) {return null;}
 
 	let current = node.parent;
 
-	while (current.type !== nodeTypes.Program) {
+	while (current.type !== AST_NODE_TYPES.Program) {
 		if (
-			current.type === nodeTypes.ArrowFunctionExpression ||
-			current.type === nodeTypes.FunctionDeclaration ||
-			current.type === nodeTypes.FunctionExpression
+			current.type === AST_NODE_TYPES.ArrowFunctionExpression ||
+			current.type === AST_NODE_TYPES.FunctionDeclaration ||
+			current.type === AST_NODE_TYPES.FunctionExpression
 		) {
 			return current;
 		}
@@ -272,9 +286,9 @@ function enclosingFunction(node: ESTree.Node): FunctionExpression | null {
 }
 
 function sourceKeyName(sourceCode: SourceCode, key: ESTree.PropertyName): string {
-	if (key.type === nodeTypes.Identifier || key.type === nodeTypes.PrivateIdentifier) {return key.name;}
+	if (key.type === AST_NODE_TYPES.Identifier || key.type === AST_NODE_TYPES.PrivateIdentifier) {return key.name;}
 
-	if (key.type === nodeTypes.Literal) {return String(key.value);}
+	if (key.type === AST_NODE_TYPES.Literal) {return String(key.value);}
 
 	return sourceCode.getText(key);
 }
@@ -286,18 +300,37 @@ function functionName(sourceCode: SourceCode, owner: FunctionExpression | null):
 
 	const parent = owner.parent;
 
-	if (parent.type === nodeTypes.VariableDeclarator && parent.id.type === nodeTypes.Identifier)
+	if (parent.type === AST_NODE_TYPES.VariableDeclarator && parent.id.type === AST_NODE_TYPES.Identifier)
 		{return parent.id.name;}
 
-	if (parent.type === nodeTypes.MethodDefinition) {return sourceKeyName(sourceCode, parent.key);}
+	if (parent.type === AST_NODE_TYPES.MethodDefinition) {return sourceKeyName(sourceCode, parent.key);}
 
 	return "anonymous function";
 }
 
-function isEmptyObjectExpression(expression: ESTree.Expression): boolean {
-	const unwrapped = unwrapExpression(expression);
+function isEmptyObjectExpression(sourceCode: SourceCode, expression: ESTree.Expression): boolean {
+	const visitedVariables = new Set<Variable>();
+	let current = expression;
 
-	return unwrapped.type === nodeTypes.ObjectExpression && unwrapped.properties.length === 0;
+	for (;;) {
+		const unwrapped = unwrapExpression(current);
+
+		if (unwrapped.type !== AST_NODE_TYPES.Identifier) {
+			return unwrapped.type === AST_NODE_TYPES.ObjectExpression && unwrapped.properties.length === 0;
+		}
+
+		const variable = resolveVariable(sourceCode, unwrapped);
+
+		if (variable === null || visitedVariables.has(variable)) {return false;}
+
+		const declarator = variableDeclarator(variable);
+
+		if (declarator === null || declarator.id.type !== AST_NODE_TYPES.Identifier ||
+			declarator.init === null || !isStableConstVariable(variable, declarator)) {return false;}
+
+		visitedVariables.add(variable);
+		current = declarator.init;
+	}
 }
 
 function isDictionaryAccumulatorTarget(destination: WideningTarget): boolean {
@@ -305,7 +338,7 @@ function isDictionaryAccumulatorTarget(destination: WideningTarget): boolean {
 }
 
 function hasParentAssertion(node: ESTree.TSAsExpression | ESTree.TSTypeAssertion): boolean {
-	return node.parent.type === nodeTypes.TSAsExpression || node.parent.type === nodeTypes.TSTypeAssertion;
+	return node.parent.type === AST_NODE_TYPES.TSAsExpression || node.parent.type === AST_NODE_TYPES.TSTypeAssertion;
 }
 
 export const noKnownValueWideningRule: CreateRule = {
@@ -321,7 +354,7 @@ export const noKnownValueWideningRule: CreateRule = {
     
     			if (
     				isDictionaryAccumulatorTarget(destination) &&
-    				isEmptyObjectExpression(expression)
+    				isEmptyObjectExpression(context.sourceCode, expression)
     			) {
     				return;
     			}
@@ -350,7 +383,7 @@ export const noKnownValueWideningRule: CreateRule = {
         				);
         			},
         			ArrowFunctionExpression(node) {
-        				if (node.body.type === nodeTypes.BlockStatement) {return;}
+        				if (node.body.type === AST_NODE_TYPES.BlockStatement) {return;}
         
         				reportFlow(
         					node.body,
@@ -359,7 +392,7 @@ export const noKnownValueWideningRule: CreateRule = {
         				);
         			},
         			AssignmentExpression(node) {
-        				if (node.operator !== "=" || node.left.type !== nodeTypes.Identifier) {return;}
+        				if (node.operator !== "=" || node.left.type !== AST_NODE_TYPES.Identifier) {return;}
         
         				const variable = resolveVariable(context.sourceCode, node.left);
         
@@ -367,7 +400,7 @@ export const noKnownValueWideningRule: CreateRule = {
         
         				const declarator = variableDeclarator(variable);
         
-        				if (declarator === null || declarator.id.type !== nodeTypes.Identifier) {return;}
+        				if (declarator === null || declarator.id.type !== AST_NODE_TYPES.Identifier) {return;}
         
         				reportFlow(
         					node.right,
@@ -389,7 +422,7 @@ export const noKnownValueWideningRule: CreateRule = {
         				const parameter = owner.params[parameterIndex];
         				const argument = node.arguments[parameterIndex];
         
-        				if (parameter === undefined || argument === undefined || argument.type === nodeTypes.SpreadElement) {
+        				if (parameter === undefined || argument === undefined || argument.type === AST_NODE_TYPES.SpreadElement) {
         					return;
         				}
         
@@ -458,7 +491,7 @@ export const noKnownValueWideningRule: CreateRule = {
         				);
         			},
         			VariableDeclarator(node) {
-        				if (node.init === null || node.id.type !== nodeTypes.Identifier) {return;}
+        				if (node.init === null || node.id.type !== AST_NODE_TYPES.Identifier) {return;}
         
         				reportFlow(
         					node.init,

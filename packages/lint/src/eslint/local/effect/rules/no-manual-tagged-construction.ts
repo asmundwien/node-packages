@@ -1,7 +1,7 @@
 /** Require existing Effect constructors instead of literal tagged objects.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/effect/rules/no-manual-tagged-construction.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import {
 	isMatchPatternObject,
@@ -19,7 +19,7 @@ const noManualTaggedConstructionRule: CreateRule = {
 
 				const tag = node.properties.find(
 					(property) => {
-						return property.type === nodeTypes.Property &&
+						return property.type === AST_NODE_TYPES.Property &&
 						propertyName(property) === "_tag" &&
 						isStringLiteral(property.value);
 					},

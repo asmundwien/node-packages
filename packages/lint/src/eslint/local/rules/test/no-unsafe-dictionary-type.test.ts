@@ -106,6 +106,82 @@ tester.run("local/no-unsafe-dictionary-type", noUnsafeDictionaryTypeRule, {
   			code: "function local() { type Record<K, V> = { key: K; value: V }; type A = Record<string, unknown>; } function global() { type A = Record<string, unknown>; }",
   			errors: 1,
   		},
+  		{
+  			code: "type Value = unknown; type Hidden = Value; type Box<Value> = Hidden; type Result = Record<string, Box<string>>;",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Identity<T> = T; type Result = Record<string, Identity<Identity<unknown>>>;",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Identity<T = Identity<unknown>> = T; type Result = Record<string, Identity>;",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Identity<T> = T; type Index<T> = Identity<Identity<Record<string, T>>>; declare const values: Index<unknown>;",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Identity<T> = T; type Index<T = unknown, U = Identity<T>> = Record<string, U>; declare const values: Index;",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Index<T = unknown> = Record<string, T>; const values: Index = {}; function consume(values: Index): Index { return values; }",
+  			errors: [error, error, error],
+  		},
+  		{
+  			code: "type Index<T = string> = Record<string, unknown>; declare const values: Index;",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Tagged<T> = Record<string, T> & { tag: string }; declare const values: Tagged<unknown>;",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Tagged<T = unknown> = Readonly<Record<string, T> & { tag: string }>; declare const values: Tagged;",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Tagged = Record<string, unknown> & { tag: string };",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Loop<T> = Loop<T> & Record<string, T>; declare const values: Loop<unknown>;",
+  			errors: [error],
+  		},
+  		{
+  			code: "function outer() { interface Value {} type Result = Record<string, Value>; }",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Value = string; function outer() { interface Value {} type Result = Record<string, Value>; }",
+  			errors: [error],
+  		},
+  		{
+  			code: "interface Value { id: string } namespace Inner { interface Value {} type Result = Record<string, Value>; }",
+  			errors: [error],
+  		},
+  		{
+  			code: "function outer() { interface Value {} interface Value { readonly __brand?: never } type Result = Record<string, Value>; }",
+  			errors: [error],
+  		},
+  		{
+  			code: "interface Value {} function outer() { interface Value { id: string } } function sibling() { type Result = Record<string, Value>; }",
+  			errors: [error],
+  		},
+  		{
+  			code: "function outer<T>() { { type T = unknown; type Result = Record<string, T>; } }",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Value = unknown; const Owner = class Value { consume(values: Record<string, Value>) {} }; type Result = Record<string, Value>;",
+  			errors: [error],
+  		},
+  		{
+  			code: "type Item = unknown; type Nested<Input> = Input extends (Input extends infer Item ? Item : never) ? Record<string, Item> : never;",
+  			errors: [error],
+  		},
   	],
   valid: [
   		"type Commands = Record<string, Command>;",
@@ -140,5 +216,29 @@ tester.run("local/no-unsafe-dictionary-type", noUnsafeDictionaryTypeRule, {
   		"function run<T extends Record<string, unknown>>(input: T): T { return input; }",
   		"declare class Store<T extends Record<string, unknown>> { read(): T }",
   		"type Deep<T extends Readonly<Record<string, unknown>>> = T;",
+  		"type Value = string; type Hidden = Value; type Box<Value> = Hidden; type Result = Record<string, Box<unknown>>;",
+  		"type Value = string; type Hidden = Value; type Box<Value> = Record<string, Hidden>; type Result = Box<unknown>;",
+  		"type Value = string; type Index<T, U = Value> = Record<string, U>; type Outer<Value> = Index<boolean>; type Result = Outer<unknown>;",
+  		"type Identity<T> = T; type Result = Record<string, Identity<Identity<string>>>;",
+  		"type Identity<T> = T; type Index<T> = Identity<Identity<Record<string, T>>>; declare const values: Index<string>;",
+  		"type Loop<T> = Loop<T>; type Result = Record<string, Loop<unknown>>; declare const values: Loop<unknown>;",
+  		"type Left<T> = Right<T>; type Right<T> = Left<T>; type Result = Record<string, Left<unknown>>;",
+  		"type Loop<T = Loop> = T; type Result = Record<string, Loop>;",
+  		"type Identity<T = Identity<string>> = T; type Result = Record<string, Identity>;",
+  		"type Index<T = string> = Record<string, T>; declare const values: Index;",
+  		"type Index<T = unknown> = Record<string, T>; declare const values: Index<string>;",
+  		"type Tagged<T> = Record<string, T> & { tag: string }; declare const values: Tagged<string>;",
+  		"type Tagged<T = string> = Readonly<Record<string, T> & { tag: string }>; declare const values: Tagged;",
+  		"type Loop<T> = Loop<T> & Record<string, T>; declare const values: Loop<string>;",
+  		"interface Value {} function outer() { type Value = string; type Result = Record<string, Value>; }",
+  		"interface Value {} function outer<Value>() { type Result = Record<string, Value>; }",
+  		"function one() { interface Value {} } function two() { interface Value { id: string } type Result = Record<string, Value>; }",
+  		"interface Value {} function outer() { interface Value {} interface Value { id: string } type Result = Record<string, Value>; }",
+  		"interface Value {} function outer() { interface Value { id: string } interface Value {} type Result = Record<string, Value>; }",
+  		"interface Value {} namespace Inner { interface Value { id: string } type Result = Record<string, Value>; }",
+  		"import type { Value } from './local'; type Result = Record<string, Value>;",
+  		"function outer<T>() { { type T = unknown; function consume<T>(value: Record<string, T>) {} } }",
+  		"type Item = unknown; type Nested<Input> = Input extends [infer Item, (Input extends infer Other ? Other : never)] ? Record<string, Item> : never;",
+  		"type Item = unknown; type Nested<Input> = Input extends (Input extends infer Item ? Record<string, Item> : never) ? string : never;",
   	],
 });

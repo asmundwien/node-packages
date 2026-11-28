@@ -1,7 +1,7 @@
 /** Disallow explicit unknown inputs except parameters named cause and type-predicate subjects.
 Adopted from https://github.com/dmmulroy/anti-slop/blob/13909c9e07590f5a85d93c62712259fe14a883f7/src/rules/no-unknown-parameters.ts
 */
-import { AST_NODE_TYPES as nodeTypes } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "@typescript-eslint/utils";
 
 import {
   functionParameterBindingName,
@@ -24,8 +24,8 @@ function isTypePredicateSubject(owner: ParameterOwner, parameterName: string): b
   const predicate = owner.returnType?.typeAnnotation;
 
   return (
-    predicate?.type === nodeTypes.TSTypePredicate &&
-    predicate.parameterName.type === nodeTypes.Identifier &&
+    predicate?.type === AST_NODE_TYPES.TSTypePredicate &&
+    predicate.parameterName.type === AST_NODE_TYPES.Identifier &&
     predicate.parameterName.name === parameterName
   );
 }
